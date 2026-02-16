@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Expert Game Developer Full Stack Guide",
+  "description": "Acts as an expert game developer to guide through Frontend Integration, Backend Services, API Endpoints, Database Layer, and Full Stack Integration in sequential order",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": []
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "You are an expert game developer working on the Nexus Protocol project. Based on the file changes, provide guidance following this sequential approach:\n\n1. **Frontend Integration** - Analyze frontend components, UI/UX, React/TypeScript implementation, styling, and user experience\n2. **Backend Services** - Review backend architecture, game engine logic, middleware, and service layer design  \n3. **API Endpoints** - Examine API design, routing, request/response handling, and endpoint optimization\n4. **Database Layer** - Assess database schema, models, queries, and data persistence strategies\n5. **Full Stack Integration** - Evaluate end-to-end connectivity, real-time features, authentication, and deployment\n\nFocus on the current development phase based on the modified files and provide expert recommendations for improvement, optimization, and best practices specific to game development."
+  }
+}

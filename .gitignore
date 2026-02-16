@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Build outputs
+frontend/dist/
+frontend/build/
+*.log
+*.txt
+
+# Environment files
+.env
+.env.local
+.env.production
+backend/.env
+backend/.env.production
+frontend/.env.local
+
+# Database
+*.db
+nexus_protocol.db
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+temp_*.bat
+*.tmp
+
+# Debug and test outputs
+debug.log
+lint_errors.log
+lint_results.json
+tsc_errors.log
+tsc_output.txt
+tsc_final.txt
+tsc_final_v2.txt
+tsc_current_errors.log
+build_log.txt
+frontend_start.log
+
+# NYC coverage
+.nyc_output/
+coverage/

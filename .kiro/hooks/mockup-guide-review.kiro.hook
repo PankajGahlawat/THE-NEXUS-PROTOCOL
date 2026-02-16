@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Visual Mockup Guide Reviewer",
+  "description": "Automatically reviews changes to the VISUAL_MOCKUP_GUIDE.md file and ensures it's comprehensive, up-to-date, and properly formatted with consistency checks against the project structure",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "The VISUAL_MOCKUP_GUIDE.md file has been updated. Please review the changes and ensure the visual mockup guide is comprehensive, up-to-date, and properly formatted. Check for consistency with the project structure and make any necessary improvements to the workspace. Focus on: 1) Content accuracy and completeness 2) Formatting and readability 3) Alignment with current project components and structure 4) Cross-references to relevant files and directories 5) Any missing sections or outdated information"
+  }
+}

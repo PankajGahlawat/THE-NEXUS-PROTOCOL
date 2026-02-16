@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Auto Merge & Cleanup",
+  "description": "Automatically merges new files into main branch after testing and deletes them from the system",
+  "version": "1",
+  "when": {
+    "type": "fileCreated",
+    "patterns": [
+      "**/*"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A new file has been created. Please test this file thoroughly, and if it passes all tests, merge it into the main codebase and then delete the original file from the system. Ensure proper integration and cleanup."
+  }
+}

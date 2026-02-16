@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Nexus Protocol Linux Setup",
+  "description": "Creates a comprehensive Linux OS setup script and portable zip folder for the Nexus Protocol game including development environment setup, dependency installation, frontend build, backend setup, database configuration, server configuration, and startup scripts",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Create a comprehensive Linux OS setup script named 'setup-nexus-linux.sh' and Windows version 'setup-nexus-windows.bat' for the Nexus Protocol game that includes:\n\n1. **Development Environment Setup**: Install Node.js (v18+), npm, Python 3.8+, and system dependencies (build-essential, curl, wget, git, sqlite3)\n2. **Dependency Installation**: Auto-install dependencies from frontend/package.json, backend/package.json, and requirements.txt\n3. **Frontend Build**: Build React/TypeScript frontend in frontend/ directory using Vite with TypeScript compilation and asset bundling\n4. **Backend Setup**: Configure Node.js backend in backend/ directory and game engines (GameEngine.js, EnhancedGameEngine.js)\n5. **Database Configuration**: Set up SQLite database (nexus_protocol.db) and run schema migrations from frontend/supabase/schema.sql and init-database.sql\n6. **Server Configuration**: Configure backend server and monitoring services (nexus_monitor_server.py)\n7. **Startup Scripts**: Create development and production startup scripts\n\nRequirements:\n- Robust error handling with proper exit codes\n- Clear, colored feedback during installation\n- Check existing installations and handle updates\n- Verify system requirements before proceeding\n- Include logging functionality\n- Set proper file permissions and environment variables\n- Test installation by starting services\n- Cross-platform compatibility (.sh and .bat versions)\n\nBased on the current project structure with frontend/, backend/, and existing setup files, create these comprehensive setup scripts that automate the entire installation and configuration process."
+  }
+}

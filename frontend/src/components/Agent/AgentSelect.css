@@ -1,0 +1,353 @@
+/**
+ * NEXUS PROTOCOL - Agent Selection Styles
+ * Enhanced cyberpunk styling for agent cards
+ */
+
+.agent-card-image {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+
+.agent-card-image::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent);
+  transition: left 0.5s;
+  z-index: 2;
+}
+
+.agent-card-image:hover::before {
+  left: 100%;
+}
+
+.agent-portrait {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: all 0.5s ease;
+  filter: brightness(0.9) contrast(1.1) saturate(1.2);
+}
+
+.agent-card-image:hover .agent-portrait {
+  transform: scale(1.1);
+  filter: brightness(1.1) contrast(1.2) saturate(1.4);
+}
+
+.glitch-effect {
+  position: relative;
+}
+
+.glitch-effect::before,
+.glitch-effect::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.glitch-effect::before {
+  animation: glitch-1 0.5s infinite;
+  color: #ff0040;
+  z-index: -1;
+}
+
+.glitch-effect::after {
+  animation: glitch-2 0.5s infinite;
+  color: #00ffff;
+  z-index: -2;
+}
+
+.agent-card:hover .glitch-effect::before,
+.agent-card:hover .glitch-effect::after {
+  opacity: 0.8;
+}
+
+@keyframes glitch-1 {
+
+  0%,
+  14%,
+  15%,
+  49%,
+  50%,
+  99%,
+  100% {
+    transform: translate(0);
+  }
+
+  15%,
+  49% {
+    transform: translate(-2px, 1px);
+  }
+}
+
+@keyframes glitch-2 {
+
+  0%,
+  20%,
+  21%,
+  62%,
+  63%,
+  99%,
+  100% {
+    transform: translate(0);
+  }
+
+  21%,
+  62% {
+    transform: translate(2px, -1px);
+  }
+}
+
+.cyberpunk-border {
+  position: relative;
+}
+
+.cyberpunk-border::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid transparent;
+  border-radius: 0.5rem;
+  background: linear-gradient(45deg, var(--theme-primary), var(--theme-accent)) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: exclude;
+  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.cyberpunk-border:hover::before {
+  opacity: 1;
+}
+
+.stat-bar {
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent);
+  animation: stat-shine 2s infinite;
+}
+
+@keyframes stat-shine {
+  0% {
+    left: -100%;
+  }
+
+  50%,
+  100% {
+    left: 100%;
+  }
+}
+
+.agent-card.selected .stat-bar::after {
+  animation-duration: 1s;
+}
+
+.hologram-effect {
+  position: relative;
+}
+
+.hologram-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 255, 255, 0.03) 2px,
+      rgba(0, 255, 255, 0.03) 4px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.agent-card:hover .hologram-effect::before {
+  opacity: 1;
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 5px var(--theme-primary);
+  }
+
+  50% {
+    box-shadow: 0 0 20px var(--theme-primary), 0 0 30px var(--theme-primary);
+  }
+}
+
+/* Enhanced Agent Portrait Fallbacks */
+.agent-fallback-hacker {
+  background: linear-gradient(135deg, #FF1744 0%, #DC143C 50%, #8B0000 100%);
+  position: relative;
+}
+
+.agent-fallback-hacker::before {
+  content: '';
+  position: absolute;
+  top: 20%;
+  left: 20%;
+  right: 20%;
+  bottom: 40%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.agent-fallback-hacker::after {
+  content: '💻';
+  position: absolute;
+  bottom: 20%;
+  right: 20%;
+  font-size: 2rem;
+  opacity: 0.7;
+}
+
+.agent-fallback-infiltrator {
+  background: linear-gradient(135deg, #00D4FF 0%, #6B2FB5 50%, #9D4EDD 100%);
+  position: relative;
+}
+
+.agent-fallback-infiltrator::before {
+  content: '';
+  position: absolute;
+  top: 30%;
+  left: 30%;
+  right: 30%;
+  bottom: 30%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+  border-radius: 50%;
+}
+
+.agent-fallback-infiltrator::after {
+  content: '👤';
+  position: absolute;
+  bottom: 20%;
+  right: 20%;
+  font-size: 2rem;
+  opacity: 0.7;
+}
+
+
+
+/* Cyberpunk grid overlay for fallback images */
+.cyberpunk-grid {
+  background-image:
+    linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  position: absolute;
+  inset: 0;
+  opacity: 0.3;
+}
+
+/* Enhanced selection pulse */
+.selected-pulse {
+  animation: selected-pulse 1.5s infinite;
+}
+
+@keyframes selected-pulse {
+
+  0%,
+  100% {
+    box-shadow:
+      0 0 10px var(--theme-primary),
+      inset 0 0 10px var(--theme-primary);
+  }
+
+  50% {
+    box-shadow:
+      0 0 25px var(--theme-primary),
+      0 0 35px var(--theme-primary),
+      inset 0 0 15px var(--theme-primary);
+  }
+}
+
+/* Scan line effect */
+.scan-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--theme-primary), transparent);
+  animation: scan-line 3s infinite;
+}
+
+@keyframes scan-line {
+  0% {
+    top: 0;
+    opacity: 1;
+  }
+
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/* Data stream effect */
+.data-stream {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    repeating-linear-gradient(0deg,
+      transparent 0px,
+      rgba(0, 255, 255, 0.03) 1px,
+      rgba(0, 255, 255, 0.03) 2px,
+      transparent 3px);
+  animation: data-stream 2s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.agent-card:hover .data-stream {
+  opacity: 1;
+}
+
+@keyframes data-stream {
+  0% {
+    transform: translateY(-100%);
+  }
+
+  100% {
+    transform: translateY(100%);
+  }
+}

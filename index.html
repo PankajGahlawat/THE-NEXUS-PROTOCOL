@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Protocol - Cyber Heist Simulation</title>
+    <meta name="description" content="Enter the Nexus Protocol - A cyberpunk narrative experience and cyber heist simulation game">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0a0a0f;
+            color: #ffffff;
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        .redirect-container {
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .loading-text {
+            font-size: 1.2rem;
+            color: #8b5cf6;
+            margin-bottom: 1rem;
+        }
+        
+        .loading-bar {
+            width: 300px;
+            height: 2px;
+            background: #1a1a25;
+            border-radius: 1px;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+        
+        .loading-progress {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #ec4899 100%);
+            animation: loadProgress 2s ease forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes loadProgress {
+            to { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="redirect-container">
+        <div class="loading-text">INITIALIZING NEXUS PROTOCOL</div>
+        <div class="loading-bar">
+            <div class="loading-progress"></div>
+        </div>
+    </div>
+
+    <script>
+        // Redirect to prototype landing page after loading animation
+        setTimeout(() => {
+            window.location.href = './prototypes/index.html';
+        }, 2500);
+    </script>
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Protocol | Cyber-Heist Simulation</title>
+    <meta name="description" content="Enter the Nexus Protocol - A cyberpunk cyber-heist simulation game">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="prototypes/styles.css">
+    <style>
+        /* Additional styles for game integration */
+        .game-stats {
+            position: fixed;
+            top: 100px;
+            right: 2rem;
+            background: rgba(10, 10, 15, 0.9);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 1001;
+        }
+        
+        .game-stats.visible {
+            opacity: 1;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            color: var(--accent-primary);
+            margin-left: 1rem;
+        }
+        
+        .character-preview {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .character-mini {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            text-align: center;
+            transition: var(--transition-fast);
+            cursor: pointer;
+        }
+        
+        .character-mini:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+        
+        .character-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        .character-name {
+            font-family: var(--font-display);
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .character-role {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        
+        .mission-preview {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .mission-title {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .mission-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        .enter-game-btn {
+            background: var(--gradient-primary);
+            border: none;
+            padding: 1rem 2rem;
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            color: var(--text-primary);
+            border-radius: 2px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            position: relative;
+            overflow: hidden;
+            margin-top: 1rem;
+            width: 100%;
+        }
+        
+        .enter-game-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-online {
+            background: #22c55e;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+        }
+        
+        .status-offline {
+            background: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="terminal-text">
+                <span class="prompt">&gt;</span> <span id="typingText"></span><span class="cursor">_</span>
+            </div>
+            <div class="loading-bar-container">
+                <div class="loading-bar" id="loadingBar"></div>
+            </div>
+            <div class="loading-info">
+                <span class="file-path" id="filePath">// initializing nexus protocol...</span>
+            </div>
+        </div>
+        <div class="click-prompt" id="clickPrompt">
+            <span class="pulse-icon">◉</span> CLICK TO ENABLE SOUND
+        </div>
+    </div>
+
+    <!-- Game Status Panel -->
+    <div class="game-stats" id="gameStats">
+        <div class="stat-item">
+            <span>Server Status:</span>
+            <span class="stat-value">
+                <span class="status-indicator status-online" id="serverStatus"></span>
+                <span id="serverStatusText">ONLINE</span>
+            </span>
+        </div>
+        <div class="stat-item">
+            <span>Active Players:</span>
+            <span class="stat-value" id="activePlayers">1</span>
+        </div>
+        <div class="stat-item">
+            <span>Missions Available:</span>
+            <span class="stat-value" id="missionsCount">8</span>
+        </div>
+        <div class="stat-item">
+            <span>Tools Ready:</span>
+            <span class="stat-value" id="toolsCount">20+</span>
+        </div>
+    </div>
+
+    <!-- Main Navigation -->
+    <nav class="main-nav" id="mainNav">
+        <div class="nav-left">
+            <a href="#" class="logo">
+                <span class="logo-text">NEXUS</span>
+                <span class="logo-slash">/</span>
+                <span class="logo-sub">PROTOCOL</span>
+            </a>
+        </div>
+        <div class="nav-center">
+            <a href="#" class="nav-link active">GAME</a>
+            <a href="#agents" class="nav-link">AGENTS</a>
+            <a href="#missions" class="nav-link">MISSIONS</a>
+            <a href="#tools" class="nav-link">TOOLS</a>
+        </div>
+        <div class="nav-right">
+            <button class="sign-in-btn" onclick="enterGame()">ENTER GAME</button>
+        </div>
+    </nav>
+
+    <!-- Side Navigation -->
+    <div class="side-nav" id="sideNav">
+        <a href="http://localhost:5173" target="_blank" class="side-link" title="Game Interface">
+            <span class="side-icon">🎮</span>
+        </a>
+        <a href="http://localhost:3000/health" target="_blank" class="side-link" title="Server Status">
+            <span class="side-icon">📡</span>
+        </a>
+        <a href="#" class="side-link" title="Documentation">
+            <span class="side-icon">📋</span>
+        </a>
+    </div>
+
+    <!-- Page Indicator -->
+    <div class="page-indicator" id="pageIndicator">
+        <span class="page-label">PAGE</span>
+        <span class="page-number" id="pageNumber">001</span>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <!-- Hero Section (Page 001) -->
+        <section class="page-section hero-section" data-page="001">
+            <div class="hero-background">
+                <div class="grid-overlay"></div>
+                <div class="particles" i
