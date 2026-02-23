@@ -1,0 +1,17 @@
+{
+  "name": "nexus-vm-automation",
+  "version": "1.0.0",
+  "description": "VM automation service for NEXUS PROTOCOL cyber range",
+  "main": "VMManager.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/vm-manager-test.js"
+  },
+  "keywords": ["vm", "automation", "libvirt", "cyber-range"],
+  "author": "NEXUS PROTOCOL Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {}
+}

@@ -25,29 +25,19 @@ const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
     origin: function (origin, callback) {
-      // Allow requests with no origin
+      // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
 
-      // Define allowed origins
-      const allowedOrigins = [
-        'http://localhost:5173',
-        'http://127.0.0.1:5173'
-      ];
+      // SECURITY: Use explicit allowlist from environment
+      const allowedOrigins = process.env.CORS_ORIGIN?.split(',').map(o => o.trim()) || [];
+      
+      if (allowedOrigins.length === 0) {
+        console.warn('⚠️  WARNING: No CORS origins configured. Set CORS_ORIGIN environment variable.');
+        return callback(new Error('CORS not configured'));
+      }
 
-      // Add environment-specific origins
-      const envOrigins = process.env.CORS_ORIGIN?.split(',') || [];
-      allowedOrigins.push(...envOrigins);
-
-      // Allow any local network IP
-      const localNetworkRegex = [
-        /^http:\/\/192\.168\.\d{1,3}\.\d{1,3}:5173$/,
-        /^http:\/\/10\.\d{1,3}\.\d{1,3}\.\d{1,3}:5173$/,
-        /^http:\/\/172\.(1[6-9]|2[0-9]|3[0-1])\.\d{1,3}\.\d{1,3}:5173$/
-      ];
-
-      // Check allowed origins and patterns
-      if (allowedOrigins.includes(origin) ||
-        localNetworkRegex.some(regex => regex.test(origin))) {
+      // Check if origin is in allowlist
+      if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
@@ -65,13 +55,53 @@ const PORT = process.env.PORT || 3000;
 // Initialize enhanced systems
 let database, gameEngine, authMiddleware, wsMiddleware;
 
+// Create lazy middleware wrappers that will work before initialization
+const auth = {
+  authenticateToken: () => (req, res, next) => authMiddleware.authenticateToken()(req, res, next),
+  optionalAuth: () => (req, res, next) => authMiddleware.optionalAuth()(req, res, next),
+  getLoginValidation: () => authMiddleware.getLoginValidation(),
+  handleValidationErrors: (req, res, next) => authMiddleware.handleValidationErrors(req, res, next),
+  getGeneralLimiter: () => authMiddleware.getGeneralLimiter(),
+  getAuthLimiter: () => authMiddleware.getAuthLimiter(),
+  getMissionActionLimiter: () => authMiddleware.getMissionActionLimiter(),
+  securityHeaders: () => authMiddleware.securityHeaders(),
+  requestLogger: () => authMiddleware.requestLogger()
+};
+
+const ws = {
+  authenticateSocket: () => wsMiddleware.authenticateSocket(),
+  rateLimitMiddleware: () => wsMiddleware.rateLimitMiddleware(),
+  handleConnection: (io) => wsMiddleware.handleConnection(io),
+  getStats: () => wsMiddleware.getStats()
+};
+
 async function initializeServer() {
   try {
     console.log('🚀 Initializing Nexus Protocol Enhanced Server...');
 
+    // SECURITY: Validate required environment variables
+    const requiredEnvVars = ['JWT_SECRET', 'POSTGRES_PASSWORD'];
+    const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+    
+    if (missingVars.length > 0) {
+      console.error('❌ SECURITY ERROR: Required environment variables not set:');
+      missingVars.forEach(varName => console.error(`   - ${varName}`));
+      console.error('');
+      console.error('Please set these variables in your .env file before starting the server.');
+      console.error('See .env.example for reference.');
+      process.exit(1);
+    }
+
+    // Validate JWT secret strength
+    if (process.env.JWT_SECRET.length < 32) {
+      console.error('❌ SECURITY ERROR: JWT_SECRET must be at least 32 characters long');
+      console.error('Generate a strong secret using: node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))"');
+      process.exit(1);
+    }
+
     // Initialize database
     database = new PostgreSQLDatabase();
-    await database.healthCheck();
+    await database.initialize();
     console.log('✅ Database connection established');
 
     // Initialize game engine
@@ -112,33 +142,23 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
 
-    // Define allowed origins
-    const allowedOrigins = [
-      'http://localhost:5173',
-      'http://127.0.0.1:5173'
-    ];
+    // SECURITY: Use explicit allowlist from environment
+    const allowedOrigins = process.env.CORS_ORIGIN?.split(',').map(o => o.trim()) || [];
+    
+    if (allowedOrigins.length === 0) {
+      console.warn('⚠️  WARNING: No CORS origins configured. Set CORS_ORIGIN environment variable.');
+      return callback(new Error('CORS not configured'));
+    }
 
-    // Add environment-specific origins
-    const envOrigins = process.env.CORS_ORIGIN?.split(',') || [];
-    allowedOrigins.push(...envOrigins);
-
-    // Allow any local network IP (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
-    const localNetworkRegex = [
-      /^http:\/\/192\.168\.\d{1,3}\.\d{1,3}:5173$/,
-      /^http:\/\/10\.\d{1,3}\.\d{1,3}\.\d{1,3}:5173$/,
-      /^http:\/\/172\.(1[6-9]|2[0-9]|3[0-1])\.\d{1,3}\.\d{1,3}:5173$/
-    ];
-
-    // Check if origin is explicitly allowed
+    // Check if origin is in allowlist
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
 
-    // Check if origin matches local network patterns
-    for (const regex of localNetworkRegex) {
-      if (regex.test(origin)) {
-        return callback(null, true);
-      }
+    callback(new Error('Not allowed by CORS'));
+  },    // Check if origin is explicitly allowed
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
 
     // Log rejected origins for debugging
@@ -152,8 +172,9 @@ app.use(cors({
 
 // Body parsing and compression
 app.use(compression({ level: parseInt(process.env.COMPRESSION_LEVEL) || 6 }));
-app.use(express.json({ limit: process.env.MAX_REQUEST_SIZE || '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: process.env.MAX_REQUEST_SIZE || '10mb' }));
+// SECURITY: Reduced from 10mb to 1mb to prevent DoS attacks
+app.use(express.json({ limit: process.env.MAX_REQUEST_SIZE || '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: process.env.MAX_REQUEST_SIZE || '1mb' }));
 
 // Initialize middleware after systems are ready
 app.use((req, res, next) => {
@@ -168,9 +189,9 @@ app.use((req, res, next) => {
 });
 
 // Apply rate limiting and security
-app.use('/api/', (req, res, next) => authMiddleware.getGeneralLimiter()(req, res, next));
-app.use('/api/v1/auth/', (req, res, next) => authMiddleware.getAuthLimiter()(req, res, next));
-app.use('/api/v1/missions/action', (req, res, next) => authMiddleware.getMissionActionLimiter()(req, res, next));
+app.use('/api/', (req, res, next) => auth.getGeneralLimiter()(req, res, next));
+app.use('/api/v1/auth/', (req, res, next) => auth.getAuthLimiter()(req, res, next));
+app.use('/api/v1/missions/action', (req, res, next) => auth.getMissionActionLimiter()(req, res, next));
 
 // Admin routes
 app.use('/api/v1/admin', (req, res, next) => {
@@ -179,15 +200,18 @@ app.use('/api/v1/admin', (req, res, next) => {
 });
 
 // Security headers and logging
-app.use((req, res, next) => authMiddleware.securityHeaders()(req, res, next));
-app.use((req, res, next) => authMiddleware.requestLogger()(req, res, next));
+app.use((req, res, next) => auth.securityHeaders()(req, res, next));
+app.use((req, res, next) => auth.requestLogger()(req, res, next));
 
 // Health check endpoint
 app.get('/health', async (req, res) => {
   try {
-    const dbHealth = await database.healthCheck();
+    // Simple database health check - try a query
+    const dbHealth = await database.query('SELECT 1 as health')
+      .then(() => ({ status: 'healthy' }))
+      .catch(() => ({ status: 'unhealthy' }));
     const cacheStats = gameEngine.getCacheStats();
-    const wsStats = wsMiddleware.getStats();
+    const wsStats = ws.getStats();
 
     res.json({
       status: 'operational',
@@ -216,8 +240,15 @@ app.get('/health', async (req, res) => {
 // Note: Auth routes are handled directly in this file for enhanced security
 
 app.post('/api/v1/auth/login',
-  authMiddleware.getLoginValidation(),
-  authMiddleware.handleValidationErrors,
+  (req, res, next) => {
+    // Lazy evaluation of validation rules
+    const validators = auth.getLoginValidation();
+    // Run validators
+    Promise.all(validators.map(v => v.run(req)))
+      .then(() => next())
+      .catch(next);
+  },
+  (req, res, next) => auth.handleValidationErrors(req, res, next),
   async (req, res) => {
     try {
       const { teamName, accessCode } = req.body;
@@ -267,7 +298,7 @@ app.post('/api/v1/auth/login',
   }
 );
 
-app.post('/api/v1/auth/logout', authMiddleware.authenticateToken(), async (req, res) => {
+app.post('/api/v1/auth/logout', auth.authenticateToken(), async (req, res) => {
   try {
     await database.deleteSession(req.session.token);
     res.json({
@@ -284,7 +315,7 @@ app.post('/api/v1/auth/logout', authMiddleware.authenticateToken(), async (req, 
   }
 });
 
-app.get('/api/v1/auth/validate', authMiddleware.authenticateToken(), (req, res) => {
+app.get('/api/v1/auth/validate', auth.authenticateToken(), (req, res) => {
   res.json({
     success: true,
     valid: true,
@@ -296,7 +327,7 @@ app.get('/api/v1/auth/validate', authMiddleware.authenticateToken(), (req, res) 
 
 // ===== GAME STATE ENDPOINTS =====
 
-app.get('/api/v1/game/state', authMiddleware.authenticateToken(), async (req, res) => {
+app.get('/api/v1/game/state', auth.authenticateToken(), async (req, res) => {
   try {
     const team = await database.getTeam(req.session.teamId);
     if (!team) {
@@ -337,7 +368,7 @@ app.get('/api/v1/game/state', authMiddleware.authenticateToken(), async (req, re
 
 // ===== MISSION ENDPOINTS =====
 
-app.get('/api/v1/missions', authMiddleware.optionalAuth(), (req, res) => {
+app.get('/api/v1/missions', auth.optionalAuth(), (req, res) => {
   const missions = Object.values(gameEngine.missionTypes);
   res.json({
     success: true,
@@ -345,7 +376,7 @@ app.get('/api/v1/missions', authMiddleware.optionalAuth(), (req, res) => {
   });
 });
 
-app.post('/api/v1/missions/start', authMiddleware.authenticateToken(), async (req, res) => {
+app.post('/api/v1/missions/start', auth.authenticateToken(), async (req, res) => {
   try {
     const { missionId, selectedAgent } = req.body;
 
@@ -387,7 +418,7 @@ app.post('/api/v1/missions/start', authMiddleware.authenticateToken(), async (re
 });
 
 app.post('/api/v1/missions/complete-objective',
-  authMiddleware.authenticateToken(),
+  auth.authenticateToken(),
   async (req, res) => {
     try {
       const { missionInstanceId, objectiveId } = req.body;
@@ -428,7 +459,7 @@ app.post('/api/v1/missions/complete-objective',
 
 // ===== AGENT ENDPOINTS =====
 
-app.get('/api/v1/agents', authMiddleware.optionalAuth(), (req, res) => {
+app.get('/api/v1/agents', auth.optionalAuth(), (req, res) => {
   const agents = Object.values(gameEngine.agents);
   res.json({
     success: true,
@@ -436,7 +467,7 @@ app.get('/api/v1/agents', authMiddleware.optionalAuth(), (req, res) => {
   });
 });
 
-app.post('/api/v1/agents/select', authMiddleware.authenticateToken(), async (req, res) => {
+app.post('/api/v1/agents/select', auth.authenticateToken(), async (req, res) => {
   try {
     const { agentId } = req.body;
 
@@ -470,7 +501,7 @@ app.post('/api/v1/agents/select', authMiddleware.authenticateToken(), async (req
 });
 
 app.post('/api/v1/agents/use-ability',
-  authMiddleware.authenticateToken(),
+  auth.authenticateToken(),
   async (req, res) => {
     try {
       const { missionInstanceId, abilityType, targetData } = req.body;
@@ -503,7 +534,7 @@ app.post('/api/v1/agents/use-ability',
 
 // ===== ANALYTICS ENDPOINTS =====
 
-app.get('/api/v1/analytics/leaderboard', authMiddleware.optionalAuth(), async (req, res) => {
+app.get('/api/v1/analytics/leaderboard', auth.optionalAuth(), async (req, res) => {
   try {
     const { limit = 10, timeframe = 'all' } = req.query;
     const leaderboard = await database.getLeaderboard(parseInt(limit), timeframe);
@@ -523,13 +554,7 @@ app.get('/api/v1/analytics/leaderboard', authMiddleware.optionalAuth(), async (r
 });
 
 // ===== WEBSOCKET HANDLING =====
-
-// WebSocket authentication
-io.use(wsMiddleware.authenticateSocket());
-io.use(wsMiddleware.rateLimitMiddleware());
-
-// WebSocket connection handling
-io.on('connection', wsMiddleware.handleConnection(io));
+// WebSocket setup is done in initializeServer() after middleware is ready
 
 // ===== ERROR HANDLING =====
 
@@ -544,14 +569,25 @@ app.use('*', (req, res) => {
   });
 });
 
-// Global error handler
-app.use(authMiddleware.errorHandler());
+// Global error handler - will be set up after initialization
+let errorHandlerSet = false;
 
 // ===== SERVER STARTUP =====
 
 async function startServer() {
   try {
     await initializeServer();
+    
+    // Set up WebSocket handling after initialization
+    io.use(wsMiddleware.authenticateSocket());
+    io.use(wsMiddleware.rateLimitMiddleware());
+    io.on('connection', wsMiddleware.handleConnection(io));
+    
+    // Set up error handler after initialization
+    if (!errorHandlerSet) {
+      app.use(authMiddleware.errorHandler());
+      errorHandlerSet = true;
+    }
 
     server.listen(PORT, '0.0.0.0', () => {
       console.log(`

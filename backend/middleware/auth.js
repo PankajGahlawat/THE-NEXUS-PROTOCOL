@@ -12,16 +12,24 @@ const { body, validationResult } = require('express-validator');
 class AuthMiddleware {
   constructor(database) {
     this.database = database;
-    this.JWT_SECRET = process.env.JWT_SECRET || this.generateSecureSecret();
+    
+    // SECURITY: Require JWT_SECRET from environment
+    if (!process.env.JWT_SECRET) {
+      throw new Error('SECURITY ERROR: JWT_SECRET environment variable is required');
+    }
+    
+    if (process.env.JWT_SECRET.length < 32) {
+      throw new Error('SECURITY ERROR: JWT_SECRET must be at least 32 characters long');
+    }
+    
+    this.JWT_SECRET = process.env.JWT_SECRET;
     this.JWT_ALGORITHM = 'HS256';
     this.TOKEN_EXPIRY = '2h';
-    
-    if (!process.env.JWT_SECRET) {
-      console.warn('⚠️  Using generated JWT secret. Set JWT_SECRET environment variable for production.');
-    }
   }
 
   generateSecureSecret() {
+    // This method is no longer used - JWT_SECRET must be provided via environment
+    // Kept for backward compatibility
     return require('crypto').randomBytes(64).toString('hex');
   }
 
@@ -314,6 +322,9 @@ class AuthMiddleware {
       
       // Referrer policy
       res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+      
+      // SECURITY: Add HSTS header for HTTPS enforcement
+      res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
       
       // Content Security Policy
       res.setHeader('Content-Security-Policy', 

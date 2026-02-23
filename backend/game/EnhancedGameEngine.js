@@ -5,7 +5,7 @@
  * Last Updated: December 20, 2025
  */
 
-const LRU = require('lru-cache');
+const { LRUCache } = require('lru-cache');
 
 class EnhancedGameEngine {
   constructor(database) {
@@ -15,9 +15,9 @@ class EnhancedGameEngine {
     this.achievements = this.initializeAchievements();
     
     // Performance optimizations with LRU caches
-    this.missionCache = new LRU({ max: 1000, ttl: 5 * 60 * 1000 }); // 5 minutes
-    this.abilityCache = new LRU({ max: 500, ttl: 30 * 1000 }); // 30 seconds
-    this.scoreCache = new LRU({ max: 100, ttl: 60 * 1000 }); // 1 minute
+    this.missionCache = new LRUCache({ max: 1000, ttl: 5 * 60 * 1000 }); // 5 minutes
+    this.abilityCache = new LRUCache({ max: 500, ttl: 30 * 1000 }); // 30 seconds
+    this.scoreCache = new LRUCache({ max: 100, ttl: 60 * 1000 }); // 1 minute
   }
 
   initializeMissionTypes() {
