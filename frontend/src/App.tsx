@@ -19,6 +19,10 @@ import AgentSelect from './components/Agent/AgentSelect';
 import MissionBriefing from './components/Mission/MissionBriefing';
 import MissionUI from './components/Mission/MissionUI';
 import AdminDashboard from './components/Admin/AdminDashboard';
+import SSHTerminal from './components/Terminal/SSHTerminal';
+import TerminalMonitor from './components/Admin/TerminalMonitor';
+import AdminDashboardFull from './components/Admin/AdminDashboardFull';
+import Leaderboard from './components/Game/Leaderboard';
 
 function App() {
   return (
@@ -49,6 +53,18 @@ function App() {
 
                   {/* Admin Route */}
                   <Route path="/admin" element={<AdminDashboard />} />
+
+                  {/* Admin Dashboard Full */}
+                  <Route path="/admin/dashboard" element={<AdminDashboardFull />} />
+
+                  {/* Terminal Monitor Route */}
+                  <Route path="/admin/terminal-monitor" element={<TerminalMonitor />} />
+
+                  {/* SSH Terminal Route */}
+                  <Route path="/terminal" element={<SSHTerminal />} />
+
+                  {/* Leaderboard Route */}
+                  <Route path="/leaderboard" element={<Leaderboard />} />
 
                   {/* Catch all - redirect to landing */}
                   <Route path="*" element={<Navigate to="/" replace />} />

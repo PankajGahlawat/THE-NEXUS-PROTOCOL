@@ -11,6 +11,7 @@ import NexusButton from '../UI/NexusButton';
 import NexusCard from '../UI/NexusCard';
 import ToolsInterface from './ToolsInterface';
 import ToolsQuickReference from './ToolsQuickReference';
+import MissionTerminal from './MissionTerminal';
 import { gsap } from '../../lib/gsap';
 
 export default function MissionUI() {
@@ -434,60 +435,8 @@ export default function MissionUI() {
 
           {/* Center Panel - Main Interface */}
           <div className="lg:col-span-2">
-            <NexusCard className="h-96 mb-6">
-              <div className="text-center py-20">
-                <div className="text-6xl text-theme-primary mb-4">
-                  🎯
-                </div>
-                <h3 className="text-2xl font-bold font-display text-arcane-text mb-4">
-                  Mission Interface Active
-                </h3>
-                <p className="text-arcane-muted mb-8">
-                  Execute objectives to progress through the mission phases.
-                  Monitor your trace level to avoid detection.
-                </p>
-
-                <div className="grid grid-cols-5 gap-3 max-w-2xl mx-auto">
-                  <NexusButton
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setShowToolsInterface(true)}
-                  >
-                    🛠️ Tools
-                  </NexusButton>
-                  <NexusButton
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setShowQuickReference(true)}
-                  >
-                    📋 Guide
-                  </NexusButton>
-                  <NexusButton
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleToolUse('network-scanner')}
-                    disabled={toolCooldowns['network-scanner'] > 0}
-                  >
-                    📡 Scan {toolCooldowns['network-scanner'] > 0 && `(${toolCooldowns['network-scanner']}s)`}
-                  </NexusButton>
-                  <NexusButton
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleToolUse('data-injector')}
-                    disabled={toolCooldowns['data-injector'] > 0}
-                  >
-                    💾 Extract {toolCooldowns['data-injector'] > 0 && `(${toolCooldowns['data-injector']}s)`}
-                  </NexusButton>
-                  <NexusButton
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleToolUse('trace-cleaner')}
-                    disabled={toolCooldowns['trace-cleaner'] > 0}
-                  >
-                    🔒 Clean {toolCooldowns['trace-cleaner'] > 0 && `(${toolCooldowns['trace-cleaner']}s)`}
-                  </NexusButton>
-                </div>
-              </div>
+            <NexusCard className="h-[600px] mb-6">
+              <MissionTerminal />
             </NexusCard>
 
             <div className="grid grid-cols-2 gap-6">

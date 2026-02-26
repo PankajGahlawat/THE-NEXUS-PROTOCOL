@@ -671,11 +671,32 @@
   width: 100%;
   height: 100%;
   background: linear-gradient(135deg, #1a1a25, #12121a);
-  transition: transform 0.4s ease;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: transform 0.4s ease, filter 0.4s ease;
 }
 
 .feature-card:hover .feature-bg {
   transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+.feature-card.large .feature-bg::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.15) 0%,
+    rgba(34, 211, 238, 0.1) 50%,
+    rgba(236, 72, 153, 0.15) 100%
+  );
+  mix-blend-mode: overlay;
+  pointer-events: none;
 }
 
 .feature-info {
@@ -686,6 +707,7 @@
   padding: 2rem;
   background: linear-gradient(180deg, transparent, rgba(10, 10, 15, 0.95));
   z-index: 1;
+  backdrop-filter: blur(2px);
 }
 
 .feature-tag {

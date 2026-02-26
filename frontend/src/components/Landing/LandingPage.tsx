@@ -334,19 +334,24 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="feature-card">
-              <div className="feature-bg"></div>
+              <div className="feature-bg" style={{
+                backgroundImage: 'url(/assets/gameplay.jpg)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                opacity: 0.6
+              }}></div>
               <div className="feature-info">
-                <span className="feature-tag">TOOLS</span>
-                <h3>20+ TOOLS</h3>
-                <p>Hacking, stealth, analysis</p>
+                <span className="feature-tag">GAMEPLAY</span>
+                <h3>STRATEGIC</h3>
+                <p>Risk vs reward decisions</p>
               </div>
             </div>
             <div className="feature-card">
               <div className="feature-bg"></div>
               <div className="feature-info">
-                <span className="feature-tag">GAMEPLAY</span>
-                <h3>STRATEGIC</h3>
-                <p>Risk vs reward decisions</p>
+                <span className="feature-tag">TOOLS</span>
+                <h3>20+ TOOLS</h3>
+                <p>Hacking, stealth, analysis</p>
               </div>
             </div>
           </div>
