@@ -61,8 +61,8 @@ class SQLiteDatabase {
 
     async initializeSchema() {
         try {
-            // Read init-database.sql
-            const sqlPath = path.join(__dirname, '../../init-database.sql');
+            // Read init-database.sql from migrations folder
+            const sqlPath = path.join(__dirname, '../migrations/001_initial_schema.sql');
             const sqlContent = fs.readFileSync(sqlPath, 'utf8');
 
             // Split by semicolon to execute individually (SQLite limitation on exec)
@@ -263,4 +263,4 @@ class SQLiteDatabase {
     }
 }
 
-module.exports = new SQLiteDatabase();
+module.exports = SQLiteDatabase;

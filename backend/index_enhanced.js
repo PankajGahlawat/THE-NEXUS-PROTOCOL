@@ -15,7 +15,7 @@ const compression = require('compression');
 // UUID import removed - not used in this file
 
 // Import enhanced systems
-const PostgreSQLDatabase = require('./models/PostgreSQLDatabase');
+const database = require('./models/database'); // Use in-memory database
 const EnhancedGameEngine = require('./game/EnhancedGameEngine');
 const AuthMiddleware = require('./middleware/auth');
 const WebSocketMiddleware = require('./middleware/websocket');
@@ -53,7 +53,7 @@ const io = socketIo(server, {
 const PORT = process.env.PORT || 3000;
 
 // Initialize enhanced systems
-let database, gameEngine, authMiddleware, wsMiddleware;
+let gameEngine, authMiddleware, wsMiddleware;
 
 // Create lazy middleware wrappers that will work before initialization
 const auth = {
@@ -99,10 +99,8 @@ async function initializeServer() {
       process.exit(1);
     }
 
-    // Initialize database
-    database = new PostgreSQLDatabase();
-    await database.initialize();
-    console.log('✅ Database connection established');
+    // Initialize database (in-memory, no connection needed)
+    console.log('✅ Database initialized (in-memory)');
 
     // Initialize game engine
     gameEngine = new EnhancedGameEngine(database);
@@ -151,12 +149,6 @@ app.use(cors({
     }
 
     // Check if origin is in allowlist
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-
-    callback(new Error('Not allowed by CORS'));
-  },    // Check if origin is explicitly allowed
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
@@ -255,28 +247,45 @@ app.post('/api/v1/auth/login',
       const clientIP = req.ip;
       const userAgent = req.get('User-Agent');
 
-      // Authenticate team
-      const team = await database.authenticateTeam(teamName, accessCode);
-      if (!team) {
+      // Built-in team credentials
+      const builtInTeams = {
+        'RedTeam': { password: 'redteam123', type: 'red' },
+        'BlueTeam': { password: 'blueteam123', type: 'blue' }
+      };
+
+      let team = null;
+      let teamType = 'red';
+
+      // Check if it's a built-in team
+      const builtInTeam = builtInTeams[teamName];
+      if (builtInTeam && accessCode === builtInTeam.password) {
+        teamType = builtInTeam.type;
+        
+        // Create team in in-memory database
+        team = database.createTeam({
+          teamName,
+          accessCodeHash: accessCode // In-memory DB doesn't hash
+        });
+      } else {
         return res.status(401).json({
           success: false,
           error: 'INVALID_CREDENTIALS',
-          message: 'Invalid team name or access code'
+          message: 'Invalid team name or access code. Use RedTeam/redteam123 or BlueTeam/blueteam123'
         });
       }
 
       // Generate session token
       const sessionToken = authMiddleware.generateToken({
         teamId: team.id,
-        teamName: team.teamName
+        teamName: team.teamName,
+        teamType
       });
 
       // Create session
-      await database.createSession({
+      database.createSession({
         teamId: team.id,
         sessionToken,
-        ipAddress: clientIP,
-        userAgent
+        authenticated: true
       });
 
       res.json({
@@ -284,6 +293,7 @@ app.post('/api/v1/auth/login',
         sessionToken,
         teamId: team.id,
         teamName: team.teamName,
+        teamType,
         expiresIn: 7200
       });
 

@@ -2,7 +2,7 @@
 
 > "The system is never secure. It's just waiting for the right key."
 
-**Nexus Protocol** is an immersive, real-time multiplayer cyber-heist experience. Players form teams, assign specialized roles (Hacker, Infiltrator, Analyst), and collaborate to breach secure systems, retrieve data shards, and complete high-stakes missions.
+**Nexus Protocol** is an immersive, real-time multiplayer cyber-heist experience. Players form teams, assign specialized roles (Hacker, Infiltrator), and collaborate to breach secure systems, retrieve data shards, and complete high-stakes missions.
 
 ## 🚀 Features
 
@@ -10,7 +10,6 @@
 - **Role-Based Gameplay**:
   - **👨‍💻 Hacker**: Breaches firewalls and decrypts nodes.
   - **🕵️ Infiltrator**: Navigates physical/digital spaces to retrieve assets.
-  - **📊 Analyst**: Monitors security feeds and coordinates the team.
 - **Cinematic Experience**:
   - Custom "Trailer" intro sequence.
   - High-fidelity animations using [GSAP](https://gsap.com/).
@@ -86,7 +85,7 @@ nexus-protocol/
 2.  **Lobby**:
     - **Create Team**: Generate a unique team code.
     - **Join Team**: Enter an existing code to join your squad.
-3.  **Select Role**: Choose your specialization (Hacker, Infiltrator, Analyst).
+3.  **Select Role**: Choose your specialization (Hacker, Infiltrator).
 4.  **Execute Mission**: Collaborate in real-time to complete objectives.
 
 ## 🤝 Contributing

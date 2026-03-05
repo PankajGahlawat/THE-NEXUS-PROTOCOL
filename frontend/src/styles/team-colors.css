@@ -1,0 +1,266 @@
+/**
+ * NEXUS PROTOCOL - Team-Based Color System
+ * Dynamic colors based on Red Team or Blue Team
+ * Version: 1.0.0
+ * Last Updated: March 5, 2026
+ */
+
+/* ===== RED TEAM COLORS ===== */
+[data-team="red"] {
+  /* Primary Colors */
+  --team-primary: #FF1744;
+  --team-primary-light: #FF4569;
+  --team-primary-dark: #C4001D;
+  --team-primary-glow: rgba(255, 23, 68, 0.5);
+  
+  /* Secondary Colors */
+  --team-secondary: #FF5252;
+  --team-accent: #FF6E40;
+  
+  /* Gradients */
+  --team-gradient: linear-gradient(135deg, #FF1744 0%, #F50057 50%, #C51162 100%);
+  --team-gradient-subtle: linear-gradient(135deg, rgba(255, 23, 68, 0.2) 0%, rgba(245, 0, 87, 0.1) 100%);
+  
+  /* Borders & Glows */
+  --team-border: rgba(255, 23, 68, 0.4);
+  --team-border-hover: rgba(255, 23, 68, 0.8);
+  --team-glow: 0 0 20px rgba(255, 23, 68, 0.3);
+  --team-glow-strong: 0 0 30px rgba(255, 23, 68, 0.6);
+  
+  /* Backgrounds */
+  --team-bg-card: rgba(255, 23, 68, 0.05);
+  --team-bg-hover: rgba(255, 23, 68, 0.1);
+}
+
+/* ===== BLUE TEAM COLORS ===== */
+[data-team="blue"] {
+  /* Primary Colors */
+  --team-primary: #00D4FF;
+  --team-primary-light: #33DDFF;
+  --team-primary-dark: #00A8CC;
+  --team-primary-glow: rgba(0, 212, 255, 0.5);
+  
+  /* Secondary Colors */
+  --team-secondary: #00B8D4;
+  --team-accent: #0091EA;
+  
+  /* Gradients */
+  --team-gradient: linear-gradient(135deg, #00D4FF 0%, #0091EA 50%, #0277BD 100%);
+  --team-gradient-subtle: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(0, 145, 234, 0.1) 100%);
+  
+  /* Borders & Glows */
+  --team-border: rgba(0, 212, 255, 0.4);
+  --team-border-hover: rgba(0, 212, 255, 0.8);
+  --team-glow: 0 0 20px rgba(0, 212, 255, 0.3);
+  --team-glow-strong: 0 0 30px rgba(0, 212, 255, 0.6);
+  
+  /* Backgrounds */
+  --team-bg-card: rgba(0, 212, 255, 0.05);
+  --team-bg-hover: rgba(0, 212, 255, 0.1);
+}
+
+/* ===== APPLY TEAM COLORS TO COMPONENTS ===== */
+
+/* Cards */
+[data-team] .team-card,
+[data-team] .story-card,
+[data-team] .character-card,
+[data-team] .feature-card {
+  border-color: var(--team-border) !important;
+  box-shadow: var(--team-glow) !important;
+}
+
+[data-team] .team-card:hover,
+[data-team] .story-card:hover,
+[data-team] .character-card:hover,
+[data-team] .feature-card:hover {
+  border-color: var(--team-border-hover) !important;
+  box-shadow: var(--team-glow-strong) !important;
+}
+
+/* Buttons */
+[data-team] .team-button,
+[data-team] .primary-btn,
+[data-team] button[class*="primary"] {
+  background: var(--team-gradient) !important;
+  border-color: var(--team-primary) !important;
+}
+
+[data-team] .team-button:hover,
+[data-team] .primary-btn:hover {
+  box-shadow: var(--team-glow-strong) !important;
+}
+
+/* Text Colors */
+[data-team] .team-text-primary {
+  color: var(--team-primary) !important;
+}
+
+[data-team] .team-text-accent {
+  color: var(--team-accent) !important;
+}
+
+/* Icons & Tags */
+[data-team] .card-icon,
+[data-team] .feature-tag,
+[data-team] .character-code {
+  color: var(--team-primary) !important;
+}
+
+/* Glows & Effects */
+[data-team] .card-glow {
+  background: radial-gradient(circle at top left, var(--team-primary-glow), transparent 50%) !important;
+}
+
+/* Borders */
+[data-team] .team-border {
+  border-color: var(--team-border) !important;
+}
+
+/* Backgrounds */
+[data-team] .team-bg {
+  background: var(--team-bg-card) !important;
+}
+
+/* Audio Control Button */
+[data-team] .audio-control-btn {
+  border-color: var(--team-border) !important;
+}
+
+[data-team] .audio-control-btn:hover {
+  border-color: var(--team-border-hover) !important;
+  box-shadow: var(--team-glow) !important;
+}
+
+[data-team] .audio-icon,
+[data-team] .sound-wave-bar {
+  color: var(--team-primary) !important;
+  background: linear-gradient(to top, var(--team-primary), var(--team-primary-light)) !important;
+}
+
+[data-team] .volume-fill {
+  background: linear-gradient(to top, var(--team-primary), var(--team-primary-light)) !important;
+  box-shadow: 0 0 8px var(--team-primary-glow) !important;
+}
+
+[data-team] .volume-percentage {
+  color: var(--team-primary) !important;
+}
+
+[data-team] .volume-slider-panel {
+  border-color: var(--team-border) !important;
+}
+
+/* Mission UI Elements */
+[data-team] .mission-card,
+[data-team] .objective-card,
+[data-team] .tool-card {
+  border-color: var(--team-border) !important;
+  box-shadow: var(--team-glow) !important;
+}
+
+[data-team] .progress-bar-fill,
+[data-team] .trace-bar-fill {
+  background: var(--team-gradient) !important;
+}
+
+/* Agent Select Cards - COMPREHENSIVE STYLING */
+[data-team] .agent-card {
+  border-color: var(--team-border) !important;
+  box-shadow: var(--team-glow) !important;
+}
+
+[data-team] .agent-card:hover {
+  border-color: var(--team-border-hover) !important;
+  box-shadow: var(--team-glow-strong) !important;
+}
+
+/* Selected Agent Card - Use Team Colors */
+[data-team] .agent-card.ring-2 {
+  border-color: var(--team-primary) !important;
+  box-shadow: 0 0 0 2px var(--team-primary), 0 0 25px var(--team-primary-glow), 0 0 35px var(--team-primary-glow) !important;
+}
+
+/* Remove default ring colors */
+[data-team] .ring-theme-primary {
+  --tw-ring-color: transparent !important;
+}
+
+/* Shadow Colors for Selected Cards */
+[data-team] .shadow-2xl {
+  box-shadow: 0 0 0 2px var(--team-primary), 0 0 30px var(--team-primary-glow) !important;
+}
+
+[data-team] .shadow-theme-primary\/25 {
+  box-shadow: 0 0 30px var(--team-primary-glow) !important;
+}
+
+/* Agent Card Image Borders */
+[data-team] .agent-card-image,
+[data-team] .cyberpunk-border {
+  border-color: var(--team-border) !important;
+}
+
+[data-team] .cyberpunk-border::before {
+  background: linear-gradient(45deg, var(--team-primary), var(--team-accent)) border-box !important;
+  opacity: 0.5 !important;
+}
+
+/* Agent Stats Bars */
+[data-team] .stat-bar > div,
+[data-team] .from-theme-primary,
+[data-team] .to-theme-accent {
+  background: var(--team-gradient) !important;
+}
+
+/* Agent Abilities Icons and Dots */
+[data-team] .agent-card h4 span,
+[data-team] .agent-card .text-theme-accent,
+[data-team] .bg-theme-accent,
+[data-team] .w-2.h-2.bg-theme-primary,
+[data-team] .w-2.h-2.bg-theme-accent {
+  color: var(--team-primary) !important;
+  background-color: var(--team-primary) !important;
+}
+
+/* Agent Code Name and Text */
+[data-team] .text-theme-primary {
+  color: var(--team-primary) !important;
+}
+
+/* Agent Selection Indicator Checkmark Circle */
+[data-team] .bg-theme-primary {
+  background-color: var(--team-primary) !important;
+}
+
+/* Animate Pulse for Selected Cards */
+[data-team] .animate-pulse {
+  animation: team-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite !important;
+}
+
+@keyframes team-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Inputs */
+[data-team] input:focus,
+[data-team] textarea:focus,
+[data-team] select:focus {
+  border-color: var(--team-primary) !important;
+  box-shadow: 0 0 0 3px var(--team-primary-glow) !important;
+}
+
+/* Links */
+[data-team] a:hover,
+[data-team] .nav-link:hover {
+  color: var(--team-primary) !important;
+}
+
+[data-team] .nav-link::after {
+  background: var(--team-primary) !important;
+}

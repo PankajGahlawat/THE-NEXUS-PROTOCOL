@@ -73,13 +73,7 @@ nexus-protocol/
 │   └── server.js           # VM API server
 │
 ├── 📁 documentation/        # Project documentation
-│   ├── archive/            # Historical docs
-│   ├── API.md              # API reference
-│   ├── INSTALLATION_GUIDE.md
-│   ├── OPERATOR_GUIDE.md
-│   ├── PROJECT_OVERVIEW.md
-│   ├── TECHNICAL_ARCHITECTURE.md
-│   └── USER_GUIDE.md
+│   └── archive/            # Historical docs
 │
 ├── 📁 scripts/              # Deployment scripts
 │   ├── setup-security.sh   # Security setup (Linux/Mac)
@@ -181,20 +175,41 @@ nexus-protocol/
 
 ## 📚 Documentation
 
-### Getting Started
-- [Installation Guide](documentation/INSTALLATION_GUIDE.md) - Detailed setup instructions
-- [User Guide](documentation/USER_GUIDE.md) - How to play the game
-- [Secure Deployment Guide](security/SECURE_DEPLOYMENT_GUIDE.md) - Production deployment
+### Complete Documentation (4 MASTER Files)
 
-### Technical
-- [Technical Architecture](documentation/TECHNICAL_ARCHITECTURE.md) - System design
-- [API Documentation](documentation/API.md) - REST API reference
-- [Project Overview](documentation/PROJECT_OVERVIEW.md) - High-level overview
+All documentation has been consolidated into 4 comprehensive MASTER files:
 
-### Operations
-- [Operator Guide](documentation/OPERATOR_GUIDE.md) - Running and maintaining
-- [Security Audit Report](security/SECURITY_AUDIT_REPORT.md) - Security analysis
-- [Security Fixes Applied](security/SECURITY_FIXES_APPLIED.md) - Security changelog
+1. **[MASTER_GUIDE.md](MASTER_GUIDE.md)** - User Guide + Installation + Project Overview
+   - Getting started
+   - Installation instructions
+   - How to play the game
+   - Project overview and features
+
+2. **[MASTER_TECHNICAL.md](MASTER_TECHNICAL.md)** - Technical Architecture + API + Operations
+   - System architecture
+   - API documentation
+   - Operator guide
+   - Technical specifications
+
+3. **[MASTER_FEATURES.md](MASTER_FEATURES.md)** - All Feature Implementations
+   - SSH Terminal System
+   - Scoring Engine
+   - Admin Dashboard
+   - Admin Monitoring
+   - Mission Lifecycle
+
+4. **[MASTER_DEPLOYMENT.md](MASTER_DEPLOYMENT.md)** - Complete Deployment Guide
+   - Quick start (5 minutes)
+   - Docker deployment
+   - Production server setup
+   - VM configuration
+   - Security setup
+   - Troubleshooting
+
+### Security
+- [Secure Deployment](security/SECURE_DEPLOYMENT_GUIDE.md) - Production security
+- [Security Audit](security/SECURITY_AUDIT_REPORT.md) - Security analysis
+- [Security Fixes](security/SECURITY_FIXES_APPLIED.md) - Security changelog
 
 ---
 
@@ -287,7 +302,7 @@ FRONTEND_PORT=8000
 BACKEND_PORT=8001
 ```
 
-**See [documentation/OPERATOR_GUIDE.md](documentation/OPERATOR_GUIDE.md) for more troubleshooting.**
+**See [MASTER_TECHNICAL.md](MASTER_TECHNICAL.md) for more troubleshooting.**
 
 ---
 
@@ -330,10 +345,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Documentation:** [documentation/](documentation/)
+- **Documentation:** See the 4 MASTER files above
 - **Security Issues:** [security/SECURITY_AUDIT_REPORT.md](security/SECURITY_AUDIT_REPORT.md)
 - **Bug Reports:** Open an issue on GitHub
-- **Questions:** Check [documentation/USER_GUIDE.md](documentation/USER_GUIDE.md)
+- **Questions:** Check [MASTER_GUIDE.md](MASTER_GUIDE.md)
 
 ---
 

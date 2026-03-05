@@ -19,6 +19,7 @@ export default function MissionUI() {
 
   const [showToolsInterface, setShowToolsInterface] = useState(false);
   const [showQuickReference, setShowQuickReference] = useState(false);
+  const [terminalFullscreen, setTerminalFullscreen] = useState(false);
   const [systemLogs, setSystemLogs] = useState<{ time: string; message: string; type: 'success' | 'info' | 'warning' | 'error' }[]>([
     { time: new Date().toLocaleTimeString(), message: 'Mission initialized', type: 'success' },
     { time: new Date().toLocaleTimeString(), message: 'Scanning network topology...', type: 'info' },
@@ -228,11 +229,102 @@ export default function MissionUI() {
     );
   }
 
+  // Terminal Fullscreen View
+  if (terminalFullscreen) {
+    return (
+      <div className="fixed inset-0 z-50 bg-arcane-dark">
+        <div className="h-full flex flex-col">
+          <div className="bg-arcane-panel border-b border-arcane-border p-4 flex justify-between items-center">
+            <h2 className="text-xl font-bold text-arcane-teal">Mission Terminal - Fullscreen</h2>
+            <button
+              onClick={() => setTerminalFullscreen(false)}
+              className="px-4 py-2 bg-theme-primary text-white rounded hover:bg-theme-secondary transition-colors"
+            >
+              Exit Fullscreen
+            </button>
+          </div>
+          <div className="flex-1">
+            <MissionTerminal />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const openLogsInNewTab = () => {
+    const logsWindow = window.open('', '_blank');
+    if (logsWindow) {
+      logsWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>System Logs - Nexus Protocol</title>
+          <style>
+            body {
+              margin: 0;
+              padding: 20px;
+              background: #0a0a0a;
+              color: #00ff00;
+              font-family: 'Courier New', monospace;
+              font-size: 14px;
+            }
+            h1 {
+              color: #0ac8b9;
+              border-bottom: 2px solid #0ac8b9;
+              padding-bottom: 10px;
+            }
+            .log-entry {
+              padding: 10px;
+              margin: 5px 0;
+              border-radius: 4px;
+              border: 1px solid #333;
+            }
+            .log-success {
+              color: #10b981;
+              background: rgba(16, 185, 129, 0.1);
+              border-color: rgba(16, 185, 129, 0.3);
+            }
+            .log-warning {
+              color: #f59e0b;
+              background: rgba(245, 158, 11, 0.1);
+              border-color: rgba(245, 158, 11, 0.3);
+            }
+            .log-error {
+              color: #ef4444;
+              background: rgba(239, 68, 68, 0.1);
+              border-color: rgba(239, 68, 68, 0.3);
+            }
+            .log-info {
+              color: #888;
+              background: rgba(136, 136, 136, 0.1);
+              border-color: #333;
+            }
+            .timestamp {
+              opacity: 0.7;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>NEXUS PROTOCOL - System Logs</h1>
+          <div id="logs">
+            ${systemLogs.map(log => `
+              <div class="log-entry log-${log.type}">
+                <span class="timestamp">[${log.time}]</span> ${log.message}
+              </div>
+            `).join('')}
+          </div>
+        </body>
+        </html>
+      `);
+      logsWindow.document.close();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-arcane-dark">
       {/* Enhanced Header */}
       <div className="bg-arcane-panel border-b border-arcane-border p-4">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold font-display text-arcane-teal">
               {gameState.currentMission.name}
@@ -266,225 +358,55 @@ export default function MissionUI() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto p-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Panel - Mission Status */}
-          <div className="space-y-6">
-            <NexusCard>
-              <h3 className="text-lg font-bold font-display text-arcane-text mb-4">
-                Mission Status
-              </h3>
+      {/* Full Page Terminal with Fullscreen Button */}
+      <div className="relative h-[calc(100vh-120px)]">
+        <button
+          onClick={() => setTerminalFullscreen(true)}
+          className="absolute top-4 right-4 z-10 px-3 py-2 bg-theme-primary/80 hover:bg-theme-primary text-white rounded text-sm font-semibold transition-colors flex items-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+          </svg>
+          Fullscreen
+        </button>
+        <MissionTerminal />
+      </div>
 
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-arcane-muted">Progress</span>
-                    <span className="text-arcane-text">{Math.round(gameState.missionProgress)}%</span>
-                  </div>
-                  <div className="w-full h-2 bg-arcane-border rounded-full overflow-hidden">
-                    <div
-                      ref={progressBarRef}
-                      className="h-full bg-gradient-to-r from-theme-primary to-theme-accent transition-all duration-500"
-                      style={{ width: '0%' }}
-                    />
-                  </div>
+      {/* System Logs - Blue Team Only - Fixed at bottom with Fullscreen Button */}
+      {gameState.teamType === 'blue' && (
+        <div className="fixed bottom-0 left-0 right-0 bg-arcane-panel border-t border-arcane-border p-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="text-sm font-semibold text-arcane-text">
+                System Logs
+              </h4>
+              <button
+                onClick={openLogsInNewTab}
+                className="px-3 py-1 bg-theme-primary/80 hover:bg-theme-primary text-white rounded text-xs font-semibold transition-colors flex items-center gap-1"
+              >
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Open in New Tab
+              </button>
+            </div>
+            <div className="space-y-1 text-xs font-mono max-h-24 overflow-y-auto">
+              {systemLogs.map((log, index) => (
+                <div
+                  key={index}
+                  className={`${log.type === 'success' ? 'text-green-400' :
+                    log.type === 'warning' ? 'text-yellow-400' :
+                      log.type === 'error' ? 'text-red-400' :
+                        'text-arcane-muted'
+                    }`}
+                >
+                  [{log.time}] {log.message}
                 </div>
-
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-arcane-muted">Trace Level</span>
-                    <span className={getTraceColor()}>{Math.round(gameState.traceLevel)}%</span>
-                  </div>
-                  <div className="w-full h-2 bg-arcane-border rounded-full overflow-hidden">
-                    <div
-                      ref={traceBarRef}
-                      className="h-full transition-all duration-500"
-                      style={{ width: '0%' }}
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-arcane-border">
-                  <div className="text-xs text-arcane-muted mb-1">Threat Level</div>
-                  <div className={`text-sm font-semibold ${gameState.threatLevel === 'LOW' ? 'text-green-400' :
-                    gameState.threatLevel === 'MEDIUM' ? 'text-yellow-400' :
-                      gameState.threatLevel === 'HIGH' ? 'text-orange-400' : 'text-red-400'
-                    }`}>
-                    {gameState.threatLevel}
-                  </div>
-                </div>
-              </div>
-            </NexusCard>
-
-            <NexusCard>
-              <h3 className="text-lg font-bold font-display text-arcane-text mb-4">
-                Phase Objectives
-              </h3>
-
-              <div className="space-y-3">
-                {gameState.currentMission.objectives
-                  .filter(objective => {
-                    const agentRole =
-                      gameState.selectedAgent === 'hacker' ? 'Red Team' :
-                        gameState.selectedAgent === 'infiltrator' ? 'Blue Team' : 'Red Team';
-                    return objective.role === agentRole;
-                  })
-                  .map((objective) => (
-                    <div
-                      key={objective.id}
-                      ref={el => { if (el) objectiveRefs.current[objective.id] = el; }}
-                      className={`flex flex-col p-4 rounded-lg border transition-all duration-300 ${objective.completed
-                        ? 'border-green-500/30 bg-green-500/10'
-                        : 'border-arcane-border bg-arcane-panel/50 hover:border-theme-primary/50'
-                        }`}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center">
-                          <div
-                            className={`w-6 h-6 rounded-full border-2 mr-3 flex items-center justify-center transition-all duration-300 ${objective.completed
-                              ? 'border-green-500 bg-green-500'
-                              : 'border-arcane-border'
-                              }`}
-                          >
-                            {objective.completed && (
-                              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            )}
-                          </div>
-                          <div>
-                            <h4 className={`text-base font-bold ${objective.completed ? 'text-green-400' : 'text-arcane-text'}`}>
-                              {objective.title || objective.description.substring(0, 30)}
-                            </h4>
-                            {objective.role && (
-                              <span className={`text-xs px-2 py-0.5 rounded border ${objective.role === 'Red Team' ? 'border-red-500/50 text-red-400 bg-red-500/10' :
-                                objective.role === 'Blue Team' ? 'border-blue-500/50 text-blue-400 bg-blue-500/10' :
-                                  'border-purple-500/50 text-purple-400 bg-purple-500/10'
-                                }`}>
-                                {objective.role.toUpperCase()}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="text-xs text-arcane-muted font-mono">
-                          +{objective.reward} PTS
-                        </div>
-                      </div>
-
-                      <div className="pl-9 space-y-3">
-                        <p className="text-sm text-arcane-muted">
-                          {objective.description}
-                        </p>
-
-                        {objective.prompt && (
-                          <div className="bg-black/30 p-3 rounded border border-arcane-border/50 font-mono text-sm text-gray-300">
-                            <span className="text-theme-primary opacity-70 block mb-1">COMMAND //</span>
-                            {objective.prompt}
-                          </div>
-                        )}
-
-                        {!objective.completed && objective.flag && (
-                          <div className="mt-3 flex gap-2">
-                            <input
-                              type="text"
-                              placeholder="Enter Flag (e.g. CTF{...})"
-                              className="bg-arcane-bg border border-arcane-border rounded px-3 py-1.5 text-sm text-arcane-text focus:border-theme-primary focus:outline-none w-full font-mono"
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  // Find the button and click it, or just call handler if we extracted it
-                                  const val = e.currentTarget.value;
-                                  if (val) handleFlagSubmit(objective.id, val);
-                                  e.currentTarget.value = '';
-                                }
-                              }}
-                            />
-                            <NexusButton
-                              variant="primary"
-                              size="sm"
-                              onClick={(e) => {
-                                // Need to traverse to find input or use state. 
-                                // Using simple DOM traversal for this quick implementation or controlled state (preferred but needs refactor)
-                                // Let's rely on the onKeyDown or make this button find the previous sibling input
-                                const input = e.currentTarget.previousElementSibling as HTMLInputElement;
-                                if (input && input.value) {
-                                  handleFlagSubmit(objective.id, input.value);
-                                  input.value = '';
-                                }
-                              }}
-                            >
-                              Submit
-                            </NexusButton>
-                          </div>
-                        )}
-
-                        {!objective.completed && !objective.flag && (
-                          <NexusButton
-                            variant="tool"
-                            size="sm"
-                            onClick={() => handleObjectiveComplete(objective.id)}
-                          >
-                            Execute
-                          </NexusButton>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </NexusCard>
-          </div>
-
-          {/* Center Panel - Main Interface */}
-          <div className="lg:col-span-2">
-            <NexusCard className="h-[600px] mb-6">
-              <MissionTerminal />
-            </NexusCard>
-
-            <div className="grid grid-cols-2 gap-6">
-              <NexusCard>
-                <h4 className="text-sm font-semibold text-arcane-text mb-3">
-                  System Logs
-                </h4>
-                <div className="space-y-1 text-xs font-mono max-h-32 overflow-y-auto">
-                  {systemLogs.map((log, index) => (
-                    <div
-                      key={index}
-                      className={`${log.type === 'success' ? 'text-green-400' :
-                        log.type === 'warning' ? 'text-yellow-400' :
-                          log.type === 'error' ? 'text-red-400' :
-                            'text-arcane-muted'
-                        }`}
-                    >
-                      [{log.time}] {log.message}
-                    </div>
-                  ))}
-                </div>
-              </NexusCard>
-
-              <NexusCard>
-                <h4 className="text-sm font-semibold text-arcane-text mb-3">
-                  Quick Tools
-                </h4>
-                <div className="space-y-2">
-                  {gameState.availableTools.slice(0, 3).map((tool) => (
-                    <NexusButton
-                      key={tool.id}
-                      variant="tool"
-                      size="sm"
-                      fullWidth
-                      onClick={() => handleToolUse(tool.id)}
-                      disabled={tool.isOnCooldown || toolCooldowns[tool.id] > 0}
-                      data-tool-id={tool.id}
-                    >
-                      {tool.name} {(tool.isOnCooldown || toolCooldowns[tool.id] > 0) &&
-                        `(${toolCooldowns[tool.id] || Math.ceil((tool.cooldown * 1000 - (Date.now() - (tool.lastUsed || 0))) / 1000)}s)`}
-                    </NexusButton>
-                  ))}
-                </div>
-              </NexusCard>
+              ))}
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

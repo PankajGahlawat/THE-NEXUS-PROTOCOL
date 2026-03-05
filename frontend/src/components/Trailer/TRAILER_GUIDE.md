@@ -20,9 +20,8 @@ The cinematic trailer is a 55-second immersive introduction sequence that follow
 - **Voiceover**: "Choose how you break in."
 - **Effect**: 
   - 16.5-18.3s: GHOST (Zap icon, stealth specialist)
-  - 18.5-20.3s: CIPHER (Eye icon, data analyst)  
-  - 20.5-22.3s: NEXUS (Brain icon, system breaker)
-  - 23-25s: Agent selection simulation with GHOST chosen
+  - 18.5-20.3s: CIPHER (Eye icon, hacking specialist)  
+  - 21-23s: Agent selection simulation with GHOST chosen
 
 ### 26-35s: System Breaker Alert with Red Inversion
 - **Visual**: Screen flashes red with breach warning and crack lines
@@ -49,12 +48,12 @@ Each agent now has enhanced animations based on the aaa folder reference:
 - **Animation**: Slide in from right with scale effect
 - **Tagline**: "STEALTH SPECIALIST"
 
-#### CIPHER (Data Analyst)  
+#### CIPHER (Hacking Specialist)  
 - **Icon**: Eye - Purple color
 - **Animation**: Slide in from right with scale effect
-- **Tagline**: "DATA ANALYST"
+- **Tagline**: "HACKING SPECIALIST"
 
-#### NEXUS (System Breaker)
+---
 - **Icon**: Brain - Gold color
 - **Animation**: Slide in from right with scale effect
 - **Tagline**: "SYSTEM BREAKER"

@@ -38,27 +38,48 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // For demo purposes, we'll accept any valid format
-    // In production, you'd validate against a database
-    const isValidCredentials = teamName.length >= 3 && accessCode.length >= 4;
+    // Built-in team credentials with proper team types
+    const builtInTeams = {
+      'RedTeam': { password: 'redteam123', type: 'red' },
+      'BlueTeam': { password: 'blueteam123', type: 'blue' }
+    };
 
-    if (!isValidCredentials) {
-      return res.status(401).json({
-        success: false,
-        error: 'INVALID_CREDENTIALS',
-        message: 'Invalid team name or access code'
-      });
+    let teamType = 'red'; // Default team type
+    let isBuiltInTeam = false;
+
+    // Check if it's a built-in team
+    const builtInTeam = builtInTeams[teamName];
+    if (builtInTeam && accessCode === builtInTeam.password) {
+      teamType = builtInTeam.type;
+      isBuiltInTeam = true;
+    } else {
+      // For other teams, accept any valid format (demo mode)
+      const isValidCredentials = teamName.length >= 3 && accessCode.length >= 4;
+      if (!isValidCredentials) {
+        return res.status(401).json({
+          success: false,
+          error: 'INVALID_CREDENTIALS',
+          message: 'Invalid team name or access code'
+        });
+      }
     }
 
-    // Generate session token
+    // Generate proper JWT session token
     const sessionToken = jwt.sign(
       { 
         teamName,
+        teamType,
         timestamp: Date.now(),
-        sessionId: database.generateId()
+        sessionId: database.generateId(),
+        isBuiltIn: isBuiltInTeam
       },
       process.env.JWT_SECRET || 'nexus-protocol-secret-key',
-      { expiresIn: '2h' }
+      { 
+        expiresIn: '2h',
+        algorithm: 'HS256',
+        issuer: 'nexus-protocol',
+        audience: 'nexus-client'
+      }
     );
 
     // Create team record
@@ -68,7 +89,7 @@ router.post('/login', async (req, res) => {
     };
     const team = database.createTeam(teamData);
 
-    // Create session
+    // Create session in database
     const sessionData = {
       teamId: team.id,
       sessionToken,
@@ -87,6 +108,7 @@ router.post('/login', async (req, res) => {
       sessionToken,
       teamId: team.id,
       teamName,
+      teamType,
       expiresIn: 7200 // 2 hours
     });
 

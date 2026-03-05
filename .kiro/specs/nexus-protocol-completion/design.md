@@ -106,6 +106,152 @@ The design follows a layered architecture with clear separation between game log
 
 ## Components and Interfaces
 
+### 0. SSH Proxy System (THE KEY PIECE)
+
+**Purpose**: Bridges browser terminals to the VM via WebSocket and SSH, enabling real command execution.
+
+**Core Classes**:
+
+```javascript
+class SSHProxyManager {
+  constructor() {
+    this.sessions = new Map(); // socketId -> session object
+  }
+  
+  createSession(socketId, team, options) {
+    // options: { onData, onClose }
+    // Returns: session object
+  }
+  
+  writeToSession(socketId, data) {
+    // Sends keystroke to VM PTY
+  }
+  
+  resizeSession(socketId, cols, rows) {
+    // Resizes VM PTY window
+  }
+  
+  closeSession(socketId) {
+    // Closes SSH connection and removes from Map
+  }
+  
+  getActiveSessions() {
+    // Returns array of active session info
+  }
+}
+
+// Session object structure
+interface Session {
+  socketId: string;
+  team: 'red' | 'blue';
+  sshConnection: SSH2.Client;
+  stream: SSH2.ClientChannel;
+  playerId: string;
+  createdAt: Date;
+}
+```
+
+**Key Implementation Details**:
+
+- Uses `ssh2` npm library for SSH client connections
+- Connects to VM using private key authentication (no passwords)
+- Creates PTY with `term: 'xterm-256color', cols: 220, rows: 50`
+- Red Team connects as `redteam@VM_HOST`, Blue Team as `blueteam@VM_HOST`
+- Each player gets their own SSH connection and PTY session
+- Sessions stored in Map keyed by Socket.IO socket ID
+- Handles SSH errors gracefully (connection failures, authentication errors)
+
+**Terminal Data Flow**:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  BROWSER (Player's Computer)                                 │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  Xterm.js Terminal                                    │   │
+│  │  - Renders terminal UI                                │   │
+│  │  - Captures keystrokes                                │   │
+│  │  - Displays output                                    │   │
+│  └──────────────────────────────────────────────────────┘   │
+│                           │                                  │
+│                           │ WebSocket (Socket.io)            │
+│                           ↓                                  │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            │
+┌─────────────────────────────────────────────────────────────┐
+│  NODE.JS BACKEND (nexusprotocol.com)                        │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  server.js                                            │   │
+│  │  - Express HTTP server                                │   │
+│  │  - Socket.IO server attached                          │   │
+│  │  - Event handlers:                                    │   │
+│  │    • 'terminal:join' → createSession()                │   │
+│  │    • 'terminal:input' → writeToSession()              │   │
+│  │    • 'terminal:resize' → resizeSession()              │   │
+│  │    • 'disconnect' → closeSession()                    │   │
+│  └──────────────────────────────────────────────────────┘   │
+│                           │                                  │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  ssh-proxy.js (SSHProxyManager)                       │   │
+│  │  - Manages SSH connections                            │   │
+│  │  - Creates PTY sessions                               │   │
+│  │  - Routes data between WebSocket and SSH              │   │
+│  └──────────────────────────────────────────────────────┘   │
+│                           │                                  │
+│                           │ SSH (ssh2 library)               │
+│                           ↓                                  │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            │
+┌─────────────────────────────────────────────────────────────┐
+│  LINUX VM (The Battlefield)                                 │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  PTY Session (Pseudo-Terminal)                        │   │
+│  │  - Runs bash shell                                    │   │
+│  │  - Executes commands                                  │   │
+│  │  - Returns output                                     │   │
+│  │                                                        │   │
+│  │  User: redteam or blueteam                            │   │
+│  │  Home: /home/redteam or /home/blueteam                │   │
+│  │  Tools: nmap, sqlmap, etc. (Red) or IDS, etc. (Blue) │   │
+│  └──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Input Flow** (Player types "whoami"):
+1. Player types "whoami" in Xterm.js
+2. Xterm.js fires `onData` event with "whoami\r"
+3. React component emits `socket.emit('terminal:input', {data: 'whoami\r'})`
+4. Backend receives event, calls `sshProxy.writeToSession(socketId, 'whoami\r')`
+5. SSHProxyManager writes data to SSH stream
+6. SSH sends data to VM PTY
+7. VM executes "whoami" command
+
+**Output Flow** (VM returns "redteam"):
+1. VM PTY produces output "redteam\n"
+2. SSH stream receives data via `stream.on('data')`
+3. SSHProxyManager calls `onData('redteam\n')` callback
+4. Backend emits `socket.emit('terminal:output', {data: 'redteam\n'})`
+5. React component receives event
+6. Xterm.js writes "redteam\n" to terminal display
+7. Player sees "redteam" on screen
+
+**WebSocket Protocol**:
+
+Client → Server:
+- `terminal:join` { team: 'red'|'blue', missionId, token }
+- `terminal:input` { data: string }
+- `terminal:resize` { cols: number, rows: number }
+
+Server → Client:
+- `terminal:output` { data: string }
+- `terminal:disconnected` { reason: string }
+
+Admin Namespace (`/admin`):
+- `admin:watch` { socketId: string } - Mirror player's terminal
+- `admin:award` { sessionId, points, reason } - Manual point award
+- `admin:reset_vm` { missionId } - Trigger VM snapshot restore
+
 ### 1. Mission Logic Engine
 
 **Purpose**: Manages round lifecycle, phase transitions, task dependencies, and agent routing.
@@ -243,7 +389,216 @@ Blue Team Tools:
 - `forensics`: Analyzes logs and artifacts, returns timeline
 - `system_restore`: Reverts to clean snapshot, returns restore status
 
-### 3. Real-Time Synchronization System
+### 3. SSH Proxy Architecture (THE KEY PIECE)
+
+**Purpose**: The SSH proxy is THE KEY PIECE that makes everything possible. It bridges browser-based terminals to VM PTY sessions via SSH connections, enabling real command execution in the cyber range.
+
+**Core Classes**:
+
+```typescript
+class SSHProxyManager {
+  private sessions: Map<string, SSHSession>;
+  private ssh2: SSH2Client;
+  
+  createSession(socketId: string, team: TeamType, options: SessionOptions): Promise<SSHSession>;
+  writeToSession(socketId: string, data: string): void;
+  resizeSession(socketId: string, cols: number, rows: number): void;
+  closeSession(socketId: string): void;
+  getSession(socketId: string): SSHSession | undefined;
+}
+
+interface SSHSession {
+  socketId: string;
+  team: TeamType;
+  vmHost: string;
+  vmUser: string;
+  sshConnection: SSH2Connection;
+  ptyStream: SSH2Stream;
+  createdAt: Date;
+  lastActivity: Date;
+}
+
+interface SessionOptions {
+  missionId: string;
+  token: string;
+  cols: number;
+  rows: number;
+}
+```
+
+**SSH Connection Flow**:
+1. Browser connects via WebSocket (Socket.io)
+2. Backend receives 'terminal:join' event with team and credentials
+3. SSHProxyManager creates SSH connection to VM using ssh2 library
+4. SSH authenticates with private key (red → redteam@vm, blue → blueteam@vm)
+5. SSH requests PTY with term='xterm-256color', cols=220, rows=50
+6. PTY stream is stored in sessions Map keyed by socketId
+7. Data flows bidirectionally: Browser ↔ WebSocket ↔ SSH ↔ VM
+
+**Terminal Data Flow Pipeline**:
+```
+Browser (Xterm.js) 
+  ↓ WebSocket (Socket.io)
+Node.js Backend (ssh-proxy.js)
+  ↓ SSH (ssh2 library)
+Linux VM (PTY session)
+```
+
+**Input Flow**: Browser keypress → socket.emit('terminal:input') → SSH write → VM
+**Output Flow**: VM output → SSH data event → socket.emit('terminal:output') → Xterm.js write
+**Resize Flow**: Browser resize → socket.emit('terminal:resize') → SSH resize → PTY resize
+
+**Team-Based User Routing**:
+```typescript
+function getVMUser(team: TeamType): string {
+  return team === 'red' ? 'redteam' : 'blueteam';
+}
+
+function getVMHost(missionId: string): string {
+  return `192.168.100.10`; // Primary battlefield VM
+}
+```
+
+**SSH Authentication**:
+```typescript
+const sshConfig = {
+  host: getVMHost(missionId),
+  port: 22,
+  username: getVMUser(team),
+  privateKey: fs.readFileSync('/app/keys/nexus_ssh_key'),
+  readyTimeout: 10000,
+  keepaliveInterval: 5000
+};
+```
+
+**PTY Configuration**:
+```typescript
+const ptyOptions = {
+  term: 'xterm-256color',
+  cols: 220,
+  rows: 50,
+  modes: {
+    ECHO: 1,
+    ICANON: 0
+  }
+};
+```
+
+### 4. WebSocket Protocol (Complete Specification)
+
+**Purpose**: Defines all Socket.io events for terminal communication, game state updates, and admin monitoring.
+
+**Client → Server Events**:
+
+```typescript
+// Terminal Events
+socket.emit('terminal:join', {
+  team: 'red' | 'blue',
+  missionId: string,
+  token: string
+});
+
+socket.emit('terminal:input', {
+  data: string  // Raw terminal input (keystrokes)
+});
+
+socket.emit('terminal:resize', {
+  cols: number,
+  rows: number
+});
+
+// Game Events
+socket.emit('tool_use', { 
+  toolId: string, 
+  targetId: string, 
+  agentId: string 
+});
+
+socket.emit('task_attempt', { 
+  taskId: string, 
+  agentId: string 
+});
+
+socket.emit('subscribe_updates', { 
+  roundId: string, 
+  team: TeamType 
+});
+```
+
+**Server → Client Events**:
+
+```typescript
+// Terminal Events
+socket.emit('terminal:output', {
+  data: string  // Raw terminal output
+});
+
+socket.emit('terminal:disconnected', {
+  reason: string
+});
+
+// Game State Events
+socket.emit('state_update', { 
+  type: 'task_complete' | 'phase_change' | 'score_update' | 'trace_update' | 'burn_update',
+  data: any 
+});
+
+socket.emit('alert', { 
+  severity: 'low' | 'medium' | 'high' | 'critical',
+  title: string,
+  message: string 
+});
+
+socket.emit('timer_sync', { 
+  timeRemaining: number 
+});
+
+socket.emit('trace_update', { 
+  level: number,
+  burnState: BurnState 
+});
+
+socket.emit('score_update', { 
+  redScore: number,
+  blueScore: number 
+});
+```
+
+**Admin Namespace (/admin) Events**:
+
+```typescript
+// Admin → Server
+adminSocket.emit('admin:watch', {
+  socketId: string  // Watch specific player's terminal
+});
+
+adminSocket.emit('admin:award', {
+  sessionId: string,
+  points: number,
+  reason: string
+});
+
+adminSocket.emit('admin:reset_vm', {
+  missionId: string
+});
+
+// Server → Admin
+adminSocket.emit('admin:terminal_stream', {
+  socketId: string,
+  data: string
+});
+
+adminSocket.emit('admin:session_list', {
+  sessions: Array<{
+    socketId: string,
+    team: string,
+    player: string,
+    connectedAt: Date
+  }>
+});
+```
+
+### 5. Real-Time Synchronization System
 
 **Purpose**: Broadcasts game state changes to all connected clients via WebSocket, handles observable actions and alerts.
 
@@ -299,23 +654,268 @@ interface Alert {
   actionable: boolean;
   suggestedResponse?: string;
 }
+
+### 6. Frontend Terminal Component
+
+**Purpose**: React component that renders a browser-based terminal using Xterm.js and connects to the backend via Socket.io.
+
+**Core Component**:
+
+```typescript
+// TerminalWindow.jsx
+import { useEffect, useRef } from 'react';
+import { Terminal } from 'xterm';
+import { FitAddon } from 'xterm-addon-fit';
+import { io } from 'socket.io-client';
+import 'xterm/css/xterm.css';
+
+interface TerminalWindowProps {
+  team: 'red' | 'blue';
+  missionId: string;
+  token: string;
+}
+
+export function TerminalWindow({ team, missionId, token }: TerminalWindowProps) {
+  const terminalRef = useRef<HTMLDivElement>(null);
+  const xtermRef = useRef<Terminal | null>(null);
+  const socketRef = useRef<Socket | null>(null);
+  const fitAddonRef = useRef<FitAddon | null>(null);
+
+  useEffect(() => {
+    // Initialize Xterm.js
+    const terminal = new Terminal({
+      cursorBlink: true,
+      fontSize: 14,
+      fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+      theme: {
+        background: '#1e1e1e',
+        foreground: '#d4d4d4'
+      },
+      cols: 220,
+      rows: 50
+    });
+
+    const fitAddon = new FitAddon();
+    terminal.loadAddon(fitAddon);
+    
+    if (terminalRef.current) {
+      terminal.open(terminalRef.current);
+      fitAddon.fit();
+    }
+
+    xtermRef.current = terminal;
+    fitAddonRef.current = fitAddon;
+
+    // Connect to backend via Socket.io
+    const socket = io('http://localhost:3000', {
+      transports: ['websocket']
+    });
+
+    socketRef.current = socket;
+
+    // Join terminal session
+    socket.emit('terminal:join', { team, missionId, token });
+
+    // Handle terminal output from VM
+    socket.on('terminal:output', ({ data }) => {
+      terminal.write(data);
+    });
+
+    // Handle terminal input to VM
+    terminal.onData((data) => {
+      socket.emit('terminal:input', { data });
+    });
+
+    // Handle terminal resize
+    const handleResize = () => {
+      fitAddon.fit();
+      socket.emit('terminal:resize', {
+        cols: terminal.cols,
+        rows: terminal.rows
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // Handle disconnection
+    socket.on('terminal:disconnected', ({ reason }) => {
+      terminal.write(`\r\n\x1b[31mConnection lost: ${reason}\x1b[0m\r\n`);
+    });
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      socket.disconnect();
+      terminal.dispose();
+    };
+  }, [team, missionId, token]);
+
+  return (
+    <div 
+      ref={terminalRef} 
+      style={{ 
+        width: '100%', 
+        height: '100%',
+        padding: '10px'
+      }} 
+    />
+  );
+}
 ```
 
-**WebSocket Protocol**:
+**Key Features**:
+- Xterm.js for terminal rendering with 256-color support
+- FitAddon for responsive terminal sizing
+- Socket.io client for WebSocket communication
+- Automatic reconnection on disconnect
+- Terminal theme matching game aesthetic
+- Proper cleanup on component unmount
 
-Client → Server:
-- `tool_use`: { toolId, targetId, agentId }
-- `task_attempt`: { taskId, agentId }
-- `subscribe_updates`: { roundId, team }
+### 7. Backend Server Architecture
 
-Server → Client:
-- `state_update`: { type, data }
-- `alert`: { severity, title, message }
-- `timer_sync`: { timeRemaining }
-- `trace_update`: { level, burnState }
-- `score_update`: { redScore, blueScore }
+**Purpose**: Express HTTP server with Socket.IO for WebSocket connections, SSH proxy integration, and REST API routes.
 
-### 4. Trace & Burn Visual System
+**Server Structure** (server.js):
+
+```typescript
+import express from 'express';
+import { createServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
+import { SSHProxyManager } from './ssh-proxy.js';
+import { TerminalLogger } from './terminal-logger.js';
+import { ScoringEngine } from './scoring-engine.js';
+
+const app = express();
+const httpServer = createServer(app);
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    methods: ['GET', 'POST']
+  },
+  transports: ['websocket', 'polling']
+});
+
+const sshProxy = new SSHProxyManager();
+const terminalLogger = new TerminalLogger();
+const scoringEngine = new ScoringEngine();
+
+// REST API Routes
+app.use(express.json());
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
+app.post('/api/auth/login', authController.login);
+app.get('/api/missions', missionController.list);
+app.get('/api/scores/:missionId', scoreController.get);
+
+// Main Socket.IO namespace
+io.on('connection', (socket) => {
+  console.log('Client connected:', socket.id);
+
+  // Terminal join
+  socket.on('terminal:join', async ({ team, missionId, token }) => {
+    try {
+      // Verify token
+      const user = await verifyToken(token);
+      
+      // Create SSH session
+      const session = await sshProxy.createSession(socket.id, team, {
+        missionId,
+        token,
+        cols: 220,
+        rows: 50
+      });
+
+      // Log session start
+      await terminalLogger.logSessionStart(socket.id, user.id, team, missionId);
+
+      // Handle SSH output
+      session.ptyStream.on('data', (data) => {
+        const output = data.toString();
+        socket.emit('terminal:output', { data: output });
+        
+        // Log output
+        terminalLogger.logOutput(socket.id, output);
+        
+        // Scan for scoring patterns
+        scoringEngine.scanTerminalOutput(socket.id, team, output);
+      });
+
+      socket.emit('terminal:connected', { sessionId: socket.id });
+    } catch (error) {
+      console.error('Terminal join error:', error);
+      socket.emit('terminal:error', { message: 'Failed to connect to terminal' });
+    }
+  });
+
+  // Terminal input
+  socket.on('terminal:input', ({ data }) => {
+    try {
+      sshProxy.writeToSession(socket.id, data);
+      terminalLogger.logInput(socket.id, data);
+    } catch (error) {
+      console.error('Terminal input error:', error);
+    }
+  });
+
+  // Terminal resize
+  socket.on('terminal:resize', ({ cols, rows }) => {
+    try {
+      sshProxy.resizeSession(socket.id, cols, rows);
+    } catch (error) {
+      console.error('Terminal resize error:', error);
+    }
+  });
+
+  // Disconnect
+  socket.on('disconnect', () => {
+    console.log('Client disconnected:', socket.id);
+    sshProxy.closeSession(socket.id);
+    terminalLogger.logSessionEnd(socket.id);
+  });
+});
+
+// Admin namespace for war room
+const adminNamespace = io.of('/admin');
+adminNamespace.on('connection', (socket) => {
+  console.log('Admin connected:', socket.id);
+
+  // Watch player terminal
+  socket.on('admin:watch', ({ socketId }) => {
+    const session = sshProxy.getSession(socketId);
+    if (session) {
+      session.ptyStream.on('data', (data) => {
+        socket.emit('admin:terminal_stream', { socketId, data: data.toString() });
+      });
+    }
+  });
+
+  // Award points manually
+  socket.on('admin:award', async ({ sessionId, points, reason }) => {
+    await scoringEngine.awardPoints(sessionId, points, reason);
+    io.emit('score_update', await scoringEngine.getScores());
+  });
+
+  // Reset VM
+  socket.on('admin:reset_vm', async ({ missionId }) => {
+    await vmManager.resetVM(missionId);
+    adminNamespace.emit('admin:vm_reset', { missionId });
+  });
+});
+
+httpServer.listen(3000, () => {
+  console.log('Server listening on port 3000');
+});
+```
+
+**Key Features**:
+- Express HTTP server for REST API
+- Socket.IO attached to HTTP server for WebSocket support
+- SSH proxy integration for terminal sessions
+- Terminal logging for all input/output
+- Scoring engine integration for automatic point detection
+- Admin namespace for war room monitoring
+- Proper error handling and logging
+
+### 8. Trace & Burn Visual System
 
 **Purpose**: Calculates and displays identity residue levels, triggers visual effects based on Burn state.
 
@@ -473,12 +1073,51 @@ CREATE TABLE tools (
   usage_count INTEGER DEFAULT 0
 );
 
+-- Terminal sessions table (NEW)
+CREATE TABLE terminal_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  player_id UUID NOT NULL,
+  mission_id UUID NOT NULL,
+  team VARCHAR(10) NOT NULL,
+  socket_id VARCHAR(100) NOT NULL UNIQUE,
+  connected_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  disconnected_at TIMESTAMP,
+  vm_host VARCHAR(50),
+  vm_user VARCHAR(50),
+  CONSTRAINT fk_mission FOREIGN KEY (mission_id) REFERENCES rounds(id)
+);
+
+-- Terminal logs table (NEW)
+CREATE TABLE terminal_logs (
+  id BIGSERIAL PRIMARY KEY,
+  session_id UUID NOT NULL REFERENCES terminal_sessions(id),
+  direction VARCHAR(5) NOT NULL CHECK (direction IN ('in', 'out')),
+  data TEXT NOT NULL,
+  logged_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- Score events table (NEW)
+CREATE TABLE score_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  round_id UUID NOT NULL REFERENCES rounds(id),
+  team VARCHAR(10) NOT NULL,
+  player_id UUID,
+  event_type VARCHAR(50) NOT NULL,
+  points INTEGER NOT NULL,
+  reason TEXT,
+  detected_pattern VARCHAR(100),
+  timestamp TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
 -- Indexes
 CREATE INDEX idx_rounds_status ON rounds(status);
 CREATE INDEX idx_tasks_round_phase ON tasks(round_id, phase);
 CREATE INDEX idx_system_states_round ON system_states(round_id);
 CREATE INDEX idx_events_round_timestamp ON events(round_id, timestamp);
 CREATE INDEX idx_events_observable ON events(observable, detected);
+CREATE INDEX idx_terminal_sessions_socket ON terminal_sessions(socket_id);
+CREATE INDEX idx_terminal_logs_session_time ON terminal_logs(session_id, logged_at);
+CREATE INDEX idx_score_events_round_team ON score_events(round_id, team);
 ```
 
 ### Key Data Structures
@@ -541,12 +1180,498 @@ interface Event {
   detected: boolean;
   timestamp: Date;
 }
+
+interface TerminalSession {
+  id: string;
+  playerId: string;
+  missionId: string;
+  team: 'red' | 'blue';
+  socketId: string;
+  connectedAt: Date;
+  disconnectedAt?: Date;
+  vmHost: string;
+  vmUser: string;
+}
+
+interface TerminalLog {
+  id: number;
+  sessionId: string;
+  direction: 'in' | 'out';
+  data: string;
+  loggedAt: Date;
+}
+
+interface ScoreEvent {
+  id: string;
+  roundId: string;
+  team: 'red' | 'blue';
+  playerId?: string;
+  eventType: string;
+  points: number;
+  reason: string;
+  detectedPattern?: string;
+  timestamp: Date;
+}
+```
+
+## Scoring Engine Integration
+
+### Purpose
+
+The Scoring Engine automatically detects Red Team and Blue Team actions by scanning terminal output and VM logs, awarding points in real-time based on detected patterns.
+
+### Core Classes
+
+```typescript
+class ScoringEngine {
+  private patterns: Map<string, ScoringPattern>;
+  private db: DatabaseConnection;
+  private io: SocketIOServer;
+  
+  scanTerminalOutput(socketId: string, team: TeamType, line: string): Promise<void>;
+  scanVMLogs(missionId: string): Promise<void>;
+  awardPoints(sessionId: string, points: number, reason: string): Promise<void>;
+  getScores(roundId: string): Promise<ScoreBoard>;
+}
+
+interface ScoringPattern {
+  pattern: RegExp;
+  team: 'red' | 'blue';
+  points: number;
+  eventType: string;
+  description: string;
+}
+```
+
+### Red Team Scoring Patterns
+
+**Network Reconnaissance** (10 points):
+```typescript
+{
+  pattern: /nmap.*-[sS][VvT].*\d+\.\d+\.\d+\.\d+/,
+  team: 'red',
+  points: 10,
+  eventType: 'network_scan',
+  description: 'Performed network scan with service detection'
+}
+```
+
+**Vulnerability Exploitation** (50 points):
+```typescript
+{
+  pattern: /sqlmap.*--dump|meterpreter.*session.*opened|shell.*spawned/i,
+  team: 'red',
+  points: 50,
+  eventType: 'exploitation',
+  description: 'Successfully exploited vulnerability'
+}
+```
+
+**Privilege Escalation** (100 points):
+```typescript
+{
+  pattern: /uid=0\(root\)|EUID.*0|sudo.*NOPASSWD/,
+  team: 'red',
+  points: 100,
+  eventType: 'privilege_escalation',
+  description: 'Obtained root privileges'
+}
+```
+
+**Data Exfiltration** (75 points):
+```typescript
+{
+  pattern: /exfiltrated.*bytes|nc.*-l.*\d+.*<|dns.*tunnel.*success/i,
+  team: 'red',
+  points: 75,
+  eventType: 'data_exfiltration',
+  description: 'Successfully exfiltrated data'
+}
+```
+
+**Persistence Established** (60 points):
+```typescript
+{
+  pattern: /crontab.*-e|systemd.*service.*enabled|\.bashrc.*backdoor/i,
+  team: 'red',
+  points: 60,
+  eventType: 'persistence',
+  description: 'Established persistence mechanism'
+}
+```
+
+### Blue Team Scoring Patterns
+
+**Intrusion Detection** (30 points):
+```typescript
+{
+  pattern: /IDS.*ALERT|snort.*detected|suricata.*alert/i,
+  team: 'blue',
+  points: 30,
+  eventType: 'intrusion_detected',
+  description: 'Detected intrusion attempt'
+}
+```
+
+**IP Blocking** (20 points):
+```typescript
+{
+  pattern: /iptables.*-A.*DROP|firewall.*blocked.*\d+\.\d+\.\d+\.\d+/i,
+  team: 'blue',
+  points: 20,
+  eventType: 'ip_blocked',
+  description: 'Blocked malicious IP address'
+}
+```
+
+**Malware Removal** (50 points):
+```typescript
+{
+  pattern: /rkhunter.*removed|webshell.*deleted|backdoor.*cleaned/i,
+  team: 'blue',
+  points: 50,
+  eventType: 'malware_removed',
+  description: 'Removed malware or backdoor'
+}
+```
+
+**System Restoration** (80 points):
+```typescript
+{
+  pattern: /system.*restored|snapshot.*applied|services.*recovered/i,
+  team: 'blue',
+  points: 80,
+  eventType: 'system_restored',
+  description: 'Restored compromised system'
+}
+```
+
+**Forensics Analysis** (40 points):
+```typescript
+{
+  pattern: /forensics.*complete|timeline.*generated|artifacts.*analyzed/i,
+  team: 'blue',
+  points: 40,
+  eventType: 'forensics',
+  description: 'Completed forensics analysis'
+}
+```
+
+### VM Log Scanning
+
+The Scoring Engine also scans VM logs for actions that may not appear in terminal output:
+
+**Apache Access Logs** (`/var/log/apache2/access.log`):
+```typescript
+async scanApacheLogs(missionId: string): Promise<void> {
+  const logs = await this.readVMFile(missionId, '/var/log/apache2/access.log');
+  
+  // Detect SQL injection attempts
+  if (/UNION.*SELECT|OR.*1=1|'.*--/.test(logs)) {
+    await this.awardPoints(missionId, 'red', 25, 'SQL injection attempt detected in logs');
+  }
+  
+  // Detect directory traversal
+  if (/\.\.\/|\.\.\\/.test(logs)) {
+    await this.awardPoints(missionId, 'red', 15, 'Directory traversal attempt');
+  }
+  
+  // Detect webshell upload
+  if (/\.php.*cmd=|shell\.php|c99\.php/.test(logs)) {
+    await this.awardPoints(missionId, 'red', 60, 'Webshell uploaded');
+  }
+}
+```
+
+**Auth Logs** (`/var/log/auth.log`):
+```typescript
+async scanAuthLogs(missionId: string): Promise<void> {
+  const logs = await this.readVMFile(missionId, '/var/log/auth.log');
+  
+  // Detect brute force attempts
+  const failedLogins = (logs.match(/Failed password/g) || []).length;
+  if (failedLogins > 10) {
+    await this.awardPoints(missionId, 'red', 20, `Brute force attack (${failedLogins} attempts)`);
+  }
+  
+  // Detect successful SSH login
+  if (/Accepted publickey for redteam/.test(logs)) {
+    await this.awardPoints(missionId, 'red', 30, 'SSH access obtained');
+  }
+  
+  // Detect sudo usage
+  if (/sudo.*COMMAND/.test(logs)) {
+    await this.awardPoints(missionId, 'red', 40, 'Sudo command executed');
+  }
+}
+```
+
+### Real-Time Score Broadcasting
+
+```typescript
+async awardPoints(
+  sessionId: string, 
+  points: number, 
+  reason: string
+): Promise<void> {
+  // Get session details
+  const session = await this.db.query(
+    'SELECT * FROM terminal_sessions WHERE socket_id = $1',
+    [sessionId]
+  );
+  
+  if (!session) return;
+  
+  // Insert score event
+  await this.db.query(`
+    INSERT INTO score_events (round_id, team, player_id, event_type, points, reason, timestamp)
+    VALUES ($1, $2, $3, $4, $5, $6, NOW())
+  `, [session.mission_id, session.team, session.player_id, 'auto_detected', points, reason]);
+  
+  // Update round score
+  const scoreField = session.team === 'red' ? 'red_score' : 'blue_score';
+  await this.db.query(`
+    UPDATE rounds 
+    SET ${scoreField} = ${scoreField} + $1, updated_at = NOW()
+    WHERE id = $2
+  `, [points, session.mission_id]);
+  
+  // Broadcast score update
+  const scores = await this.getScores(session.mission_id);
+  this.io.to(session.mission_id).emit('score_update', scores);
+  
+  // Send notification to team
+  this.io.to(`${session.mission_id}:${session.team}`).emit('alert', {
+    severity: 'low',
+    title: 'Points Awarded',
+    message: `+${points} points: ${reason}`
+  });
+}
+```
+
+## Infrastructure Deployment
+
+### Nginx Configuration
+
+**Purpose**: Reverse proxy for frontend and WebSocket connections with SSL/TLS termination.
+
+**Configuration** (`/etc/nginx/sites-available/nexus-protocol`):
+
+```nginx
+# HTTP redirect to HTTPS
+server {
+    listen 80;
+    server_name nexus-protocol.example.com;
+    return 301 https://$server_name$request_uri;
+}
+
+# HTTPS server
+server {
+    listen 443 ssl http2;
+    server_name nexus-protocol.example.com;
+
+    # SSL certificates (Let's Encrypt)
+    ssl_certificate /etc/letsencrypt/live/nexus-protocol.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/nexus-protocol.example.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+
+    # Security headers
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+
+    # Frontend (React app)
+    location / {
+        root /var/www/nexus-protocol/frontend;
+        try_files $uri $uri/ /index.html;
+        expires 1h;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Backend API
+    location /api/ {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # Timeouts
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    # WebSocket connections (Socket.io)
+    location /socket.io/ {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        
+        # WebSocket upgrade headers
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # Timeouts for long-lived connections
+        proxy_connect_timeout 7d;
+        proxy_send_timeout 7d;
+        proxy_read_timeout 7d;
+    }
+
+    # Health check endpoint
+    location /health {
+        proxy_pass http://localhost:3000/health;
+        access_log off;
+    }
+}
+```
+
+### PM2 Process Management
+
+**Purpose**: Keep Node.js backend running continuously with automatic restart on crashes.
+
+**PM2 Configuration** (`ecosystem.config.js`):
+
+```javascript
+module.exports = {
+  apps: [{
+    name: 'nexus-protocol-backend',
+    script: './server.js',
+    instances: 1,
+    exec_mode: 'cluster',
+    watch: false,
+    max_memory_restart: '1G',
+    env: {
+      NODE_ENV: 'production',
+      PORT: 3000,
+      DATABASE_URL: 'postgresql://nexus:password@localhost:5432/nexus_protocol',
+      JWT_SECRET: process.env.JWT_SECRET,
+      ADMIN_CODE: process.env.ADMIN_CODE
+    },
+    error_file: './logs/err.log',
+    out_file: './logs/out.log',
+    log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+    merge_logs: true,
+    autorestart: true,
+    max_restarts: 10,
+    min_uptime: '10s',
+    listen_timeout: 3000,
+    kill_timeout: 5000
+  }]
+};
+```
+
+**PM2 Commands**:
+```bash
+# Start application
+pm2 start ecosystem.config.js
+
+# View logs
+pm2 logs nexus-protocol-backend
+
+# Restart application
+pm2 restart nexus-protocol-backend
+
+# Stop application
+pm2 stop nexus-protocol-backend
+
+# Monitor resources
+pm2 monit
+
+# Save PM2 configuration for startup
+pm2 save
+
+# Setup PM2 to start on system boot
+pm2 startup systemd
+```
+
+### SSL/TLS Configuration
+
+**Let's Encrypt Setup**:
+```bash
+# Install Certbot
+sudo apt-get update
+sudo apt-get install certbot python3-certbot-nginx
+
+# Obtain SSL certificate
+sudo certbot --nginx -d nexus-protocol.example.com
+
+# Test automatic renewal
+sudo certbot renew --dry-run
+
+# Certbot will automatically renew certificates via cron job
+```
+
+### Health Check Endpoints
+
+**Backend Health Check** (`/health`):
+```typescript
+app.get('/health', async (req, res) => {
+  try {
+    // Check database connection
+    await db.query('SELECT 1');
+    
+    // Check SSH proxy
+    const sessionCount = sshProxy.getSessionCount();
+    
+    // Check VM connectivity
+    const vmHealth = await vmManager.checkHealth();
+    
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      database: 'connected',
+      sessions: sessionCount,
+      vms: vmHealth
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: 'error',
+      error: error.message
+    });
+  }
+});
+```
+
+### Firewall Configuration
+
+**UFW (Uncomplicated Firewall)**:
+```bash
+# Allow SSH
+sudo ufw allow 22/tcp
+
+# Allow HTTP and HTTPS
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+
+# Deny all other incoming traffic
+sudo ufw default deny incoming
+
+# Allow all outgoing traffic
+sudo ufw default allow outgoing
+
+# Enable firewall
+sudo ufw enable
+
+# Check status
+sudo ufw status verbose
 ```
 
 
 ## Correctness Properties
 
 A property is a characteristic or behavior that should hold true across all valid executions of a system—essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.
+
+This design includes 103 correctness properties that comprehensively validate all 19 requirements from the requirements document. Each property is universally quantified (using "for any" statements) and explicitly references the requirements it validates. These properties will be implemented as property-based tests using fast-check, with a minimum of 100 iterations per test to ensure robust validation across diverse inputs.
 
 ### Mission Logic Properties
 
@@ -748,31 +1873,257 @@ Property 45: Emergency kill switch stops all rounds
 *For any* emergency kill switch activation, all active rounds should be immediately terminated and all clients disconnected
 **Validates: Requirements 15.6, 15.7, 15.8, 9.10**
 
+### SSH Terminal Properties
+
+Property 46: SSH session creation establishes connection
+*For any* terminal join request with valid credentials, an SSH session should be created and stored in the sessions Map
+**Validates: Requirements 3.1, 3.2, 3.3**
+
+Property 47: Team-based user routing
+*For any* Red Team player connection, the SSH session should authenticate as 'redteam' user, and for any Blue Team player, as 'blueteam' user
+**Validates: Requirements 3.4, 3.5**
+
+Property 48: Terminal input flows to VM
+*For any* terminal input event, the data should be written to the SSH session and transmitted to the VM
+**Validates: Requirements 3.6**
+
+Property 49: Terminal output flows to browser
+*For any* VM output, the data should be transmitted through SSH to the backend and emitted to the browser via WebSocket
+**Validates: Requirements 3.7**
+
+Property 50: Terminal resize updates PTY
+*For any* terminal resize event, the SSH session PTY should be resized to match the new dimensions
+**Validates: Requirements 3.8**
+
+Property 51: Session isolation
+*For any* two concurrent terminal sessions, input to one session should not affect the other session
+**Validates: Requirements 3.11**
+
+Property 52: Session cleanup on disconnect
+*For any* client disconnection, the associated SSH session should be closed and removed from the sessions Map
+**Validates: Requirements 3.10, 3.12**
+
+### Terminal Logging Properties
+
+Property 53: Input logging
+*For any* terminal input, a record should be inserted into terminal_logs with direction='in'
+**Validates: Requirements 5.1**
+
+Property 54: Output logging
+*For any* terminal output, a record should be inserted into terminal_logs with direction='out'
+**Validates: Requirements 5.2**
+
+Property 55: Session tracking
+*For any* terminal session creation, a record should be inserted into terminal_sessions with start time
+**Validates: Requirements 5.3**
+
+Property 56: Session end tracking
+*For any* terminal session closure, the terminal_sessions record should be updated with end time
+**Validates: Requirements 5.4**
+
+Property 57: Terminal replay reconstruction
+*For any* terminal session, retrieving all logs ordered by timestamp should allow reconstruction of the complete session
+**Validates: Requirements 5.5, 5.6**
+
+### Scoring Engine Properties
+
+Property 58: Pattern detection awards points
+*For any* terminal output matching a scoring pattern, points should be awarded to the appropriate team
+**Validates: Requirements 10.1, 10.4**
+
+Property 59: Score persistence
+*For any* points awarded, a record should be inserted into score_events and the round score should be updated
+**Validates: Requirements 10.9**
+
+Property 60: Score broadcasting
+*For any* score update, all clients in the round should receive a score_update event via WebSocket
+**Validates: Requirements 7.4**
+
+### VM User Environment Properties
+
+Property 61: User creation
+*For any* VM provisioning, both 'redteam' and 'blueteam' users should be created with home directories
+**Validates: Requirements 4.1, 4.2**
+
+Property 62: Tool installation
+*For any* 'redteam' user creation, offensive tools should be installed, and for 'blueteam' user, defensive tools should be installed
+**Validates: Requirements 4.3, 4.4**
+
+Property 63: SSH key authentication
+*For any* VM provisioning, the backend's public SSH key should be added to authorized_keys for both users
+**Validates: Requirements 4.5, 4.6**
+
+Property 64: User isolation
+*For any* file access attempt, 'redteam' user should not be able to access /home/blueteam and vice versa
+**Validates: Requirements 4.7, 4.8**
+
+### Infrastructure Properties
+
+Property 65: WebSocket upgrade headers
+*For any* WebSocket connection request, Nginx should include Upgrade and Connection headers in the proxy request
+**Validates: Requirements 6.8**
+
+Property 66: SSL/TLS encryption
+*For any* HTTP request, Nginx should redirect to HTTPS with valid SSL certificate
+**Validates: Requirements 6.5**
+
+Property 67: PM2 automatic restart
+*For any* backend process crash, PM2 should automatically restart the process
+**Validates: Requirements 6.10**
+
+Property 68: Health check availability
+*For any* health check request, the backend should return status including database, SSH sessions, and VM health
+**Validates: Requirements 6.12**
+
 ### Security Properties
 
-Property 46: Security headers applied to all responses
+Property 69: Security headers applied to all responses
 *For any* HTTP response, security headers (CSP, HSTS, X-Frame-Options) should be present
-**Validates: Requirements 9.1**
+**Validates: Requirements 9.1, 13.1**
 
-Property 47: CORS validation against whitelist
+Property 70: CORS validation against whitelist
 *For any* CORS request, the origin should be validated against the configured whitelist
-**Validates: Requirements 9.2**
+**Validates: Requirements 9.2, 13.2**
 
-Property 48: Rate limiting enforced
+Property 71: Rate limiting enforced
 *For any* client exceeding rate limits, subsequent requests should be rejected with 429 status
-**Validates: Requirements 9.3**
+**Validates: Requirements 9.3, 13.3**
 
-Property 49: Input validation and sanitization
+Property 72: Input validation and sanitization
 *For any* user input, the system should validate format and sanitize content before processing
-**Validates: Requirements 9.5**
+**Validates: Requirements 9.5, 13.5**
 
-Property 50: WebSocket authentication required
+Property 73: WebSocket authentication required
 *For any* WebSocket connection attempt, the client must provide a valid authentication token
-**Validates: Requirements 9.7**
+**Validates: Requirements 9.7, 13.7**
 
-Property 51: Sensitive data redaction in logs
+Property 74: Sensitive data redaction in logs
 *For any* log entry containing sensitive data (credentials, tokens), the sensitive portions should be redacted
-**Validates: Requirements 9.12**
+**Validates: Requirements 9.12, 13.12, 5.8**
+
+### Docker Deployment Properties
+
+Property 75: Container startup sequence
+*For any* docker-compose up execution, the PostgreSQL container should be healthy before the backend container starts
+**Validates: Requirements 11.1, 11.3**
+
+Property 76: Network isolation
+*For any* container in the cyber_range network, it should not be able to access the public internet
+**Validates: Requirements 11.2, 11.13**
+
+Property 77: Volume persistence
+*For any* container restart, data stored in Docker volumes should persist and be available to the restarted container
+**Validates: Requirements 11.6, 11.7**
+
+Property 78: Container restart on failure
+*For any* container failure, Docker should automatically restart the container according to the restart policy
+**Validates: Requirements 11.9**
+
+Property 79: Environment variable configuration
+*For any* environment variable change, the system should apply the new value without requiring image rebuild
+**Validates: Requirements 11.8**
+
+### VM Automation Properties
+
+Property 80: VM provisioning for all tiers
+*For any* round initialization, VMs should be provisioned for Tier I (web), Tier II (SSH/DB), and Tier III (core) systems
+**Validates: Requirements 12.1, 12.4, 12.5, 12.6**
+
+Property 81: VM snapshot on round end
+*For any* round completion, the final state of all VMs should be captured in snapshots
+**Validates: Requirements 12.2**
+
+Property 82: VM restoration to baseline
+*For any* new round start, all VMs should be restored to their baseline vulnerable state from snapshots
+**Validates: Requirements 12.3**
+
+Property 83: VM IP assignment
+*For any* VM provisioning, the VM should be assigned an IP address in the 192.168.100.0/24 range
+**Validates: Requirements 12.7**
+
+Property 84: VM health check verification
+*For any* VM health check request, the system should verify that all required services are running
+**Validates: Requirements 12.8**
+
+Property 85: VM restart on health check failure
+*For any* VM that fails health check, the system should attempt to restart the VM
+**Validates: Requirements 12.9**
+
+Property 86: VM user provisioning
+*For any* VM provisioning, both 'redteam' and 'blueteam' users should be created with appropriate tools installed
+**Validates: Requirements 12.11, 4.1, 4.2, 4.3, 4.4**
+
+Property 87: DVWA configuration
+*For any* VM provisioning, DVWA should be installed and configured as the primary target application
+**Validates: Requirements 12.12, 4.9, 4.10**
+
+### Agent Capability Properties
+
+Property 88: Agent task assignment by specialization
+*For any* task, the system should assign it to an agent whose specialization matches the task type
+**Validates: Requirements 18.1, 18.2, 18.3, 18.4, 18.5, 18.6**
+
+Property 89: Agent effectiveness modifiers
+*For any* tool used by an agent, the effectiveness should include the agent's specialization bonus
+**Validates: Requirements 18.7**
+
+Property 90: Agent bonus points on task completion
+*For any* task completed by an agent, agent-specific bonus points should be awarded based on specialization match
+**Validates: Requirements 18.8**
+
+Property 91: Multi-agent task coordination
+*For any* team with multiple agents, task distribution should avoid conflicts and optimize for agent specializations
+**Validates: Requirements 18.9**
+
+### Emergency and Error Recovery Properties
+
+Property 92: Database retry with exponential backoff
+*For any* database connection failure, the system should retry with exponentially increasing delays before giving up
+**Validates: Requirements 19.1**
+
+Property 93: VM unavailability handling
+*For any* unresponsive VM, the system should mark it as unavailable and notify the operator
+**Validates: Requirements 19.2**
+
+Property 94: WebSocket automatic reconnection
+*For any* WebSocket connection drop, the client should automatically attempt to reconnect
+**Validates: Requirements 19.3**
+
+Property 95: User-friendly validation errors
+*For any* validation error, the system should return a message that explains the problem without exposing internal details
+**Validates: Requirements 19.4**
+
+Property 96: Exception logging and generic error response
+*For any* unhandled exception, the system should log the full stack trace and return a generic error message to the client
+**Validates: Requirements 19.5**
+
+Property 97: Emergency kill switch immediate termination
+*For any* emergency kill switch activation, all active rounds should be immediately terminated
+**Validates: Requirements 19.6**
+
+Property 98: Emergency kill switch client disconnection
+*For any* emergency kill switch activation, all WebSocket clients should be disconnected
+**Validates: Requirements 19.7**
+
+Property 99: Emergency kill switch state persistence
+*For any* emergency kill switch activation, the current game state should be persisted before shutdown
+**Validates: Requirements 19.8**
+
+Property 100: Error recovery logging
+*For any* successful error recovery, the system should log the recovery event and resume normal operation
+**Validates: Requirements 19.9**
+
+Property 101: Critical error operator alerts
+*For any* accumulation of critical errors, the system should alert the operator via configured notification channels
+**Validates: Requirements 19.10**
+
+Property 102: SSH connection failure handling
+*For any* SSH connection failure, the system should log the failure and notify the affected player
+**Validates: Requirements 19.11**
+
+Property 103: Terminal session limit enforcement
+*For any* terminal connection attempt when maximum sessions are reached, the system should reject the connection with a descriptive error
+**Validates: Requirements 19.12**
 
 ## Error Handling
 
@@ -874,6 +2225,12 @@ The NEXUS PROTOCOL system requires both unit testing and property-based testing 
 - VM provisioning for each tier
 - Emergency kill switch activation
 - Specific error handling scenarios
+- SSH connection establishment with valid credentials
+- Terminal session creation for red and blue teams
+- WebSocket event handling for terminal:join, terminal:input, terminal:output
+- Scoring pattern detection for specific commands
+- Nginx reverse proxy configuration
+- PM2 process restart on crash
 
 **Property-Based Tests**: Verify universal properties across all inputs
 - Task dependency unlocking for any task graph
@@ -886,6 +2243,11 @@ The NEXUS PROTOCOL system requires both unit testing and property-based testing 
 - Score calculation for any completed objective
 - Detection probability for any observable action
 - State updates for any system modification
+- SSH session isolation for any concurrent sessions
+- Terminal input/output flow for any data
+- Terminal logging for any session
+- Scoring pattern matching for any terminal output
+- Session cleanup for any disconnection
 
 ### Property-Based Testing Configuration
 
@@ -922,6 +2284,86 @@ describe('Task Dependency Unlocking', () => {
           
           // The task should be in the unlocked list
           return unlocked.some(t => t.id === taskWithPrereqs.id);
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+});
+
+// Feature: nexus-protocol-completion, Property 51: Session isolation
+describe('SSH Session Isolation', () => {
+  it('should isolate input between concurrent sessions', () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.string({ minLength: 1, maxLength: 100 }), { minLength: 2, maxLength: 5 }),
+        async (inputs) => {
+          const sshProxy = new SSHProxyManager();
+          const sessions = [];
+          
+          // Create multiple sessions
+          for (let i = 0; i < inputs.length; i++) {
+            const session = await sshProxy.createSession(
+              `socket-${i}`,
+              i % 2 === 0 ? 'red' : 'blue',
+              { missionId: 'test', token: 'test', cols: 80, rows: 24 }
+            );
+            sessions.push(session);
+          }
+          
+          // Write different input to each session
+          const outputs = [];
+          for (let i = 0; i < inputs.length; i++) {
+            sshProxy.writeToSession(`socket-${i}`, inputs[i]);
+            const output = await captureSessionOutput(`socket-${i}`, 1000);
+            outputs.push(output);
+          }
+          
+          // Verify each session only received its own input
+          for (let i = 0; i < inputs.length; i++) {
+            for (let j = 0; j < inputs.length; j++) {
+              if (i !== j) {
+                // Session i should not contain input from session j
+                if (outputs[i].includes(inputs[j])) {
+                  return false;
+                }
+              }
+            }
+          }
+          
+          // Cleanup
+          sessions.forEach((_, i) => sshProxy.closeSession(`socket-${i}`));
+          
+          return true;
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+});
+
+// Feature: nexus-protocol-completion, Property 58: Pattern detection awards points
+describe('Scoring Pattern Detection', () => {
+  it('should award points when terminal output matches scoring patterns', () => {
+    fc.assert(
+      fc.property(
+        fc.oneof(
+          fc.constant('nmap -sV 192.168.100.10'),
+          fc.constant('sqlmap --dump -u http://target.com'),
+          fc.constant('uid=0(root) gid=0(root)'),
+          fc.constant('meterpreter session 1 opened')
+        ),
+        async (command) => {
+          const scoringEngine = new ScoringEngine();
+          const initialScore = await scoringEngine.getScore('test-round', 'red');
+          
+          // Simulate terminal output
+          await scoringEngine.scanTerminalOutput('socket-1', 'red', command);
+          
+          const finalScore = await scoringEngine.getScore('test-round', 'red');
+          
+          // Score should have increased
+          return finalScore > initialScore;
         }
       ),
       { numRuns: 100 }
@@ -1420,7 +2862,29 @@ Key design decisions:
 4. Trace & Burn system adds risk/reward mechanics
 5. PostgreSQL enables scalability and audit trails
 6. Docker deployment ensures consistent environments
-7. Property-based testing verifies correctness across all inputs
+7. Property-based testing verifies correctness across all inputs (103 properties covering all 19 requirements)
 8. Production hardening protects game infrastructure
+9. SSH proxy system enables real terminal access to cyber range
+10. Automated VM provisioning ensures consistent vulnerable environments
+
+The design includes 103 correctness properties that validate all 19 requirements:
+- Requirements 1-2: Mission Logic and Tool Functionality (Properties 1-10)
+- Requirement 3: SSH Terminal System (Properties 46-52)
+- Requirement 4: VM User Environment (Properties 61-64)
+- Requirement 5: Terminal Logging (Properties 53-57)
+- Requirement 6: Server Infrastructure (Properties 65-68)
+- Requirement 7: Real-Time Synchronization (Properties 11-15)
+- Requirement 8: Trace & Burn Visual System (Properties 16-19)
+- Requirement 9: PostgreSQL Migration (Properties 20-23)
+- Requirement 10: Cyber Range Validator (Properties 24-26)
+- Requirement 11: Docker Deployment (Properties 75-79)
+- Requirement 12: VM Automation (Properties 80-87)
+- Requirement 13: Production Hardening (Properties 69-74)
+- Requirement 14: Round Scoring (Properties 27-31, 58-60)
+- Requirement 15: Task Dependencies (Properties 2, 5)
+- Requirement 16: Observable Actions (Properties 12, 32-35)
+- Requirement 17: System State Management (Properties 36-40)
+- Requirement 18: Agent Capabilities (Properties 3, 10, 88-91)
+- Requirement 19: Emergency and Error Handling (Properties 41-45, 92-103)
 
 The implementation can proceed in phases, with each phase building on the previous one. The system is designed to be deployed incrementally, allowing for testing and validation at each stage.

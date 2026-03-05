@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Design Change Guard",
+  "description": "Prevents unintended design/UI changes by verifying user intent before modifying CSS, styling, or UI component files",
+  "version": "1",
+  "when": {
+    "type": "preToolUse",
+    "toolTypes": [
+      "write"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "CRITICAL: Before making ANY changes to design, styling, CSS, UI components, or page layouts, verify that the user has EXPLICITLY requested these specific design changes in their current message. If the user has NOT explicitly asked to modify the design/styling/layout, you MUST NOT proceed with this change. Only make design changes when the user clearly says to do so. For all other requests, focus only on functionality without touching design elements."
+  }
+}

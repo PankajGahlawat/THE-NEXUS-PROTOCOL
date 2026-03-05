@@ -44,11 +44,6 @@ export default function LoginScreen() {
     }
   };
 
-  const handleDemoLogin = () => {
-    setTeamName('Ghost');
-    setAccessCode('1234');
-  };
-
   return (
     <div className="min-h-screen bg-arcane-dark flex items-center justify-center p-8">
       <div className="w-full max-w-md">
@@ -113,18 +108,8 @@ export default function LoginScreen() {
 
           <div className="mt-6 pt-6 border-t border-bg-border">
             <div className="text-center">
-              <p className="text-sm text-text-muted mb-3">
-                Demo Credentials
-              </p>
-              <NexusButton
-                variant="secondary"
-                size="sm"
-                onClick={handleDemoLogin}
-              >
-                Use Demo Login
-              </NexusButton>
-              <p className="text-xs text-text-muted mt-2">
-                Team: Ghost, Code: 1234
+              <p className="text-sm text-text-muted">
+                Contact your administrator for team credentials
               </p>
             </div>
           </div>

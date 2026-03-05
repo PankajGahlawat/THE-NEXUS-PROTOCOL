@@ -94,6 +94,31 @@ class Database {
     return this.sessions.delete(sessionId);
   }
 
+  validateSession(sessionToken) {
+    // Find session by token
+    for (const [sessionId, session] of this.sessions.entries()) {
+      if (session.sessionToken === sessionToken) {
+        // Check if session is expired
+        if (new Date(session.expiresAt) > new Date()) {
+          // Get team info
+          const team = this.getTeam(session.teamId);
+          return {
+            id: sessionId,
+            team_id: session.teamId,
+            team_name: team?.teamName || 'Unknown',
+            selected_agent: session.selectedAgent,
+            current_mission: session.currentMission,
+            authenticated: session.authenticated
+          };
+        } else {
+          // Session expired, delete it
+          this.sessions.delete(sessionId);
+        }
+      }
+    }
+    return null;
+  }
+
   // Mission instance management
   createMissionInstance(missionData) {
     const instanceId = this.generateId();

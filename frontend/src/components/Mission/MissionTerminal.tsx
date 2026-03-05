@@ -59,7 +59,8 @@ const MissionTerminal: React.FC = () => {
     terminal.current.writeln('║           NEXUS PROTOCOL - MISSION TERMINAL v3.0             ║');
     terminal.current.writeln('╚═══════════════════════════════════════════════════════════════╝');
     terminal.current.writeln('');
-    terminal.current.writeln('Configure VM connection to begin mission...');
+    terminal.current.writeln('Mission terminal ready. Complete tasks to earn points.');
+    terminal.current.writeln('The more tasks you complete, the higher your score.');
     terminal.current.writeln('');
 
     // Connect to SSH proxy
@@ -108,8 +109,12 @@ const MissionTerminal: React.FC = () => {
       terminal.current?.writeln(`\r\n[BROADCAST] ${data.message}\r\n`);
     });
 
-    // Handle terminal input
+    // Handle terminal input - Allow typing for both teams
     terminal.current.onData((data) => {
+      // Echo the input back to terminal for local display
+      terminal.current?.write(data);
+      
+      // If connected to SSH, send to server
       if (connected && socket.current) {
         socket.current.emit('ssh-input', data);
       }
@@ -155,99 +160,7 @@ const MissionTerminal: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#0a0a0a' }}>
-      {/* Connection Config Panel */}
-      {showConfig && !connected && (
-        <div style={{
-          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-          padding: '20px',
-          borderBottom: '2px solid #00ff00',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)'
-        }}>
-          <h3 style={{ color: '#00ff00', marginBottom: '15px', fontSize: '16px', fontWeight: 'bold' }}>
-            🎯 MISSION VM CONNECTION
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '15px' }}>
-            <input
-              type="text"
-              placeholder="VM Host (e.g., 192.168.1.100)"
-              value={vmConfig.host}
-              onChange={(e) => setVmConfig({ ...vmConfig, host: e.target.value })}
-              style={{
-                padding: '10px',
-                borderRadius: '4px',
-                border: '1px solid #00ff00',
-                background: '#0a0a0a',
-                color: '#00ff00',
-                fontFamily: 'monospace'
-              }}
-            />
-            <input
-              type="number"
-              placeholder="Port (22)"
-              value={vmConfig.port}
-              onChange={(e) => setVmConfig({ ...vmConfig, port: parseInt(e.target.value) })}
-              style={{
-                padding: '10px',
-                borderRadius: '4px',
-                border: '1px solid #00ff00',
-                background: '#0a0a0a',
-                color: '#00ff00',
-                fontFamily: 'monospace'
-              }}
-            />
-            <input
-              type="text"
-              placeholder="Username"
-              value={vmConfig.username}
-              onChange={(e) => setVmConfig({ ...vmConfig, username: e.target.value })}
-              style={{
-                padding: '10px',
-                borderRadius: '4px',
-                border: '1px solid #00ff00',
-                background: '#0a0a0a',
-                color: '#00ff00',
-                fontFamily: 'monospace'
-              }}
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={vmConfig.password}
-              onChange={(e) => setVmConfig({ ...vmConfig, password: e.target.value })}
-              style={{
-                padding: '10px',
-                borderRadius: '4px',
-                border: '1px solid #00ff00',
-                background: '#0a0a0a',
-                color: '#00ff00',
-                fontFamily: 'monospace'
-              }}
-            />
-          </div>
-          <button
-            onClick={handleConnect}
-            disabled={connected}
-            style={{
-              width: '100%',
-              padding: '12px',
-              background: connected ? '#555' : '#00ff00',
-              color: connected ? '#aaa' : '#000',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: connected ? 'not-allowed' : 'pointer',
-              fontWeight: 'bold',
-              fontSize: '14px',
-              fontFamily: 'monospace',
-              textTransform: 'uppercase',
-              letterSpacing: '1px'
-            }}
-          >
-            {connected ? '● Connected' : '○ Connect to Mission VM'}
-          </button>
-        </div>
-      )}
-
-      {/* Terminal Display */}
+      {/* Terminal Display - Full Page */}
       <div
         ref={terminalRef}
         style={{
@@ -268,8 +181,8 @@ const MissionTerminal: React.FC = () => {
         fontSize: '12px',
         fontFamily: 'monospace'
       }}>
-        <div style={{ color: connected ? '#00ff00' : '#ff0000' }}>
-          {connected ? '● CONNECTED' : '○ DISCONNECTED'}
+        <div style={{ color: '#00ff00' }}>
+          ● MISSION ACTIVE
         </div>
         <div style={{ color: '#aaa' }}>
           Mission: {gameState.currentMission?.name || 'None'} | 

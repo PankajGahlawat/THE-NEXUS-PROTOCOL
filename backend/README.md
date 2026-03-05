@@ -9,7 +9,7 @@ A complete backend implementation for the Nexus Protocol cyber-heist simulation 
 - ✅ **Complete Game Engine** - Mission management, scoring, and game mechanics
 - ✅ **Real-time Communication** - WebSocket support for live mission updates
 - ✅ **Authentication System** - JWT-based session management with 2-hour expiry
-- ✅ **Agent System** - Three specialized roles (Hacker, Infiltrator, Analyst)
+- ✅ **Agent System** - Two specialized roles (Hacker, Infiltrator)
 - ✅ **Mission Types** - False Flag, Biometric Bluff, and Core Extraction missions
 - ✅ **Performance Tracking** - Scoring, rankings, and achievement system
 - ✅ **Security Features** - Rate limiting, CORS, Helmet, input validation
@@ -106,7 +106,6 @@ socket.on('mission-update', (data) => {
 
 - **Hacker (Breach Architect)**: System exploitation specialist
 - **Infiltrator (Shadow Linguist)**: Social engineering expert
-- **Analyst (Signal Oracle)**: Intelligence gathering specialist
 
 ### Scoring System
 

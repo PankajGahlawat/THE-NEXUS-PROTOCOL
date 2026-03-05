@@ -103,46 +103,32 @@ export default function TrailerSequence() {
       )
       .to('#role-cipher', { autoAlpha: 0, duration: 0.2 }, 20.3)
 
-      // NEXUS Agent Flash
-      .set('#role-nexus', { autoAlpha: 1 }, 20.5)
-      .fromTo('#role-nexus .role-img',
-        { x: 50, opacity: 0, scale: 0.8 },
-        { x: 0, opacity: 1, scale: 1, duration: 0.4, ease: 'power2.out' },
-        20.5
-      )
-      .fromTo('#role-nexus .role-text',
-        { x: -50, opacity: 0 },
-        { x: 0, opacity: 1, duration: 0.4, ease: 'power2.out' },
-        20.5
-      )
-      .to('#role-nexus', { autoAlpha: 0, duration: 0.2 }, 22.3)
-
       // Final agent selection simulation
-      .set('#agent-selection', { autoAlpha: 1 }, 23)
+      .set('#agent-selection', { autoAlpha: 1 }, 21)
       .fromTo('.choice-card',
         { y: 50, opacity: 0, scale: 0.9 },
         { y: 0, opacity: 1, scale: 1, stagger: 0.2, duration: 0.8, ease: 'back.out(1.7)' },
-        23
+        21
       )
       .to('#choice-ghost', {
         scale: 1.1,
         borderColor: '#0ac8b9',
         boxShadow: '0 0 30px #0ac8b9',
         duration: 0.5
-      }, 24)
+      }, 22)
       .to('.choice-card:not(#choice-ghost)', {
         opacity: 0.3,
         scale: 0.9,
         duration: 0.5
-      }, 24)
-      .to('#agent-selection', { autoAlpha: 0, duration: 0.5 }, 25)
+      }, 22)
+      .to('#agent-selection', { autoAlpha: 0, duration: 0.5 }, 23)
 
-      // 26-35s: System breaker alert with red inversion
-      .call(() => setCurrentVO('And what you leave behind.'), [], 26)
+      // 24-33s: System breaker alert with red inversion
+      .call(() => setCurrentVO('And what you leave behind.'), [], 24)
       .to(containerRef.current, {
         backgroundColor: '#FF1744',
         duration: 0.2
-      }, 26)
+      }, 24)
       .fromTo(systemAlertRef.current,
         { opacity: 0, y: 100, rotationX: -90 },
         { opacity: 1, y: 0, rotationX: 0, duration: 2, ease: 'back.out(1.7)' },
@@ -279,17 +265,7 @@ export default function TrailerSequence() {
           <Eye size={120} className="role-img text-arcane-purple" />
           <div className="role-text text-left">
             <h2 className="text-6xl font-display font-bold text-white">CIPHER</h2>
-            <p className="text-arcane-purple tracking-widest">DATA ANALYST</p>
-          </div>
-        </div>
-      </div>
-
-      <div id="role-nexus" className="scene absolute inset-0 flex items-center justify-center invisible bg-arcane-dark">
-        <div className="flex items-center gap-8">
-          <Brain size={120} className="role-img text-arcane-gold" />
-          <div className="role-text text-left">
-            <h2 className="text-6xl font-display font-bold text-white">NEXUS</h2>
-            <p className="text-arcane-gold tracking-widest">SYSTEM BREAKER</p>
+            <p className="text-arcane-purple tracking-widest">HACKING SPECIALIST</p>
           </div>
         </div>
       </div>
@@ -306,12 +282,7 @@ export default function TrailerSequence() {
           <div id="choice-cipher" className="choice-card w-64 h-80 bg-arcane-card border border-white/10 p-6 flex flex-col items-center justify-center gap-4 transition-all">
             <Eye size={64} className="text-arcane-purple" />
             <h3 className="text-xl font-bold text-white">CIPHER</h3>
-            <p className="text-sm text-arcane-muted text-center">Data Analyst</p>
-          </div>
-          <div id="choice-nexus" className="choice-card w-64 h-80 bg-arcane-card border border-white/10 p-6 flex flex-col items-center justify-center gap-4 transition-all">
-            <Brain size={64} className="text-arcane-gold" />
-            <h3 className="text-xl font-bold text-white">NEXUS</h3>
-            <p className="text-sm text-arcane-muted text-center">System Breaker</p>
+            <p className="text-sm text-arcane-muted text-center">Hacking Specialist</p>
           </div>
         </div>
       </div>

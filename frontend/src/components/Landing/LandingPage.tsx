@@ -18,7 +18,7 @@ export default function LandingPage() {
   const [progress, setProgress] = useState(0); // Progress value 0-100
   const [showContent, setShowContent] = useState(false);
 
-  const { audioStarted, startAudio, isMuted, toggleMute, playSound } = useAudio();
+  const { audioStarted, isMuted, toggleMute, playSound } = useAudio();
 
   const textSequences = [
     'initializing nexus protocol systems...',
@@ -36,26 +36,7 @@ export default function LandingPage() {
     '// heist interface ready'
   ];
 
-  // Set up audio event listeners for first interaction
-  useEffect(() => {
-    const handleFirstInteraction = () => {
-      startAudio();
-      // Remove listeners after first use
-      document.removeEventListener("click", handleFirstInteraction);
-      document.removeEventListener("keydown", handleFirstInteraction);
-    };
-
-    if (!audioStarted) {
-      document.addEventListener("click", handleFirstInteraction);
-      document.addEventListener("keydown", handleFirstInteraction);
-    }
-
-    return () => {
-      document.removeEventListener("click", handleFirstInteraction);
-      document.removeEventListener("keydown", handleFirstInteraction);
-    };
-  }, [audioStarted, startAudio]);
-
+  // No need for audio event listeners since audio auto-plays now
   useEffect(() => {
     let sequenceIndex = 0;
     let textIndex = 0;
@@ -104,7 +85,6 @@ export default function LandingPage() {
 
   const handleEnterGame = () => {
     playSound('click');
-    startAudio(); // Ensure audio starts
     setShowContent(false);
 
     // Check if trailer has been shown
@@ -170,24 +150,6 @@ export default function LandingPage() {
   return (
     <div className={`landing-page ${showContent ? 'visible' : ''} ${audioStarted ? 'audio-active' : ''}`}>
 
-      {/* Audio Status Indicator - Now a functional mute button */}
-      {audioStarted && (
-        <div
-          className={`audio-indicator ${isMuted ? 'muted' : ''}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleMute();
-          }}
-          title={isMuted ? "Unmute Audio" : "Mute Audio"}
-        >
-          <div className="audio-wave">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </div>
-      )}
-
       {/* Navigation */}
       <nav className="landing-nav">
         <div className="nav-left">
@@ -230,9 +192,6 @@ export default function LandingPage() {
               <span className="btn-text">INITIALIZE NEXUS</span>
               <span className="btn-arrow">→</span>
             </button>
-            <div className="interaction-hint">
-              <span>Click to start audio experience</span>
-            </div>
           </div>
         </div>
         <div className="scroll-indicator">
@@ -288,9 +247,7 @@ export default function LandingPage() {
           <div className="characters-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 400px))', justifyContent: 'center' }}>
             <div className="character-card" onClick={() => handleCharacterSelect('hacker')}>
               <div className="character-image">
-                <div className="image-placeholder">
-                  <span className="placeholder-icon">💻</span>
-                </div>
+                <img src="/assets/CIPHER-001.webp" alt="CIPHER-001" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 <div className="character-overlay"></div>
               </div>
               <div className="character-info">
@@ -301,9 +258,7 @@ export default function LandingPage() {
             </div>
             <div className="character-card" onClick={() => handleCharacterSelect('infiltrator')}>
               <div className="character-image">
-                <div className="image-placeholder">
-                  <span className="placeholder-icon">👤</span>
-                </div>
+                <img src="/assets/GHOST-002.webp" alt="GHOST-002" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 <div className="character-overlay"></div>
               </div>
               <div className="character-info">
@@ -326,7 +281,12 @@ export default function LandingPage() {
           </div>
           <div className="features-showcase">
             <div className="feature-card large">
-              <div className="feature-bg"></div>
+              <div className="feature-bg" style={{
+                backgroundImage: 'url(/assets/cyber-heist.WEBP)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                opacity: 0.6
+              }}></div>
               <div className="feature-info">
                 <span className="feature-tag">MISSION_TYPE</span>
                 <h3>CYBER HEIST</h3>
@@ -335,7 +295,7 @@ export default function LandingPage() {
             </div>
             <div className="feature-card">
               <div className="feature-bg" style={{
-                backgroundImage: 'url(/assets/gameplay.jpg)',
+                backgroundImage: 'url(/assets/gameplay.WEBP)',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 opacity: 0.6
@@ -347,7 +307,12 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="feature-card">
-              <div className="feature-bg"></div>
+              <div className="feature-bg" style={{
+                backgroundImage: 'url(/assets/tool.WEBP)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                opacity: 0.6
+              }}></div>
               <div className="feature-info">
                 <span className="feature-tag">TOOLS</span>
                 <h3>20+ TOOLS</h3>

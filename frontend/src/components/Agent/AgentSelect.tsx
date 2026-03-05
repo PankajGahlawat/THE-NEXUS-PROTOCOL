@@ -7,10 +7,8 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../context/ThemeContext';
 import { useGame } from '../../context/GameContext';
 import { useAudio } from '../../context/AudioContext';
-import type { AgentTheme } from '../../hooks/useTheme';
 import NexusButton from '../UI/NexusButton';
 import NexusCard from '../UI/NexusCard';
 import './AgentSelect.css';
@@ -22,7 +20,7 @@ const agents = {
     codeName: 'CIPHER',
     description: 'System exploitation and digital warfare specialist',
     philosophy: 'Language of systems is code. She writes the lies the Vault reads.',
-    image: '/assets/card-left-01.webp',
+    image: '/assets/CIPHER-001.webp',
     stats: { hacking: 100, stealth: 60, combat: 40, analysis: 70 },
     abilities: [
       'Cipher Cache: False telemetry echo',
@@ -36,7 +34,7 @@ const agents = {
     codeName: 'GHOST',
     description: 'Social engineering and identity manipulation specialist',
     philosophy: 'People open doors that only words can unlock.',
-    image: '/assets/card-right-01.webp',
+    image: '/assets/GHOST-002.webp',
     stats: { hacking: 40, stealth: 100, combat: 70, analysis: 60 },
     abilities: [
       'Social Echo: Boost persuasion checks',
@@ -53,24 +51,50 @@ interface AgentSelectProps {
 export default function AgentSelect({ }: AgentSelectProps) {
   const navigate = useNavigate();
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
-  const { setTheme } = useTheme();
-  const { selectAgent } = useGame();
+  const { selectAgent, gameState } = useGame();
   const { playSound } = useAudio();
+
+  // Apply team theme on mount
+  useEffect(() => {
+    if (gameState.teamType) {
+      const root = document.documentElement;
+      const teamTheme = gameState.teamType === 'red' ? 'red' : 'blue';
+      const colors = gameState.teamType === 'red' ? {
+        primary: '#FF1744',
+        secondary: '#DC143C',
+        accent: '#8B0000',
+        highlight: '#FF6B35',
+        glow: 'rgba(255, 23, 68, 0.5)'
+      } : {
+        primary: '#00D4FF',
+        secondary: '#0099CC',
+        accent: '#0066AA',
+        highlight: '#33E0FF',
+        glow: 'rgba(0, 212, 255, 0.5)'
+      };
+
+      root.setAttribute('data-theme', teamTheme);
+      root.style.setProperty('--theme-primary', colors.primary);
+      root.style.setProperty('--theme-secondary', colors.secondary);
+      root.style.setProperty('--theme-accent', colors.accent);
+      root.style.setProperty('--theme-highlight', colors.highlight);
+      root.style.setProperty('--theme-glow', colors.glow);
+    }
+  }, [gameState.teamType]);
 
   // Check for preselected character from landing page
   useEffect(() => {
     const preselectedCharacter = sessionStorage.getItem('nexus_preselected_character');
     if (preselectedCharacter && agents[preselectedCharacter as keyof typeof agents]) {
       setSelectedAgent(preselectedCharacter);
-      setTheme(preselectedCharacter as AgentTheme);
       // Clear the preselection
       sessionStorage.removeItem('nexus_preselected_character');
     }
-  }, [setTheme]);
+  }, []);
 
   const handleAgentSelect = (agentId: string) => {
     setSelectedAgent(agentId);
-    setTheme(agentId as AgentTheme);
+    playSound('click');
   };
 
   const handleConfirm = () => {
@@ -102,62 +126,22 @@ export default function AgentSelect({ }: AgentSelectProps) {
               interactive
               selected={selectedAgent === agent.id}
               onClick={() => handleAgentSelect(agent.id)}
-              className={`agent-card cursor-pointer transition-all duration-500 transform hover:scale-105 ${selectedAgent === agent.id
-                ? 'ring-2 ring-theme-primary shadow-2xl shadow-theme-primary/25 pulse-glow'
+              className={`agent-card cursor-pointer transition-all duration-300 ${selectedAgent === agent.id
+                ? 'ring-2 ring-theme-primary shadow-2xl shadow-theme-primary/25'
                 : 'hover:shadow-xl hover:shadow-theme-primary/10'
                 }`}
             >
               <div className="text-center mb-6">
                 {/* Agent Card Image */}
-                <div className="agent-card-image w-full h-64 mb-4 cyberpunk-border hologram-effect group">
+                <div className="agent-card-image w-full h-64 mb-4 cyberpunk-border">
                   <img
                     src={agent.image}
                     alt={`${agent.name} - ${agent.codeName}`}
                     className="agent-portrait"
-                    onError={(e) => {
-                      // Fallback to gradient icon if image fails to load
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const fallback = target.nextElementSibling as HTMLElement;
-                      if (fallback) fallback.style.display = 'flex';
-                    }}
                   />
-                  {/* Enhanced Fallback gradient icon */}
-                  <div
-                    className="absolute inset-0 bg-gradient-to-br from-theme-primary via-theme-accent to-theme-primary rounded-lg flex flex-col items-center justify-center text-white"
-                    style={{ display: 'none' }}
-                  >
-                    <div className="text-6xl font-bold mb-2">{agent.codeName[0]}</div>
-                    <div className="text-sm font-mono opacity-75">CLASSIFIED</div>
-                    <div className="absolute inset-0 bg-black/20"></div>
-                  </div>
-                  <img
-                    src={agent.image}
-                    alt={`${agent.name} - ${agent.codeName}`}
-                    className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110"
-                    onError={(e) => {
-                      // Fallback to gradient icon if image fails to load
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const fallback = target.nextElementSibling as HTMLElement;
-                      if (fallback) fallback.style.display = 'flex';
-                    }}
-                  />
-                  {/* Fallback gradient icon */}
-                  <div
-                    className="absolute inset-0 bg-gradient-to-br from-theme-primary to-theme-accent rounded-lg flex items-center justify-center text-6xl font-bold text-white"
-                    style={{ display: 'none' }}
-                  >
-                    {agent.codeName[0]}
-                  </div>
 
                   {/* Cyberpunk overlay effects */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-theme-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                  {/* Glitch lines effect */}
-                  <div className="absolute top-0 left-0 w-full h-0.5 bg-theme-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="absolute bottom-0 right-0 w-full h-0.5 bg-theme-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                   {/* Agent code name overlay */}
                   <div className="absolute bottom-4 left-4 right-4">
@@ -172,18 +156,17 @@ export default function AgentSelect({ }: AgentSelectProps) {
                   {/* Selection indicator */}
                   {selectedAgent === agent.id && (
                     <div className="absolute top-4 right-4">
-                      <div className="w-8 h-8 bg-theme-primary rounded-full flex items-center justify-center animate-pulse">
-                        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      <div className="w-10 h-10 bg-theme-primary rounded-full flex items-center justify-center shadow-lg" style={{
+                        boxShadow: '0 0 20px var(--theme-glow)'
+                      }}>
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                       </div>
                     </div>
                   )}
-
-                  {/* Hover effect border */}
-                  <div className="absolute inset-0 border-2 border-transparent group-hover:border-theme-primary/50 rounded-lg transition-colors duration-300" />
                 </div>
-                <h3 className="text-xl font-bold font-display text-arcane-text mb-2 glitch-effect" data-text={agent.name}>
+                <h3 className="text-xl font-bold font-display text-arcane-text mb-2">
                   {agent.name}
                 </h3>
                 <div className="flex items-center justify-center mb-2">
@@ -209,10 +192,9 @@ export default function AgentSelect({ }: AgentSelectProps) {
                     </span>
                     <div className="flex-1 mx-3 h-2 bg-arcane-border rounded-full overflow-hidden stat-bar">
                       <div
-                        className="h-full bg-gradient-to-r from-theme-primary to-theme-accent transition-all duration-1000 relative"
+                        className="h-full bg-gradient-to-r from-theme-primary to-theme-accent transition-all duration-1000"
                         style={{ width: `${value}%` }}
                       >
-                        <div className="absolute inset-0 bg-white/10"></div>
                       </div>
                     </div>
                     <span className="w-8 text-xs text-arcane-text text-right font-mono">
@@ -228,9 +210,9 @@ export default function AgentSelect({ }: AgentSelectProps) {
                   Specialized Abilities
                 </h4>
                 {agent.abilities.map((ability, index) => (
-                  <div key={index} className="text-xs text-arcane-muted flex items-start group">
-                    <span className="text-theme-accent mr-2 group-hover:text-theme-primary transition-colors">▶</span>
-                    <span className="group-hover:text-arcane-text transition-colors">{ability}</span>
+                  <div key={index} className="text-xs text-arcane-muted flex items-start">
+                    <span className="text-theme-accent mr-2">▶</span>
+                    <span>{ability}</span>
                   </div>
                 ))}
               </div>

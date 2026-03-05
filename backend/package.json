@@ -2,10 +2,10 @@
   "name": "nexus-protocol-backend",
   "version": "2.0.0",
   "description": "Nexus Protocol - Enhanced Backend Implementation with Security & Performance",
-  "main": "index.js",
+  "main": "index_enhanced.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
+    "start": "node index_enhanced.js",
+    "dev": "nodemon index_enhanced.js",
     "ssh-proxy": "node start-ssh-proxy.js",
     "migrate": "node scripts/run-migrations.js",
     "test": "jest --coverage",

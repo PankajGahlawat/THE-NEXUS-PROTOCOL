@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useCallback, createContext, useContext } from 'react';
 
-export type AgentTheme = 'hacker' | 'infiltrator';
+export type AgentTheme = 'hacker' | 'infiltrator' | 'red' | 'blue';
 
 export interface ThemeColors {
   primary: string;
@@ -43,6 +43,22 @@ const THEME_COLORS: Record<AgentTheme, ThemeColors> = {
     highlight: '#FF10F0',
     glow: 'rgba(0, 212, 255, 0.5)',
     name: 'GHOST'
+  },
+  red: {
+    primary: '#FF1744',
+    secondary: '#DC143C',
+    accent: '#8B0000',
+    highlight: '#FF6B35',
+    glow: 'rgba(255, 23, 68, 0.5)',
+    name: 'RED TEAM'
+  },
+  blue: {
+    primary: '#00D4FF',
+    secondary: '#0099CC',
+    accent: '#0066AA',
+    highlight: '#33E0FF',
+    glow: 'rgba(0, 212, 255, 0.5)',
+    name: 'BLUE TEAM'
   }
 };
 

@@ -33,11 +33,12 @@ export function AudioProvider({ children }: AudioProviderProps) {
   
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Initialize audio element with gamevoice.mp3
+  // Initialize audio element with gamevoice.mp3 and auto-play
   useEffect(() => {
     const audio = new Audio('/audio/gamevoice.mp3');
     audio.loop = true;
     audio.preload = 'auto';
+    audio.volume = volume;
     audioRef.current = audio;
 
     // Audio event listeners
@@ -48,6 +49,29 @@ export function AudioProvider({ children }: AudioProviderProps) {
     audio.addEventListener('play', handlePlay);
     audio.addEventListener('pause', handlePause);
     audio.addEventListener('ended', handleEnded);
+
+    // Auto-play immediately when component mounts
+    const attemptAutoPlay = () => {
+      audio.play().then(() => {
+        setAudioStarted(true);
+        console.log('Audio started automatically');
+      }).catch(err => {
+        console.log("Audio autoplay blocked, will retry on user interaction:", err);
+        // Set up fallback for user interaction
+        const handleInteraction = () => {
+          audio.play().then(() => {
+            setAudioStarted(true);
+            document.removeEventListener("click", handleInteraction);
+            document.removeEventListener("keydown", handleInteraction);
+          }).catch(e => console.log("Audio play failed:", e));
+        };
+        document.addEventListener("click", handleInteraction, { once: true });
+        document.addEventListener("keydown", handleInteraction, { once: true });
+      });
+    };
+
+    // Try to play immediately
+    attemptAutoPlay();
 
     // Tab visibility handling
     const handleVisibilityChange = () => {
@@ -72,7 +96,7 @@ export function AudioProvider({ children }: AudioProviderProps) {
       audio.pause();
       audio.src = '';
     };
-  }, [audioStarted, isMuted]);
+  }, []); // Only run once on mount
 
   // Start audio function (Method 1 - Recommended)
   const startAudio = () => {
@@ -182,25 +206,12 @@ export function AudioProvider({ children }: AudioProviderProps) {
     }
   }, []);
 
-  // Set up first interaction listeners for gamevoice.mp3
+  // Update volume when it changes
   useEffect(() => {
-    const handleFirstInteraction = () => {
-      startAudio();
-      // Remove listeners after first use
-      document.removeEventListener("click", handleFirstInteraction);
-      document.removeEventListener("keydown", handleFirstInteraction);
-    };
-
-    if (!audioStarted) {
-      document.addEventListener("click", handleFirstInteraction);
-      document.addEventListener("keydown", handleFirstInteraction);
+    if (audioRef.current && !isMuted) {
+      audioRef.current.volume = volume;
     }
-
-    return () => {
-      document.removeEventListener("click", handleFirstInteraction);
-      document.removeEventListener("keydown", handleFirstInteraction);
-    };
-  }, [audioStarted]);
+  }, [volume, isMuted]);
 
   const value: AudioContextType = {
     isPlaying,

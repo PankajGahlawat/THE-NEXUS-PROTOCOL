@@ -485,57 +485,6 @@ class EnhancedGameEngine {
             manaCost: 0
           }
         }
-      },
-
-      analyst: {
-        id: 'analyst',
-        name: 'Signal Oracle',
-        description: 'Intelligence gathering specialist',
-        color: '#0AC8B9', // FIXED: Consistent with theme
-        stats: {
-          hacking: 70,
-          stealth: 40,
-          combat: 30,
-          analysis: 100
-        },
-        abilities: {
-          passive: {
-            name: 'Pattern Eye',
-            description: 'Reveal hidden traps and provide team-wide threat warnings',
-            effect: 'reveal_traps',
-            range: 'global',
-            threatReduction: 5, // ENHANCED: Passive threat reduction
-            cooldown: 0
-          },
-          ability1: {
-            name: 'Echo Scan',
-            description: 'Highlight vulnerable nodes for 8s, increases team efficiency',
-            cooldown: 16,
-            duration: 8,
-            effect: 'highlight_vulnerabilities',
-            efficiencyBonus: 20, // ENHANCED: Team efficiency bonus
-            manaCost: 0
-          },
-          ability2: {
-            name: 'Predictive Mesh',
-            description: 'Forecast next sweep, grant dodge window and trace immunity',
-            cooldown: 25,
-            effect: 'dodge_window',
-            duration: 8, // ENHANCED: Increased from 5s
-            traceImmunity: true, // ENHANCED: Added trace immunity
-            manaCost: 0
-          },
-          ultimate: {
-            name: 'Oracle Burst',
-            description: 'Reveal full mission map for 8s with optimal path highlighting', // ENHANCED
-            type: 'charge',
-            duration: 8, // ENHANCED: Increased from 6s
-            effect: 'reveal_map',
-            chargeRequired: 100,
-            pathOptimization: true, // ENHANCED: Shows optimal paths
-            manaCost: 0
-          }
-        }
       }
     };
   }

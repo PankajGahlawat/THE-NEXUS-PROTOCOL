@@ -8,6 +8,115 @@ The implementation uses JavaScript (Node.js) for the backend and TypeScript (Rea
 
 ## Tasks
 
+- [ ] 0. Implement SSH Terminal System (THE KEY PIECE - BUILD THIS FIRST)
+  - [ ] 0.1 Create SSH Proxy backend
+    - Create `backend/ssh/SSHProxyManager.js` with session management
+    - Implement `createSession(socketId, team, options)` method
+    - Implement `writeToSession(socketId, data)` method
+    - Implement `resizeSession(socketId, cols, rows)` method
+    - Implement `closeSession(socketId)` method
+    - Use ssh2 library for SSH client connections
+    - Configure PTY with term='xterm-256color', cols=220, rows=50
+    - Route Red Team to 'redteam@VM_HOST', Blue Team to 'blueteam@VM_HOST'
+    - Store sessions in Map keyed by socketId
+    - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.9, 3.10, 3.11, 3.12, 3.13, 3.14_
+  
+  - [ ] 0.2 Integrate SSH Proxy with Socket.IO server
+    - Update `backend/index_enhanced.js` to import SSHProxyManager
+    - Add Socket.IO event handler for 'terminal:join'
+    - Add Socket.IO event handler for 'terminal:input'
+    - Add Socket.IO event handler for 'terminal:resize'
+    - Add Socket.IO event handler for 'disconnect'
+    - Implement onData callback to emit 'terminal:output'
+    - Implement onClose callback to emit 'terminal:disconnected'
+    - _Requirements: 3.6, 3.7, 3.8, 3.12_
+  
+  - [ ] 0.3 Create frontend terminal component
+    - Create `frontend/src/components/Terminal/TerminalWindow.tsx`
+    - Install @xterm/xterm, @xterm/addon-fit, socket.io-client
+    - Initialize Xterm.js terminal with dark theme
+    - Load and activate FitAddon for responsive sizing
+    - Connect to Socket.IO server
+    - Emit 'terminal:join' on mount with team and missionId
+    - Listen for 'terminal:output' and write to terminal
+    - Listen for 'terminal:disconnected' and show message
+    - Handle terminal.onData to emit 'terminal:input'
+    - Handle window resize to emit 'terminal:resize'
+    - Clean up on unmount (dispose terminal, remove listeners)
+    - _Requirements: 3.1, 3.6, 3.7, 3.8, 3.15_
+  
+  - [ ] 0.4 Set up VM with team users and SSH keys
+    - SSH into VM and create 'redteam' Linux user
+    - SSH into VM and create 'blueteam' Linux user
+    - Generate SSH key pair on backend server: `ssh-keygen -t ed25519 -f /root/.ssh/vm_key`
+    - Copy public key to VM: `ssh-copy-id -i /root/.ssh/vm_key.pub redteam@VM_IP`
+    - Copy public key to VM: `ssh-copy-id -i /root/.ssh/vm_key.pub blueteam@VM_IP`
+    - Set VM_HOST, VM_KEY_PATH in backend .env file
+    - Test SSH connection from backend to VM
+    - _Requirements: 4.1, 4.2, 4.5, 4.6, 4.13_
+  
+  - [ ] 0.5 Install tools on VM for each team
+    - Install Red Team tools: `apt install -y nmap sqlmap hydra metasploit-framework nikto dirb john`
+    - Install Blue Team tools: `apt install -y tcpdump fail2ban iptables wireshark aide rkhunter`
+    - Configure file permissions: `chmod 750 /home/redteam /home/blueteam`
+    - Prevent cross-team access: `chown redteam:redteam /home/redteam`, `chown blueteam:blueteam /home/blueteam`
+    - Configure sudo for blueteam: add to sudoers for firewall/service management
+    - _Requirements: 4.3, 4.4, 4.7, 4.8, 4.12_
+  
+  - [ ] 0.6 Install and configure DVWA on VM
+    - Install Apache, PHP, MySQL: `apt install -y apache2 php php-mysql mysql-server`
+    - Download DVWA from github.com/digininja/DVWA
+    - Extract to /var/www/html/dvwa
+    - Create MySQL database with weak credentials (dvwa/password)
+    - Configure DVWA config file with database credentials
+    - Set security level to LOW
+    - Verify DVWA accessible on http://VM_IP/dvwa
+    - _Requirements: 4.9, 4.10, 4.11_
+  
+  - [ ] 0.7 Implement terminal logging to PostgreSQL
+    - Add terminal_sessions and terminal_logs tables to migration script
+    - Insert terminal_sessions record on 'terminal:join'
+    - Update terminal_sessions.disconnected_at on 'disconnect'
+    - Insert terminal_logs record for every 'terminal:input' (direction='in')
+    - Insert terminal_logs record for every 'terminal:output' (direction='out')
+    - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.11, 5.12_
+  
+  - [ ] 0.8 Implement SSH error handling
+    - Add SSH connection failure error handling in SSHProxyManager
+    - Log SSH authentication failures with context
+    - Emit 'terminal:error' event to client on connection failure
+    - Implement maximum session limit (configurable, default 50)
+    - Reject new connections with descriptive error when limit reached
+    - Add session timeout (configurable, default 4 hours)
+    - Clean up stale sessions automatically
+    - _Requirements: 19.11, 19.12_
+  
+  - [ ] 0.9 Implement scoring engine for terminal output
+    - Create `backend/game/ScoringEngine.js` with pattern matching
+    - Define Red Team scoring patterns (network_scan, exploitation, privilege_escalation, data_exfiltration, persistence)
+    - Define Blue Team scoring patterns (intrusion_detected, ip_blocked, malware_removed, system_restored, forensics)
+    - Integrate scoring engine with terminal output stream
+    - Scan each terminal output line for pattern matches
+    - Award points automatically when patterns detected
+    - Insert score_events records for each detection
+    - Broadcast score updates via WebSocket
+    - _Requirements: 10.1, 10.4, 10.9_
+  
+  - [ ] 0.10 Test SSH terminal end-to-end
+    - Start backend server
+    - Open frontend in browser
+    - Join as Red Team player
+    - Verify terminal connects and shows prompt
+    - Type "whoami" and verify output shows "redteam"
+    - Type "ls" and verify output shows files
+    - Verify terminal logs inserted into database
+    - Repeat test for Blue Team player
+    - _Requirements: 3.1-3.15_
+
+- [ ] 0.9 Checkpoint - Verify SSH terminal system works
+  - SSH terminal is THE KEY PIECE. Everything else builds on this.
+  - Ensure all tests pass, ask the user if questions arise.
+
 - [x] 1. Set up Mission Logic Engine foundation
   - Create `backend/game/MissionLogicEngine.js` with round lifecycle management
   - Create `backend/game/TaskDependencyGraph.js` for task dependency tracking
@@ -500,8 +609,85 @@ The implementation uses JavaScript (Node.js) for the backend and TypeScript (Rea
 - [ ] 21. Checkpoint - Verify security, deployment, and VM automation
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 22. Integration and End-to-End Testing
-  - [ ] 22.1 Write end-to-end round simulation test
+- [ ] 22. Deploy Infrastructure (VPS, Nginx, PM2, SSL)
+  - [ ] 22.1 Provision VPS server
+    - Sign up for Hetzner, DigitalOcean, or Vultr
+    - Create VPS with minimum 4 CPU cores, 8GB RAM, 100GB SSD
+    - Select Ubuntu 22.04 LTS as operating system
+    - Note server IP address
+    - SSH into server as root
+    - _Requirements: 6.1, 6.2_
+  
+  - [ ] 22.2 Install required software on VPS
+    - Run: `apt update && apt upgrade -y`
+    - Install Node.js 20: `curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt install -y nodejs`
+    - Install PM2: `npm install -g pm2`
+    - Install Nginx: `apt install -y nginx`
+    - Install Certbot: `apt install -y certbot python3-certbot-nginx`
+    - Install VirtualBox or KVM: `apt install -y virtualbox virtualbox-ext-pack` or `apt install -y qemu-kvm libvirt-daemon-system`
+    - Install PostgreSQL: `apt install -y postgresql postgresql-contrib`
+    - Verify installations: `node --version`, `pm2 --version`, `nginx -v`, `certbot --version`
+    - _Requirements: 6.3, 6.5, 6.6, 6.9_
+  
+  - [ ] 22.3 Configure domain and SSL
+    - Point domain DNS A record to VPS IP address
+    - Wait for DNS propagation (check with `dig yourdomain.com`)
+    - Run Certbot: `certbot --nginx -d yourdomain.com -d www.yourdomain.com`
+    - Verify SSL certificate installed
+    - Test auto-renewal: `certbot renew --dry-run`
+    - _Requirements: 6.4, 6.5, 6.14_
+  
+  - [ ] 22.4 Configure Nginx reverse proxy
+    - Create Nginx config: `/etc/nginx/sites-available/nexusprotocol`
+    - Configure HTTP to HTTPS redirect
+    - Configure frontend proxy to serve React build from /var/www/nexusprotocol/frontend/dist
+    - Configure backend API proxy to http://localhost:3000
+    - Configure WebSocket proxy with upgrade headers for Socket.IO
+    - Enable site: `ln -s /etc/nginx/sites-available/nexusprotocol /etc/nginx/sites-enabled/`
+    - Test config: `nginx -t`
+    - Reload Nginx: `systemctl reload nginx`
+    - _Requirements: 6.6, 6.7, 6.8_
+  
+  - [ ] 22.5 Deploy backend with PM2
+    - Clone repository to /var/www/nexusprotocol
+    - Navigate to backend directory
+    - Install dependencies: `npm ci --only=production`
+    - Create .env file with production values
+    - Start with PM2: `pm2 start index_enhanced.js --name nexus-backend`
+    - Save PM2 process list: `pm2 save`
+    - Configure PM2 startup: `pm2 startup` (follow instructions)
+    - Verify backend running: `pm2 status`
+    - Check logs: `pm2 logs nexus-backend`
+    - _Requirements: 6.9, 6.10, 6.11_
+  
+  - [ ] 22.6 Build and deploy frontend
+    - Navigate to frontend directory
+    - Install dependencies: `npm ci`
+    - Create production .env file with API_URL and WS_URL
+    - Build: `npm run build`
+    - Copy build to Nginx directory: `cp -r dist /var/www/nexusprotocol/frontend/`
+    - Verify frontend accessible at https://yourdomain.com
+    - _Requirements: 6.7_
+  
+  - [ ] 22.7 Configure firewall
+    - Enable UFW: `ufw enable`
+    - Allow SSH: `ufw allow 22/tcp`
+    - Allow HTTP: `ufw allow 80/tcp`
+    - Allow HTTPS: `ufw allow 443/tcp`
+    - Deny all other ports: `ufw default deny incoming`
+    - Verify rules: `ufw status`
+    - _Requirements: 6.12_
+  
+  - [ ] 22.8 Set up VM network isolation
+    - Configure VM network adapter to use internal network
+    - Assign VM IP in 192.168.100.0/24 range
+    - Configure iptables to prevent VM from accessing public internet
+    - Allow VM to communicate with backend server only
+    - Test VM isolation: ping from VM should fail for external IPs
+    - _Requirements: 6.13_
+
+- [ ] 23. Integration and End-to-End Testing
+  - [ ] 23.1 Write end-to-end round simulation test
     - Test complete round from start to finish
     - Test Red Team Initial Access → Escalation → Impact
     - Test Blue Team detection and response
@@ -511,60 +697,60 @@ The implementation uses JavaScript (Node.js) for the backend and TypeScript (Rea
     - Test round completion
     - _Requirements: All requirements_
   
-  - [ ] 22.2 Write integration tests for real-time system
+  - [ ] 23.2 Write integration tests for real-time system
     - Test WebSocket broadcasting with multiple clients
     - Test message ordering and delivery
     - Test reconnection and state synchronization
     - _Requirements: 3.1-3.12_
   
-  - [ ] 22.3 Write integration tests for tool system with real VMs
+  - [ ] 23.3 Write integration tests for tool system with real VMs
     - Test Red Team tools against vulnerable VMs
     - Test Blue Team tools for detection and containment
     - Test validation against real system state
     - _Requirements: 2.1-2.18, 6.1-6.10_
 
-- [ ] 23. Performance Optimization
-  - [ ] 23.1 Optimize database queries
+- [ ] 24. Performance Optimization
+  - [ ] 24.1 Optimize database queries
     - Add indexes for frequently queried columns
     - Implement query result caching for leaderboards
     - Implement prepared statement caching
     - Implement batch inserts for events
     - _Requirements: 5.1, 5.7_
   
-  - [ ] 23.2 Optimize WebSocket communication
+  - [ ] 24.2 Optimize WebSocket communication
     - Implement message batching (max 10ms delay)
     - Implement message compression for large payloads
     - Implement connection pooling
     - _Requirements: 3.1, 3.2, 3.12_
   
-  - [ ] 23.3 Optimize frontend rendering
+  - [ ] 24.3 Optimize frontend rendering
     - Implement WebSocket message throttling
     - Add memoization for expensive calculations
     - Implement virtual scrolling for large lists
     - _Requirements: 3.4, 3.5, 3.6, 3.7_
 
-- [ ] 24. Documentation and Deployment Guide
-  - [ ] 24.1 Create deployment documentation
+- [ ] 25. Documentation and Deployment Guide
+  - [ ] 25.1 Create deployment documentation
     - Document Docker deployment process
     - Document environment variable configuration
     - Document VM setup and configuration
     - Document PostgreSQL setup
     - _Requirements: 7.1-7.10, 8.1-8.10_
   
-  - [ ] 24.2 Create operator guide
+  - [ ] 25.2 Create operator guide
     - Document round management
     - Document emergency procedures
     - Document monitoring and logging
     - Document troubleshooting
     - _Requirements: 15.6, 15.7, 15.8, 15.10_
   
-  - [ ] 24.3 Update API documentation
+  - [ ] 25.3 Update API documentation
     - Document all new API endpoints
     - Document WebSocket protocol
     - Document error responses
     - _Requirements: All requirements_
 
-- [ ] 25. Final Checkpoint - Complete system verification
+- [ ] 26. Final Checkpoint - Complete system verification
   - Run all property-based tests (minimum 100 iterations each)
   - Run all unit tests
   - Run all integration tests
@@ -574,11 +760,14 @@ The implementation uses JavaScript (Node.js) for the backend and TypeScript (Rea
 
 ## Notes
 
+- **CRITICAL**: Task 0 (SSH Terminal System) is THE KEY PIECE that must be built first. Everything else depends on it.
+- The SSH proxy bridges browser terminals to the VM - without it, players cannot interact with the cyber range
 - Tasks marked with `*` are optional property-based and unit tests that can be skipped for faster MVP
 - Each task references specific requirements for traceability
 - Checkpoints ensure incremental validation at logical break points
 - Property tests validate universal correctness properties across all inputs
 - Unit tests validate specific examples, edge cases, and integration points
-- The implementation follows a phased approach: core logic → tools → real-time → visuals → database → validation → deployment → hardening
+- The implementation follows a phased approach: **SSH terminal first** → core logic → tools → real-time → visuals → database → validation → deployment → hardening
 - All code should maintain consistency with existing codebase (JavaScript for backend, TypeScript for frontend)
 - Integration tests with real VMs should be run in isolated cyber range environment (192.168.100.0/24)
+- Infrastructure deployment (Task 22) requires a dedicated VPS with root access, not serverless platforms

@@ -1,265 +1,298 @@
 /**
  * NEXUS PROTOCOL - Global Audio Controls Styles
- * Cyberpunk-themed floating audio controls
+ * YouTube-style audio control with integrated volume slider
+ * Version: 4.0.0
+ * Last Updated: March 4, 2026
  */
 
-/* Main Audio Controls Container */
-.audio-controls {
+/* Audio Controls Wrapper */
+.audio-controls-wrapper {
   position: fixed;
-  top: 20px;
+  bottom: 20px;
   right: 20px;
-  z-index: 9999;
+  z-index: 1000;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 10px;
-}
-
-.audio-controls-container {
-  display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 255, 255, 0.3);
-  border-radius: 25px;
-  padding: 8px 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-  transition: all 0.3s ease;
 }
 
-.audio-controls-container:hover {
-  border-color: rgba(0, 255, 255, 0.6);
-  box-shadow: 0 6px 25px rgba(0, 255, 255, 0.2);
-}
-
-/* Main Mute/Unmute Button */
-.audio-main-btn {
-  width: 40px;
-  height: 40px;
-  border: 2px solid;
+/* Audio Control Button */
+.audio-control-btn {
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.9);
-  cursor: pointer;
+  background: rgba(10, 10, 15, 0.9);
+  border: 2px solid rgba(139, 92, 246, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.audio-main-btn.unmuted.playing {
-  border-color: #00ff00;
-  color: #00ff00;
-  animation: audioPlaying 2s ease-in-out infinite;
-}
-
-.audio-main-btn.unmuted.paused {
-  border-color: #ffaa00;
-  color: #ffaa00;
-}
-
-.audio-main-btn.muted {
-  border-color: #ff4444;
-  color: #ff4444;
-}
-
-.audio-main-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 15px currentColor;
-}
-
-.audio-icon {
-  font-size: 1.2rem;
-}
-
-/* Volume Toggle Button */
-.volume-toggle-btn {
-  width: 32px;
-  height: 32px;
-  border: 1px solid rgba(0, 255, 255, 0.5);
-  border-radius: 50%;
-  background: rgba(0, 255, 255, 0.1);
-  color: #00ffff;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: visible;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-.volume-toggle-btn:hover {
-  background: rgba(0, 255, 255, 0.2);
-  transform: scale(1.05);
-}
-
-/* Volume Slider */
-.volume-slider-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 8px;
-}
-
-.volume-slider {
-  width: 80px;
-  height: 4px;
-  background: rgba(0, 255, 255, 0.2);
-  border-radius: 2px;
-  outline: none;
-  cursor: pointer;
-  -webkit-appearance: none;
-}
-
-.volume-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 12px;
-  height: 12px;
-  background: #00ffff;
-  border-radius: 50%;
-  cursor: pointer;
-  box-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
-}
-
-.volume-slider::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
-  background: #00ffff;
-  border-radius: 50%;
-  cursor: pointer;
-  border: none;
-  box-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
-}
-
-.volume-display {
-  color: #00ffff;
-  font-family: 'Orbitron', monospace;
-  font-size: 0.7rem;
-  font-weight: 600;
-  min-width: 30px;
-  text-align: center;
-}
-
-/* Audio Wave Indicator */
-.audio-status {
-  display: flex;
-  align-items: center;
-  height: 20px;
-}
-
-.audio-wave {
-  display: flex;
-  align-items: flex-end;
-  gap: 2px;
-  height: 16px;
-}
-
-.audio-wave span {
-  width: 2px;
-  background: linear-gradient(to top, #00ffff, #0080ff);
-  border-radius: 1px;
-  animation: audioWave 1.5s ease-in-out infinite;
-}
-
-.audio-wave span:nth-child(1) {
-  height: 6px;
-  animation-delay: 0s;
-}
-
-.audio-wave span:nth-child(2) {
-  height: 12px;
-  animation-delay: 0.2s;
-}
-
-.audio-wave span:nth-child(3) {
-  height: 8px;
-  animation-delay: 0.4s;
-}
-
-/* Audio Info Tooltip */
-.audio-info {
+.audio-control-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.2), transparent);
   opacity: 0;
-  transform: translateY(-10px);
-  transition: all 0.3s ease;
-  pointer-events: none;
+  transition: opacity 0.3s ease;
+  border-radius: 50%;
 }
 
-.audio-controls:hover .audio-info {
+.audio-control-btn:hover {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.8);
+  transform: scale(1.1);
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+}
+
+.audio-control-btn:hover::before {
   opacity: 1;
+}
+
+.audio-control-btn:active {
+  transform: scale(0.95);
+}
+
+/* Audio Icon */
+.audio-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8b5cf6;
+  transition: color 0.3s ease;
+}
+
+.audio-control-btn:hover .audio-icon {
+  color: #a855f7;
+}
+
+.audio-control-btn.muted .audio-icon {
+  color: #606070;
+}
+
+.audio-control-btn.muted:hover .audio-icon {
+  color: #808080;
+}
+
+/* Tooltip */
+.audio-tooltip {
+  position: absolute;
+  bottom: 60px;
+  right: 0;
+  background: rgba(10, 10, 15, 0.95);
+  border: 1px solid rgba(139, 92, 246, 0.5);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: #ffffff;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.05em;
+}
+
+.audio-control-btn:hover .audio-tooltip {
+  opacity: 1;
+}
+
+/* Volume Slider Panel - YouTube Style */
+.volume-slider-panel {
+  position: absolute;
+  bottom: 60px;
+  right: 0;
+  width: 48px;
+  height: 120px;
+  background: rgba(10, 10, 15, 0.95);
+  border: 2px solid rgba(139, 92, 246, 0.5);
+  border-radius: 24px;
+  padding: 12px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.volume-slider-panel.visible {
+  opacity: 1;
+  pointer-events: all;
   transform: translateY(0);
 }
 
-.audio-info-content {
-  background: rgba(0, 0, 0, 0.9);
-  border: 1px solid rgba(0, 255, 255, 0.3);
-  border-radius: 8px;
-  padding: 8px 12px;
-  text-align: right;
-  backdrop-filter: blur(10px);
+/* Volume Slider Track */
+.volume-slider-track {
+  position: relative;
+  width: 4px;
+  height: 80px;
+  background: rgba(139, 92, 246, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
 }
 
-.audio-status-text {
-  color: #00ffff;
-  font-family: 'Orbitron', monospace;
+/* Volume Fill */
+.volume-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(to top, #8b5cf6, #a855f7);
+  border-radius: 2px;
+  transition: height 0.1s ease;
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
+}
+
+/* Volume Slider Input */
+.volume-slider-input {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  transform-origin: center;
+  transform: translateX(-50%) rotate(-90deg);
+}
+
+.volume-slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.volume-slider-input::-webkit-slider-thumb:hover {
+  background: #a855f7;
+  transform: scale(1.2);
+}
+
+.volume-slider-input::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.volume-slider-input::-moz-range-thumb:hover {
+  background: #a855f7;
+  transform: scale(1.2);
+}
+
+/* Volume Percentage Display */
+.volume-percentage {
+  font-family: 'JetBrains Mono', monospace;
   font-size: 0.7rem;
+  color: #8b5cf6;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.05em;
 }
 
-.audio-controls-hint {
-  color: rgba(255, 255, 255, 0.7);
-  font-family: 'Orbitron', monospace;
-  font-size: 0.6rem;
-  margin-top: 2px;
-}
-
-/* Animations */
-@keyframes audioPlaying {
-  0%, 100% {
-    box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+/* Pulse effect when audio is playing */
+@keyframes audioPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7);
   }
-  50% {
-    box-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
+  70% {
+    box-shadow: 0 0 0 10px rgba(139, 92, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
   }
 }
 
-@keyframes audioWave {
-  0%, 100% {
-    transform: scaleY(1);
-    opacity: 0.7;
-  }
-  50% {
-    transform: scaleY(1.5);
-    opacity: 1;
-  }
+.audio-control-btn.playing {
+  animation: audioPulse 2s infinite;
+}
+
+/* Muted State */
+.audio-control-btn.muted {
+  background: rgba(10, 10, 15, 0.7);
+  border-color: rgba(96, 96, 112, 0.5);
+  animation: none;
+}
+
+.audio-control-btn.muted:hover {
+  background: rgba(96, 96, 112, 0.2);
+  border-color: rgba(96, 96, 112, 0.8);
+  box-shadow: 0 4px 16px rgba(96, 96, 112, 0.3);
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .audio-controls {
-    top: 15px;
+  .audio-controls-wrapper {
+    bottom: 15px;
     right: 15px;
   }
-  
-  .audio-controls-container {
+
+  .audio-control-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .audio-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .volume-slider-panel {
+    width: 44px;
+    height: 110px;
+    bottom: 55px;
+  }
+
+  .volume-slider-track {
+    height: 70px;
+  }
+
+  .audio-tooltip {
+    font-size: 0.7rem;
     padding: 6px 10px;
   }
-  
-  .audio-main-btn {
-    width: 36px;
-    height: 36px;
-  }
-  
-  .volume-toggle-btn {
-    width: 28px;
-    height: 28px;
-  }
-  
-  .volume-slider {
-    width: 60px;
-  }
-  
-  .audio-info {
-    display: none;
-  }
+}
+
+/* Accessibility - Keyboard Focus */
+.audio-control-btn:focus-visible {
+  outline: 2px solid #8b5cf6;
+  outline-offset: 2px;
+}
+
+.volume-slider-input:focus-visible {
+  outline: none;
+}
+
+.volume-slider-input:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.3);
+}
+
+.volume-slider-input:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.3);
 }

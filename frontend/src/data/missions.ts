@@ -10,20 +10,108 @@ export interface MissionObjective {
     required: boolean;
     hint?: string;
     maxAttempts?: number;
+    category?: string;
 }
 
 export interface MissionData {
     id: string;
     name: string;
     description: string;
-    difficulty: 'Easy' | 'Medium' | 'Hard';
+    difficulty: 'Easy' | 'Medium' | 'Hard' | 'Beginner';
     duration: number; // in seconds
     traceThreshold: number; // 0-100
     phases: number;
     objectives: MissionObjective[];
+    target?: string;
+    targetDomain?: string;
 }
 
 export const MISSIONS: MissionData[] = [
+    {
+        id: "college-event-ctf",
+        name: "College Event Website Under Attack",
+        description: "A college event website is vulnerable to multiple attacks. Red Team must exploit vulnerabilities while Blue Team defends and responds.",
+        difficulty: "Beginner",
+        duration: 2700, // 45 minutes
+        traceThreshold: 30,
+        phases: 5,
+        target: "172.25.0.10",
+        targetDomain: "college-event.local",
+        objectives: [
+            {
+                id: 1,
+                role: "Blue Team",
+                title: "Log Analysis",
+                description: "Identify suspicious login attempts from system logs",
+                prompt: "Analyze the system logs to find suspicious login patterns",
+                flag: "ANALYSIS",
+                points: 75,
+                completed: false,
+                required: true,
+                category: "ANALYSIS"
+            },
+            {
+                id: 2,
+                role: "Blue Team",
+                title: "Patch SQL Injection",
+                description: "Implement prepared statements to fix the SQL injection vulnerability",
+                prompt: "Fix the SQL injection vulnerability in the login system",
+                flag: "REMEDIATION",
+                points: 150,
+                completed: false,
+                required: true,
+                category: "REMEDIATION"
+            },
+            {
+                id: 3,
+                role: "Blue Team",
+                title: "Fix XSS Vulnerability",
+                description: "Implement input sanitization to prevent XSS attacks",
+                prompt: "Sanitize user inputs to prevent cross-site scripting",
+                flag: "REMEDIATION",
+                points: 125,
+                completed: false,
+                required: true,
+                category: "REMEDIATION"
+            },
+            {
+                id: 4,
+                role: "Blue Team",
+                title: "Create Basic WAF Rule",
+                description: "Block suspicious patterns using iptables or ModSecurity",
+                prompt: "Create firewall rules to block malicious traffic patterns",
+                flag: "DEFENSE",
+                points: 100,
+                completed: false,
+                required: true,
+                category: "DEFENSE"
+            },
+            {
+                id: 5,
+                role: "Blue Team",
+                title: "Incident Report",
+                description: "Document the attack timeline and prevention measures",
+                prompt: "Create a comprehensive incident report",
+                flag: "ANALYSIS",
+                points: 100,
+                completed: false,
+                required: true,
+                category: "ANALYSIS"
+            },
+            {
+                id: 6,
+                role: "Blue Team",
+                title: "Security Hardening",
+                description: "Apply additional security measures to prevent future attacks",
+                prompt: "Implement security best practices and hardening measures",
+                flag: "DEFENSE",
+                points: 50,
+                completed: false,
+                required: false,
+                category: "DEFENSE"
+            }
+        ]
+    },
     {
         id: "stage-1",
         name: "Stage 1: The Perimeter Breach",
@@ -32,6 +120,8 @@ export const MISSIONS: MissionData[] = [
         duration: 900, // 15 minutes
         traceThreshold: 30,
         phases: 1,
+        target: "192.168.1.100",
+        targetDomain: "target-site.com",
         objectives: [
             {
                 id: 101,
@@ -42,7 +132,8 @@ export const MISSIONS: MissionData[] = [
                 flag: "CTF{B4ckup_Exposur3_2026}",
                 points: 30, // Stage 1 Reward
                 completed: false,
-                required: true
+                required: true,
+                category: "RECON"
             },
             {
                 id: 102,
@@ -53,7 +144,8 @@ export const MISSIONS: MissionData[] = [
                 flag: "CVE-2024-8892",
                 points: 30, // Stage 1 Reward
                 completed: false,
-                required: true
+                required: true,
+                category: "ANALYSIS"
             }
         ]
     },
@@ -65,6 +157,8 @@ export const MISSIONS: MissionData[] = [
         duration: 1200, // 20 minutes
         traceThreshold: 50,
         phases: 1,
+        target: "192.168.1.101",
+        targetDomain: "internal-server.local",
         objectives: [
             {
                 id: 201,
@@ -75,7 +169,8 @@ export const MISSIONS: MissionData[] = [
                 flag: "TOKEN_SQLI_MASTER_99",
                 points: 40, // Stage 2 Reward
                 completed: false,
-                required: true
+                required: true,
+                category: "EXPLOIT"
             },
             {
                 id: 202,
@@ -86,7 +181,8 @@ export const MISSIONS: MissionData[] = [
                 flag: "ls -la",
                 points: 40, // Stage 2 Reward
                 completed: false,
-                required: true
+                required: true,
+                category: "ANALYSIS"
             }
         ]
     },
@@ -98,6 +194,8 @@ export const MISSIONS: MissionData[] = [
         duration: 1500, // 25 minutes
         traceThreshold: 80,
         phases: 1,
+        target: "192.168.1.102",
+        targetDomain: "data-server.local",
         objectives: [
             {
                 id: 301,
@@ -108,7 +206,8 @@ export const MISSIONS: MissionData[] = [
                 flag: "S4lty_D0g_2026",
                 points: 30, // Stage 3 Reward
                 completed: false,
-                required: true
+                required: true,
+                category: "RECON"
             },
             {
                 id: 302,
@@ -119,7 +218,8 @@ export const MISSIONS: MissionData[] = [
                 flag: "4412",
                 points: 30, // Stage 3 Reward
                 completed: false,
-                required: true
+                required: true,
+                category: "DEFENSE"
             }
         ]
     }

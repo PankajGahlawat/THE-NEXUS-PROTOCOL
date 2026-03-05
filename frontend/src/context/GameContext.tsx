@@ -26,7 +26,7 @@ interface Objective {
   completed: boolean;
   required: boolean;
   // Enhanced fields
-  role?: 'Red Team' | 'Blue Team' | 'Analyst';
+  role?: 'Red Team' | 'Blue Team';
   title?: string;
   prompt?: string;
   flag?: string;
@@ -56,6 +56,7 @@ interface Broadcast {
 interface GameState {
   isAuthenticated: boolean;
   currentTeam: string | null;
+  teamType?: 'red' | 'blue';
   selectedAgent: string | null;
   currentMission: Mission | null;
   missionProgress: number;
@@ -92,6 +93,7 @@ interface GameContextType {
 const initialGameState: GameState = {
   isAuthenticated: false,
   currentTeam: null,
+  teamType: undefined,
   selectedAgent: null,
   currentMission: null,
   missionProgress: 0,
@@ -113,17 +115,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [gameState, setGameState] = useState<GameState>(initialGameState);
 
   const login = useCallback(async (teamName: string, accessCode: string): Promise<{ success: boolean; message?: string }> => {
-    // Demo Login Bypass
-    if (teamName === 'Ghost' && accessCode === '1234') {
-      setGameState(prev => ({
-        ...prev,
-        isAuthenticated: true,
-        currentTeam: teamName,
-        sessionToken: 'demo-session-token-2026',
-      }));
-      return { success: true };
-    }
-
     try {
       const response = await fetch(`http://${window.location.hostname}:3000/api/v1/auth/login`, {
         method: 'POST',
@@ -135,10 +126,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       if (response.ok) {
         const data = await response.json();
+        
+        // Get team type from backend response
+        const teamType = data.teamType || data.team_type || 'red'; // Default to red if not specified
+        
         setGameState(prev => ({
           ...prev,
           isAuthenticated: true,
           currentTeam: teamName,
+          teamType: teamType,
           sessionToken: data.sessionToken,
         }));
         return { success: true };
@@ -148,9 +144,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('Login failed:', error);
-      // Optional: Fallback for any other credentials if backend is down? 
-      // For now, only explicit demo credentials work without backend.
-      return { success: false, message: 'Connection failed. Please check if server is running.' };
+      return { success: false, message: 'Connection failed. Try RedTeam/redteam123 or BlueTeam/blueteam123' };
     }
   }, []);
 

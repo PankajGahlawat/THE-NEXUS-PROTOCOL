@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Follow Prompt Exactly",
+  "description": "Reminds the agent to do only what is requested in the prompt, nothing extra, and complete all tasks in detail without errors",
+  "version": "1",
+  "when": {
+    "type": "promptSubmit"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "CRITICAL REMINDER: Do ONLY what the user explicitly requested in their prompt. Do not add extra features, suggestions, or improvements unless specifically asked. Complete all requested tasks thoroughly and in detail without any errors. Stay focused on the exact requirements stated."
+  }
+}
