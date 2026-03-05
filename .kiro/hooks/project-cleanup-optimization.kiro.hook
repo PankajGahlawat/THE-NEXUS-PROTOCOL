@@ -1,0 +1,15 @@
+{
+  "enabled": false,
+  "name": "Project Cleanup & Optimization",
+  "description": "Disabled to prevent recursive cleanup loops",
+  "version": "1",
+  "when": {
+    "type": "promptSubmit"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Review the entire project and perform comprehensive cleanup: 1) Update all project files, folders, programs and code as needed, 2) Remove all unnecessary code, programs, files, and folders throughout the project, 3) Merge files where possible and appropriate, 4) Remove all empty files and folders, 5) Clean up anything not required for this game, 6) Perform this task in detail for every file, folder, and program with thorough examination of every component"
+  },
+  "workspaceFolderName": "THE-NEXUS-PROTOCOL",
+  "shortName": "project-cleanup-optimization"
+}

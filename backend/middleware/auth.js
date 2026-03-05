@@ -27,12 +27,6 @@ class AuthMiddleware {
     this.TOKEN_EXPIRY = '2h';
   }
 
-  generateSecureSecret() {
-    // This method is no longer used - JWT_SECRET must be provided via environment
-    // Kept for backward compatibility
-    return require('crypto').randomBytes(64).toString('hex');
-  }
-
   // Rate limiting configurations
   getAuthLimiter() {
     return rateLimit({
