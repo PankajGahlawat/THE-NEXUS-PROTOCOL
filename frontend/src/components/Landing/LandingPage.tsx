@@ -18,7 +18,7 @@ export default function LandingPage() {
   const [progress, setProgress] = useState(0); // Progress value 0-100
   const [showContent, setShowContent] = useState(false);
 
-  const { audioStarted, isMuted, toggleMute, playSound } = useAudio();
+  const { audioStarted, playSound } = useAudio();
 
   const textSequences = [
     'initializing nexus protocol systems...',
@@ -185,7 +185,9 @@ export default function LandingPage() {
           </div>
         </div>
         <div className="hero-content">
-          <h1 className="glitch-text" data-text="THE PROTOCOL">THE PROTOCOL</h1>
+          <h1 className="glitch-text" data-text="THE">THE</h1>
+          <h1 className="glitch-text" data-text="NEXUS">NEXUS</h1>
+          <h1 className="glitch-text" data-text="PROTOCOL">PROTOCOL</h1>
           <p className="hero-subtitle">CYBER HEIST SIMULATION</p>
           <div className="hero-cta">
             <button className="primary-btn nexus-initialize" onClick={handleEnterGame}>

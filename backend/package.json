@@ -11,9 +11,7 @@
     "test": "jest --coverage",
     "test:watch": "jest --watch",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "seed": "node scripts/seed.js",
-    "cleanup": "node scripts/cleanup.js"
+    "lint:fix": "eslint . --fix"
   },
   "keywords": [
     "nexus",

@@ -409,6 +409,71 @@ class Database {
     if (average >= 1.5) return 'D-RANK';
     return 'F-RANK';
   }
+  // Admin methods
+  getActivityFeed(limit = 50) {
+    const activities = [];
+
+    // Add login/session activities
+    const sessions = Array.from(this.sessions.values())
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, limit);
+
+    sessions.forEach(session => {
+      const team = this.teams.get(session.teamId);
+      if (team) {
+        activities.push({
+          type: 'team_login',
+          team: team.teamName,
+          mission: 'N/A',
+          agent: session.selectedAgent || 'Not Selected',
+          data: {
+            sessionId: session.id,
+            status: session.authenticated ? 'active' : 'inactive'
+          },
+          timestamp: session.createdAt
+        });
+      }
+    });
+
+    // Add mission instances
+    const instances = Array.from(this.missionInstances.values())
+      .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
+      .slice(0, limit);
+
+    instances.forEach(instance => {
+      const team = this.teams.get(instance.teamId);
+      if (team) {
+        activities.push({
+          type: instance.status === 'completed' ? 'mission_completed' : 'mission_start',
+          team: team.teamName,
+          mission: instance.missionId,
+          agent: instance.selectedAgent || 'Unknown',
+          data: {
+            score: instance.finalScore || 0,
+            rank: instance.rank || 'F-RANK',
+            objectiveId: instance.objectives?.filter(o => o.completed).length || 0,
+            reward: instance.finalScore || 0
+          },
+          timestamp: instance.completedAt || instance.startTime
+        });
+      }
+    });
+
+    // Sort all activities by timestamp
+    activities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    return activities.slice(0, limit);
+  }
+
+  getTeams() {
+    return Array.from(this.teams.values()).map(team => ({
+      teamName: team.teamName,
+      score: team.totalScore,
+      mission: team.totalMissions,
+      lastActive: team.lastActive,
+      status: 'active'
+    }));
+  }
 
   // Utility methods
   generateId() {

@@ -21,6 +21,10 @@ This folder contains all project documentation organized by category.
 
 ### 📄 Root Documentation
 - QUICK_START.md - Quick start guide for developers
+- ADMIN_ACCESS.md - Admin dashboard access and password
+- ADMIN_PANEL_INTEGRATION.md - Admin panel real-time data integration
+- NETWORK_ACCESS.md - Network access configuration for other devices
+- PROJECT_CLEANUP_SUMMARY.md - Project cleanup and optimization summary
 
 ## Main Project READMEs
 
