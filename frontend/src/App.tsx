@@ -20,6 +20,7 @@ import MissionBriefing from './components/Mission/MissionBriefing';
 import MissionUI from './components/Mission/MissionUI';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import SSHTerminal from './components/Terminal/SSHTerminal';
+import HackLab from './components/HackLab/HackLab';
 import TerminalMonitor from './components/Admin/TerminalMonitor';
 import AdminDashboardFull from './components/Admin/AdminDashboardFull';
 import Leaderboard from './components/Game/Leaderboard';
@@ -62,6 +63,9 @@ function App() {
 
                   {/* SSH Terminal Route */}
                   <Route path="/terminal" element={<SSHTerminal />} />
+
+                  {/* HackLab Split-Screen Route */}
+                  <Route path="/hacklab" element={<HackLab />} />
 
                   {/* Leaderboard Route */}
                   <Route path="/leaderboard" element={<Leaderboard />} />

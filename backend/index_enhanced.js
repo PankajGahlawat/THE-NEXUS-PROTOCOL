@@ -18,6 +18,7 @@ const database = require('./models/database'); // Use in-memory database
 const EnhancedGameEngine = require('./game/EnhancedGameEngine');
 const AuthMiddleware = require('./middleware/auth');
 const WebSocketMiddleware = require('./middleware/websocket');
+const TerminalService = require('./services/terminalService');
 
 const app = express();
 const server = http.createServer(app);
@@ -52,7 +53,7 @@ const io = socketIo(server, {
 const PORT = process.env.PORT || 3000;
 
 // Initialize enhanced systems
-let gameEngine, authMiddleware, wsMiddleware;
+let gameEngine, authMiddleware, wsMiddleware, terminalService;
 
 // Create lazy middleware wrappers that will work before initialization
 const auth = {
@@ -109,6 +110,10 @@ async function initializeServer() {
     authMiddleware = new AuthMiddleware(database);
     wsMiddleware = new WebSocketMiddleware(database, authMiddleware);
     console.log('✅ Security middleware initialized');
+
+    // Initialize terminal service
+    terminalService = new TerminalService();
+    console.log('✅ Terminal service initialized');
 
   } catch (error) {
     console.error('❌ Server initialization failed:', error);
@@ -590,7 +595,101 @@ async function startServer() {
     // Set up WebSocket handling after initialization
     io.use(wsMiddleware.authenticateSocket());
     io.use(wsMiddleware.rateLimitMiddleware());
-    io.on('connection', wsMiddleware.handleConnection(io));
+    io.on('connection', (socket) => {
+      // Delegate to existing WebSocket middleware
+      wsMiddleware.handleConnection(io)(socket);
+
+      // ── Terminal WebSocket Events ──
+      socket.on('terminal:spawn', (data, callback) => {
+        try {
+          const { targetUrl } = data;
+          const session = terminalService.spawnSession(
+            socket.teamId,
+            socket.teamName,
+            targetUrl
+          );
+          console.log(`🖥️  Terminal spawned: ${socket.teamName} → ${targetUrl}`);
+
+          // Send welcome message
+          const welcome = [
+            '',
+            '\x1b[1;36m╔══════════════════════════════════════════════════╗',
+            '║          NEXUS PROTOCOL — SECURE TERMINAL         ║',
+            '╚══════════════════════════════════════════════════════╝\x1b[0m',
+            '',
+            `\x1b[32m  Agent:\x1b[0m    ${socket.teamName}`,
+            `\x1b[32m  Target:\x1b[0m   \x1b[36m${targetUrl}\x1b[0m`,
+            `\x1b[32m  Session:\x1b[0m  ${session.sessionId}`,
+            '',
+            '  Type \x1b[1;33mhelp\x1b[0m for available commands.',
+            '',
+          ].join('\r\n');
+
+          socket.emit('terminal:output', {
+            sessionId: session.sessionId,
+            data: welcome
+          });
+
+          callback?.({ success: true, sessionId: session.sessionId });
+        } catch (error) {
+          callback?.({
+            success: false,
+            error: error.message
+          });
+        }
+      });
+
+      socket.on('terminal:input', async (data) => {
+        try {
+          const { sessionId, command } = data;
+
+          // Execute the command
+          const output = await terminalService.executeCommand(
+            socket.teamId,
+            sessionId,
+            command
+          );
+
+          // Get the session for prompt
+          const sessionKey = `${socket.teamId}:${sessionId}`;
+          const session = terminalService.sessions.get(sessionKey);
+          const prompt = session
+            ? `\x1b[1;32m${session.env.USER}@nexus\x1b[0m:\x1b[1;34m~\x1b[0m$ `
+            : '$ ';
+
+          // Send output back
+          let response = '';
+          if (output) {
+            response = output + '\r\n';
+          }
+          response += prompt;
+
+          socket.emit('terminal:output', {
+            sessionId,
+            data: response
+          });
+        } catch (error) {
+          socket.emit('terminal:output', {
+            sessionId: data.sessionId,
+            data: `\x1b[31mError: ${error.message}\x1b[0m\r\n$ `
+          });
+        }
+      });
+
+      socket.on('terminal:kill', (data) => {
+        const { sessionId } = data;
+        terminalService.killSession(socket.teamId, sessionId);
+        console.log(`🖥️  Terminal killed: ${socket.teamName}/${sessionId}`);
+      });
+
+      // Clean up terminal sessions on disconnect
+      socket.on('disconnect', () => {
+        const sessions = terminalService.getTeamSessions(socket.teamId);
+        sessions.forEach(s => {
+          terminalService.killSession(socket.teamId, s.sessionId);
+        });
+      });
+    });
     
     // Set up error handler after initialization
     if (!errorHandlerSet) {

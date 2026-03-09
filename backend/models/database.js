@@ -475,6 +475,47 @@ class Database {
     }));
   }
 
+  // Compatibility methods (expected by index_enhanced.js)
+  async query(sql) {
+    // In-memory DB doesn't use SQL, but return a truthy result for health checks
+    return [{ health: 1 }];
+  }
+
+  async cleanupExpiredSessions() {
+    const now = new Date();
+    let cleaned = 0;
+    for (const [sessionId, session] of this.sessions.entries()) {
+      if (new Date(session.expiresAt) <= now) {
+        this.sessions.delete(sessionId);
+        cleaned++;
+      }
+    }
+    return cleaned;
+  }
+
+  async cleanupOldMissions(days = 30) {
+    const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    let cleaned = 0;
+    for (const [id, instance] of this.missionInstances.entries()) {
+      if (new Date(instance.startTime) < cutoff) {
+        this.missionInstances.delete(id);
+        cleaned++;
+      }
+    }
+    return cleaned;
+  }
+
+  async close() {
+    // Nothing to close for in-memory DB
+    this.teams.clear();
+    this.sessions.clear();
+    this.missions.clear();
+    this.missionInstances.clear();
+    this.performanceLogs.clear();
+    this.hexShards.clear();
+    this.achievements.clear();
+  }
+
   // Utility methods
   generateId() {
     return 'id_' + Math.random().toString(36).substring(2, 16) + Date.now().toString(36);

@@ -48,3 +48,8 @@ frontend_start.log
 # NYC coverage
 .nyc_output/
 coverage/
+
+# Large zip files
+frontend/public/rounds/*.zip
+
+rounds/*.zip
