@@ -3,19 +3,22 @@ title Nexus Protocol - Stopping All Servers
 color 0C
 
 echo.
-echo  Stopping all Nexus Protocol servers...
+echo  ╔═══════════════════════════════════════════════════════╗
+echo  ║        NEXUS PROTOCOL - STOPPING ALL SERVERS          ║
+echo  ╚═══════════════════════════════════════════════════════╝
 echo.
 
-:: Kill all node processes on known ports
-for %%p in (3000 3001 3002 3003 5173 5175 5176 5177) do (
-    for /f "tokens=5" %%a in ('netstat -aon ^| findstr :%%p ^| findstr LISTENING') do (
+:: Kill by named window titles first (cleanest)
+taskkill /FI "WINDOWTITLE eq NexusProtocol-Backend" /F >nul 2>&1
+taskkill /FI "WINDOWTITLE eq NexusProtocol-Frontend" /F >nul 2>&1
+taskkill /FI "WINDOWTITLE eq Round1-Vidyatech" /F >nul 2>&1
+taskkill /FI "WINDOWTITLE eq Round1-Monitor" /F >nul 2>&1
+
+:: Kill by port as fallback
+for %%p in (3000 5173 5000 8080) do (
+    for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr :%%p ^| findstr LISTENING') do (
         taskkill /PID %%a /F >nul 2>&1
     )
-)
-
-:: Kill Python (NexusCore on 7007)
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr :7007 ^| findstr LISTENING') do (
-    taskkill /PID %%a /F >nul 2>&1
 )
 
 echo  All servers stopped.

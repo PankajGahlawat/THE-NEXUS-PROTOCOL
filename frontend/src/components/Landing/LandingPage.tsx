@@ -18,7 +18,7 @@ export default function LandingPage() {
   const [progress, setProgress] = useState(0); // Progress value 0-100
   const [showContent, setShowContent] = useState(false);
 
-  const { audioStarted, playSound } = useAudio();
+  const { audioStarted, playSound, startAudio } = useAudio();
 
   const textSequences = [
     'initializing nexus protocol systems...',
@@ -85,6 +85,7 @@ export default function LandingPage() {
 
   const handleEnterGame = () => {
     playSound('click');
+    startAudio();
     setShowContent(false);
 
     // Check if trailer has been shown
@@ -140,7 +141,7 @@ export default function LandingPage() {
             <span className="file-path">{currentFile}</span>
           </div>
         </div>
-        <div className="click-prompt" onClick={() => { setLoading(false); setTimeout(() => setShowContent(true), 100); }}>
+        <div className="click-prompt" onClick={() => { setLoading(false); startAudio(); setTimeout(() => setShowContent(true), 100); }}>
           <span className="pulse-icon">◉</span> CLICK TO CONTINUE
         </div>
       </div>

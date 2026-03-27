@@ -1,4 +1,4 @@
-/**
+﻿/**
  * NEXUS PROTOCOL - Enhanced Game Context
  * Complete game state management with real-time mechanics
  * Version: 2.1.0
@@ -8,6 +8,8 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import { MISSIONS } from '../data/missions';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+const WS_BASE = import.meta.env.VITE_WS_URL || '';
 interface Tool {
   id: string;
   name: string;
@@ -116,7 +118,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (teamName: string, accessCode: string): Promise<{ success: boolean; message?: string }> => {
     try {
-      const response = await fetch(`http://${window.location.hostname}:3000/api/v1/auth/login`, {
+      const response = await fetch(`${API_BASE}/api/v1/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -144,7 +146,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('Login failed:', error);
-      return { success: false, message: 'Connection failed. Try RedTeam/redteam123 or BlueTeam/blueteam123' };
+      return { success: false, message: 'Connection failed. Please check your network and try again.' };
     }
   }, []);
 
@@ -162,7 +164,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           headers['Authorization'] = `Bearer ${gameState.sessionToken}`;
         }
 
-        const res = await fetch(`http://${window.location.hostname}:3000/api/v1/game/state`, { headers });
+        const res = await fetch(`${API_BASE}/api/v1/game/state`, { headers });
         if (res.ok) {
           const response = await res.json();
           if (response.success) {
@@ -307,7 +309,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
 
       // Fallback to backend fetch
-      const missionResponse = await fetch(`http://${window.location.hostname}:3000/api/v1/missions`);
+      const missionResponse = await fetch(`${API_BASE}/api/v1/missions`);
       const missionsData = await missionResponse.json();
       const mission = missionsData.data.missions.find((m: any) => m.id === missionId);
 
@@ -316,11 +318,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
 
       // Fetch available tools
-      const toolsResponse = await fetch(`http://${window.location.hostname}:3000/api/v1/tools`);
+      const toolsResponse = await fetch(`${API_BASE}/api/v1/tools`);
       const toolsData = await toolsResponse.json();
 
       // Start mission on backend
-      const startResponse = await fetch(`http://${window.location.hostname}:3000/api/v1/missions/start`, {
+      const startResponse = await fetch(`${API_BASE}/api/v1/missions/start`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -383,7 +385,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const completeObjective = useCallback(async (objectiveId: number) => {
     try {
-      const response = await fetch(`http://${window.location.hostname}:3000/api/v1/missions/objective/complete`, {
+      const response = await fetch(`${API_BASE}/api/v1/missions/objective/complete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -437,7 +439,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         return false;
       }
 
-      const response = await fetch(`http://${window.location.hostname}:3000/api/v1/tools/use`, {
+      const response = await fetch(`${API_BASE}/api/v1/tools/use`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -542,7 +544,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (gameState.websocket) return;
 
     try {
-      const ws = new WebSocket(`ws://${window.location.hostname}:3000`);
+      const ws = new WebSocket(`${WS_BASE}`);
 
       ws.onopen = () => {
         console.log('WebSocket connected');

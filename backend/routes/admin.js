@@ -9,7 +9,7 @@ module.exports = (database) => {
         const token = authHeader && authHeader.split(' ')[1];
 
         // Accept if it's the special Admin Code (in a real app, this would be a signed JWT)
-        if (token === 'NEXUS-MASTER-ADMIN-8821') {
+        if (token === 'ADMIN-8821') {
             return next();
         }
 

@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
+
+const API_BASE = import.meta.env.VITE_API_URL || '';
 import { useAudio } from '../../context/AudioContext';
 
 interface ActivityLog {
@@ -49,7 +51,7 @@ const AdminDashboard: React.FC = () => {
 
         try {
             // Test auth by fetching activity
-            const response = await fetch(`http://${window.location.hostname}:3000/api/v1/admin/activity?limit=1`, {
+            const response = await fetch(`${API_BASE}/api/v1/admin/activity?limit=1`, {
                 headers: {
                     'Authorization': `Bearer ${adminCode}`
                 }
@@ -78,7 +80,7 @@ const AdminDashboard: React.FC = () => {
     const sendBroadcast = async () => {
         if (!broadcastMessage) return;
         try {
-            await fetch(`http://${window.location.hostname}:3000/api/v1/admin/broadcast`, {
+            await fetch(`${API_BASE}/api/v1/admin/broadcast`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminCode}` },
                 body: JSON.stringify({ message: broadcastMessage })
@@ -92,7 +94,7 @@ const AdminDashboard: React.FC = () => {
 
     const setThreatLevel = async (level: string) => {
         try {
-            await fetch(`http://${window.location.hostname}:3000/api/v1/admin/threat`, {
+            await fetch(`${API_BASE}/api/v1/admin/threat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminCode}` },
                 body: JSON.stringify({ level })
@@ -104,7 +106,7 @@ const AdminDashboard: React.FC = () => {
     const resetSystem = async () => {
         if (!confirm('WARNING: THIS WILL RESET ALL GAME DATA. CONTINUE?')) return;
         try {
-            await fetch(`http://${window.location.hostname}:3000/api/v1/admin/reset`, {
+            await fetch(`${API_BASE}/api/v1/admin/reset`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${adminCode}` }
             });
@@ -115,7 +117,7 @@ const AdminDashboard: React.FC = () => {
     const kickTeam = async (teamName: string) => {
         if (!confirm(`Are you sure you want to KICK team ${teamName}? This will force them to logout.`)) return;
         try {
-            await fetch(`http://${window.location.hostname}:3000/api/v1/admin/team/kick`, {
+            await fetch(`${API_BASE}/api/v1/admin/team/kick`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminCode}` },
                 body: JSON.stringify({ teamName })
@@ -127,7 +129,7 @@ const AdminDashboard: React.FC = () => {
     const resetTeam = async (teamName: string) => {
         if (!confirm(`Are you sure you want to RESET progress for team ${teamName}?`)) return;
         try {
-            await fetch(`http://${window.location.hostname}:3000/api/v1/admin/team/reset`, {
+            await fetch(`${API_BASE}/api/v1/admin/team/reset`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminCode}` },
                 body: JSON.stringify({ teamName })
@@ -141,7 +143,7 @@ const AdminDashboard: React.FC = () => {
 
         try {
             // Fetch Activity
-            const activityRes = await fetch(`http://${window.location.hostname}:3000/api/v1/admin/activity?limit=50`, {
+            const activityRes = await fetch(`${API_BASE}/api/v1/admin/activity?limit=50`, {
                 headers: { 'Authorization': `Bearer ${adminCode}` }
             });
             const activityData = await activityRes.json();
@@ -150,7 +152,7 @@ const AdminDashboard: React.FC = () => {
             }
 
             // Fetch Leaderboard
-            const leaderboardRes = await fetch(`http://${window.location.hostname}:3000/api/v1/admin/leaderboard?limit=100`, {
+            const leaderboardRes = await fetch(`${API_BASE}/api/v1/admin/leaderboard?limit=100`, {
                 headers: { 'Authorization': `Bearer ${adminCode}` }
             });
             const leaderboardData = await leaderboardRes.json();
@@ -159,7 +161,7 @@ const AdminDashboard: React.FC = () => {
             }
 
             // Fetch Teams
-            const teamsRes = await fetch(`http://${window.location.hostname}:3000/api/v1/admin/teams`, {
+            const teamsRes = await fetch(`${API_BASE}/api/v1/admin/teams`, {
                 headers: { 'Authorization': `Bearer ${adminCode}` }
             });
             const teamsData = await teamsRes.json();
@@ -256,7 +258,7 @@ const AdminDashboard: React.FC = () => {
                     <div className="space-y-4">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl text-cyan-100">SYSTEM LOGS</h2>
-                            <span className="text-xs text-cyan-600 animate-pulse">● LIVE CONNECTION ACTIVE</span>
+                            <span className="text-xs text-cyan-600 animate-pulse">â— LIVE CONNECTION ACTIVE</span>
                         </div>
                         <div className="bg-cyan-950/10 border border-cyan-900/50 rounded-lg overflow-hidden">
                             <table className="w-full text-left">
@@ -345,7 +347,7 @@ const AdminDashboard: React.FC = () => {
                                                 </td>
                                                 <td className="p-4 font-bold text-lg text-cyan-100">
                                                     {entry.teamName}
-                                                    {entry.rank === 1 && <span className="ml-2 text-yellow-500">👑</span>}
+                                                    {entry.rank === 1 && <span className="ml-2 text-yellow-500">ðŸ‘‘</span>}
                                                 </td>
                                                 <td className="p-4 text-right text-cyan-400">
                                                     {entry.missionsCompleted}
@@ -420,7 +422,7 @@ const AdminDashboard: React.FC = () => {
                         {/* Broadcast System */}
                         <div className="bg-cyan-950/10 border border-cyan-900/50 p-6 rounded-lg">
                             <h2 className="text-xl text-cyan-100 mb-4 flex items-center gap-2">
-                                <span className="text-2xl">📢</span> BROADCAST SYSTEM
+                                <span className="text-2xl">ðŸ“¢</span> BROADCAST SYSTEM
                             </h2>
                             <textarea
                                 value={broadcastMessage}
@@ -440,7 +442,7 @@ const AdminDashboard: React.FC = () => {
                         {/* Global Threat Level */}
                         <div className="bg-cyan-950/10 border border-cyan-900/50 p-6 rounded-lg">
                             <h2 className="text-xl text-cyan-100 mb-4 flex items-center gap-2">
-                                <span className="text-2xl">⚠️</span> THREAT LEVEL
+                                <span className="text-2xl">âš ï¸</span> THREAT LEVEL
                             </h2>
                             <div className="grid grid-cols-2 gap-4">
                                 {['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].map((level) => (
@@ -461,7 +463,7 @@ const AdminDashboard: React.FC = () => {
 
                         {/* System Reset */}
                         <div className="bg-red-950/10 border border-red-900/50 p-6 rounded-lg md:col-span-2 mt-4">
-                            <h2 className="text-xl text-red-100 mb-2">⛔ DANGER ZONE</h2>
+                            <h2 className="text-xl text-red-100 mb-2">â›” DANGER ZONE</h2>
                             <p className="text-red-400 mb-4 text-sm">Resetting the system will clear all active sessions, activity logs, and leaderboards. This cannot be undone.</p>
                             <button
                                 onClick={resetSystem}

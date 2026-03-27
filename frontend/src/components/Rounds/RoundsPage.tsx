@@ -1,6 +1,6 @@
 /**
  * NEXUS PROTOCOL - Rounds Page Component
- * Displays CTF round information with vulnerability details
+ * Displays round information with vulnerability details
  * Version: 1.0.0
  */
 
@@ -45,7 +45,7 @@ const roundsData: Round[] = [
     subtitle: 'Three Branches — 24 Vulnerabilities',
     difficulty: 'BEGINNER → INTERMEDIATE',
     difficultyClass: 'beginner',
-    format: 'Red Team vs Blue Team CTF',
+    format: 'Red Team vs Blue Team',
     duration: '45 Minutes',
     totalVulns: 24,
     downloadFile: '/rounds/NEXXUS.zip',
@@ -53,7 +53,7 @@ const roundsData: Round[] = [
     branches: [
       {
         name: 'Branch A — Andheri',
-        port: 'Port 5001',
+        port: 'Port 5000',
         vulns: [
           { id: 'VA1', name: 'Sensitive Data in HTML Source', level: 'beginner', vector: 'View page source, find admin creds in comment' },
           { id: 'VA2', name: 'IDOR — Account Access', level: 'beginner', vector: 'Change ACC002 → ACC001 in URL' },
@@ -67,7 +67,7 @@ const roundsData: Round[] = [
       },
       {
         name: 'Branch B — Bandra',
-        port: 'Port 5002',
+        port: 'Port 6000',
         vulns: [
           { id: 'VB1', name: 'JWT Weak Secret', level: 'beginner', vector: 'Secret="secret"; forge admin JWT' },
           { id: 'VB2', name: 'IDOR — Transactions', level: 'beginner', vector: 'Change BAC001 in URL' },
@@ -81,7 +81,7 @@ const roundsData: Round[] = [
       },
       {
         name: 'Branch C — Colaba',
-        port: 'Port 5003',
+        port: 'Port 7000',
         vulns: [
           { id: 'VC1', name: 'Cookie Manipulation', level: 'beginner', vector: 'Decode base64 cookie, change role' },
           { id: 'VC2', name: 'IDOR — Loan Details', level: 'beginner', vector: 'GET /api/loan/4 reveals admin loan' },
@@ -101,12 +101,12 @@ const roundsData: Round[] = [
     subtitle: '8 Advanced Vulnerabilities — Winner Selection',
     difficulty: 'ADVANCED',
     difficultyClass: 'advanced',
-    format: 'Red Team vs Blue Team CTF',
+    format: 'Red Team vs Blue Team',
     duration: 'Extended',
     totalVulns: 8,
     port: 'Port 7007',
-    downloadFile: '/rounds/NexusCore_Round2_CTF.zip',
-    downloadName: 'NexusCore_Round2_CTF.zip',
+    downloadFile: '/rounds/NexusCore_Round2.zip',
+    downloadName: 'NexusCore_Round2.zip',
     vulns: [
       { id: 'V1', name: 'Server-Side Request Forgery (SSRF)', level: 'advanced', vector: 'Fetch internal metadata via localhost', endpoint: '/api/integrations/fetch' },
       { id: 'V2', name: 'XML External Entity (XXE)', level: 'advanced', vector: 'SYSTEM "file:///etc/passwd" in DOCTYPE', endpoint: '/api/reports/upload' },
@@ -171,17 +171,17 @@ export default function RoundsPage() {
           <span className="arrow">←</span> BACK TO NEXUS
         </button>
         <span className="rounds-nav-title">
-          CTF <span className="accent">/</span> ROUNDS
+          ROUNDS
         </span>
         <div style={{ width: '140px' }} />
       </nav>
 
       {/* Header */}
       <div className="rounds-header">
-        <span className="section-tag">// CTF_CHALLENGES</span>
+        <span className="section-tag">// CHALLENGES</span>
         <h1 className="page-title">OPERATION ROUNDS</h1>
         <p className="page-subtitle">
-          Two rounds of Capture The Flag challenges. From beginner-level banking vulnerabilities
+          Two rounds of hacking challenges. From beginner-level banking vulnerabilities
           to advanced exploitation techniques. Download the challenge files and begin your mission.
         </p>
       </div>

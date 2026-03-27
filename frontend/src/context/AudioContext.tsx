@@ -19,7 +19,18 @@ interface AudioContextType {
   playSound: (soundType: string) => void;
 }
 
-const AudioContext = createContext<AudioContextType | undefined>(undefined);
+let globalAudioContext: AudioContext | null = null;
+const getGlobalAudioContext = () => {
+  if (!globalAudioContext) {
+    globalAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  }
+  if (globalAudioContext.state === 'suspended') {
+    globalAudioContext.resume();
+  }
+  return globalAudioContext;
+};
+
+const AudioContextData = createContext<AudioContextType | undefined>(undefined);
 
 interface AudioProviderProps {
   children: ReactNode;
@@ -100,8 +111,10 @@ export function AudioProvider({ children }: AudioProviderProps) {
 
   // Start audio function (Method 1 - Recommended)
   const startAudio = () => {
-    if (audioRef.current && !audioStarted) {
+    if (audioRef.current) {
       const audio = audioRef.current;
+      if (!audio.paused && audioStarted) return; // Already playing
+      
       audio.volume = 0; // Start silent for fade-in
       
       audio.play().then(() => {
@@ -129,8 +142,18 @@ export function AudioProvider({ children }: AudioProviderProps) {
     const newMutedState = !isMuted;
     setIsMuted(newMutedState);
     
+    let activeVolume = volume;
+    if (!newMutedState && volume === 0) {
+      activeVolume = 0.6;
+      setVolumeState(0.6);
+      localStorage.setItem('nexus_audio_volume', '0.6');
+    }
+    
     if (audioRef.current) {
-      audioRef.current.volume = newMutedState ? 0 : volume;
+      audioRef.current.volume = newMutedState ? 0 : activeVolume;
+      if (!newMutedState && audioRef.current.paused) {
+        audioRef.current.play().catch(e => console.log("Play failed on unmute:", e));
+      }
     }
 
     // Save preference
@@ -144,6 +167,9 @@ export function AudioProvider({ children }: AudioProviderProps) {
     
     if (audioRef.current && !isMuted) {
       audioRef.current.volume = clampedVolume;
+      if (clampedVolume > 0 && audioRef.current.paused) {
+        audioRef.current.play().catch(e => console.log("Play failed on setVolume:", e));
+      }
     }
 
     // Save preference
@@ -155,7 +181,7 @@ export function AudioProvider({ children }: AudioProviderProps) {
     if (!isMuted) {
       // Simple beep sounds using Web Audio API
       try {
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const audioContext = getGlobalAudioContext();
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
         
@@ -225,14 +251,14 @@ export function AudioProvider({ children }: AudioProviderProps) {
   };
 
   return (
-    <AudioContext.Provider value={value}>
+    <AudioContextData.Provider value={value}>
       {children}
-    </AudioContext.Provider>
+    </AudioContextData.Provider>
   );
 }
 
 export function useAudio() {
-  const context = useContext(AudioContext);
+  const context = useContext(AudioContextData);
   if (context === undefined) {
     throw new Error('useAudio must be used within an AudioProvider');
   }

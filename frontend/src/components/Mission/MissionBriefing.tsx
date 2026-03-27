@@ -2,15 +2,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../../context/GameContext.js';
 
-/* ── Round data (game terminology, no "CTF") ── */
+/* ── Round data ── */
 interface Vulnerability {
   id: string;
   name: string;
   level: 'beginner' | 'intermediate' | 'advanced';
-  vector: string;
-  endpoint?: string;
+  points: number;
 }
-interface Branch { name: string; port: string; targetUrl: string; vulns: Vulnerability[]; }
 interface Round {
   number: number;
   title: string;
@@ -22,62 +20,34 @@ interface Round {
   totalVulns: number;
   port?: string;
   targetUrl?: string;
-  branches?: Branch[];
+  monitorUrl?: string;
   vulns?: Vulnerability[];
 }
 
 const ROUNDS: Round[] = [
   {
-    number: 1, title: 'NEXUSBANK', subtitle: 'Three Branches — 24 Vulnerabilities',
-    difficulty: 'BEGINNER → INTERMEDIATE', difficultyClass: 'beginner',
-    format: 'Red Team vs Blue Team', duration: '45 Minutes', totalVulns: 24,
-    branches: [
-      { name: 'Branch A — Andheri', port: 'Port 5175', targetUrl: 'http://localhost:5175', vulns: [
-        { id:'VA1', name:'Sensitive Data in HTML Source', level:'beginner', vector:'View page source, find admin creds in comment' },
-        { id:'VA2', name:'IDOR — Account Access', level:'beginner', vector:'Change ACC002 → ACC001 in URL' },
-        { id:'VA3', name:'Broken Auth — Weak Passwords', level:'beginner', vector:'Login with guessable password' },
-        { id:'VA4', name:'Sensitive Data API', level:'beginner', vector:'GET /api/all-accounts — no auth' },
-        { id:'VA5', name:'SQL Injection — Login', level:'intermediate', vector:"admin' OR '1'='1' -- in username" },
-        { id:'VA6', name:'Stored XSS — Feedback', level:'intermediate', vector:'<script>alert(1)</script> in form' },
-        { id:'VA7', name:'Directory Traversal', level:'intermediate', vector:'../../secret.txt in download' },
-        { id:'VA8', name:'CSRF — Fund Transfer', level:'intermediate', vector:'No token; cross-origin POST' },
-      ]},
-      { name: 'Branch B — Bandra', port: 'Port 5176', targetUrl: 'http://localhost:5176', vulns: [
-        { id:'VB1', name:'JWT Weak Secret', level:'beginner', vector:'Secret="secret"; forge admin JWT' },
-        { id:'VB2', name:'IDOR — Transactions', level:'beginner', vector:'Change BAC001 in URL' },
-        { id:'VB3', name:'Broken Auth — No Lockout', level:'beginner', vector:'Brute force — no rate limiting' },
-        { id:'VB4', name:'Mass Assignment', level:'intermediate', vector:'PUT /api/profile with role=admin' },
-        { id:'VB5', name:'SQL Injection — Search', level:'intermediate', vector:"' OR '1'='1 in search" },
-        { id:'VB6', name:'Reflected XSS — Search', level:'intermediate', vector:'<img src=x onerror=alert(1)>' },
-        { id:'VB7', name:'Insecure File Access', level:'intermediate', vector:'GET /api/docs/internal_audit.txt' },
-        { id:'VB8', name:'Broken Access Control', level:'intermediate', vector:'Forge JWT role=admin → /api/admin' },
-      ]},
-      { name: 'Branch C — Colaba', port: 'Port 5177', targetUrl: 'http://localhost:5177', vulns: [
-        { id:'VC1', name:'Cookie Manipulation', level:'beginner', vector:'Decode base64 cookie, change role' },
-        { id:'VC2', name:'IDOR — Loan Details', level:'beginner', vector:'GET /api/loan/4 reveals admin loan' },
-        { id:'VC3', name:'Default Credentials', level:'beginner', vector:'Login with admin / admin' },
-        { id:'VC4', name:'API Enumeration', level:'beginner', vector:'GET /api/ticket/1, /2, /3' },
-        { id:'VC5', name:'SQL Injection — Profile', level:'intermediate', vector:"nominee='HACKED' WHERE 1=1 --" },
-        { id:'VC6', name:'DOM-Based XSS', level:'intermediate', vector:'<img src=x onerror=alert(1)>' },
-        { id:'VC7', name:'Path Traversal', level:'intermediate', vector:'../server_config.txt in download' },
-        { id:'VC8', name:'CSRF — Profile Update', level:'intermediate', vector:'No CSRF token — POST /api/profile' },
-      ]},
-    ]
-  },
-  {
-    number: 2, title: 'NEXUSCORE', subtitle: '8 Advanced Vulnerabilities — Final Round',
-    difficulty: 'ADVANCED', difficultyClass: 'advanced',
-    format: 'Red Team vs Blue Team', duration: 'Extended', totalVulns: 8, port: 'Port 7007',
-    targetUrl: 'http://localhost:7007',
+    number: 1, title: 'VIDYATECH', subtitle: 'University Portal — 15 Vulnerabilities',
+    difficulty: 'EASY → INTERMEDIATE → ADVANCED', difficultyClass: 'beginner',
+    format: 'Red Team vs Blue Team', duration: '60 Minutes', totalVulns: 15,
+    port: 'Port 5000',
+    targetUrl: `http://${window.location.hostname}:5000`,
+    monitorUrl: `http://${window.location.hostname}:8080`,
     vulns: [
-      { id:'V1', name:'Server-Side Request Forgery (SSRF)', level:'advanced', vector:'Fetch internal metadata via localhost', endpoint:'/api/integrations/fetch' },
-      { id:'V2', name:'XML External Entity (XXE)', level:'advanced', vector:'SYSTEM "file:///etc/passwd" in DOCTYPE', endpoint:'/api/reports/upload' },
-      { id:'V3', name:'Command Injection', level:'advanced', vector:'127.0.0.1; whoami — unsanitised host', endpoint:'/api/diagnostics/run' },
-      { id:'V4', name:'JWT Algorithm Confusion', level:'advanced', vector:'RS256→HS256, sign with public key', endpoint:'/api/admin/users' },
-      { id:'V5', name:'Race Condition', level:'advanced', vector:'10 parallel POSTs → over-consume license', endpoint:'/api/licenses/redeem' },
-      { id:'V6', name:'Insecure Deserialization', level:'advanced', vector:'Malicious pickle payload → RCE', endpoint:'/api/session/import' },
-      { id:'V7', name:'GraphQL Injection', level:'advanced', vector:'__schema introspection → secret data', endpoint:'/api/graphql' },
-      { id:'V8', name:'Server-Side Template Injection', level:'advanced', vector:'{{7*7}} → {{config}} → RCE via Jinja2', endpoint:'/api/notifications/preview' },
+      { id:'V1',  name:'SQL Injection — Student Login',           level:'beginner',     points: 40  },
+      { id:'V2',  name:'Stored XSS — Notice Board',               level:'beginner',     points: 40  },
+      { id:'V3',  name:'Default Credentials — Staff Portal',      level:'beginner',     points: 40  },
+      { id:'V4',  name:'Directory Traversal — Resources',         level:'beginner',     points: 40  },
+      { id:'V5',  name:'Sensitive Data Exposure',                 level:'beginner',     points: 40  },
+      { id:'V6',  name:'Hardcoded Admin Login',                   level:'beginner',     points: 40  },
+      { id:'V7',  name:'Unrestricted File Upload',                level:'beginner',     points: 40  },
+      { id:'V8',  name:'Clickjacking — Missing X-Frame-Options',  level:'beginner',     points: 40  },
+      { id:'V9',  name:'Weak Password Policy',                    level:'beginner',     points: 40  },
+      { id:'V10', name:'CSRF — Email Hijack',                     level:'beginner',     points: 40  },
+      { id:'V11', name:'JWT alg:none — API Auth Bypass',          level:'intermediate', points: 100 },
+      { id:'V12', name:'IDOR — Student Results',                  level:'intermediate', points: 100 },
+      { id:'V13', name:'Command Injection — NSLookup Tool',       level:'intermediate', points: 100 },
+      { id:'V14', name:'PyYAML Unsafe Load — RCE',                level:'advanced',     points: 150 },
+      { id:'V15', name:'Debug Endpoint — Secret Key Leak + SSRF', level:'advanced',     points: 150 },
     ]
   }
 ];
@@ -122,13 +92,14 @@ const s = {
   expand: (open: boolean) => ({ fontSize: '1.1rem', color: open ? '#8b5cf6' : '#606070', transition: 'transform 0.3s', transform: open ? 'rotate(180deg)' : 'none' }) as React.CSSProperties,
 };
 
-function VulnTable({ vulns, showEndpoint }: { vulns: Vulnerability[]; showEndpoint?: boolean }) {
+function VulnTable({ vulns }: { vulns: Vulnerability[] }) {
   return (
     <table style={s.table}>
       <thead><tr>
-        <th style={s.th}>#</th><th style={s.th}>Vulnerability</th><th style={s.th}>Level</th>
-        {showEndpoint && <th style={s.th}>Endpoint</th>}
-        <th style={s.th}>Attack Vector</th>
+        <th style={s.th}>#</th>
+        <th style={s.th}>Vulnerability</th>
+        <th style={s.th}>Level</th>
+        <th style={s.th}>Points</th>
       </tr></thead>
       <tbody>
         {vulns.map(v => (
@@ -136,8 +107,7 @@ function VulnTable({ vulns, showEndpoint }: { vulns: Vulnerability[]; showEndpoi
             <td style={s.td}><span style={s.vulnId}>{v.id}</span></td>
             <td style={s.td}><span style={s.vulnName}>{v.name}</span></td>
             <td style={s.td}><span style={s.vulnLevel(v.level)}>{v.level}</span></td>
-            {showEndpoint && <td style={s.td}><code style={s.endpoint}>{v.endpoint}</code></td>}
-            <td style={s.td}><span style={s.vulnVec}>{v.vector}</span></td>
+            <td style={s.td}><span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '0.7rem', fontWeight: 700, color: '#f59e0b' }}>{v.points} pts</span></td>
           </tr>
         ))}
       </tbody>
@@ -208,24 +178,19 @@ export default function MissionBriefing() {
                 {/* Body */}
                 <div style={s.body(open)}>
                   <div style={{ padding: '0 1.5rem 1.5rem' }}>
-                    {round.branches?.map(branch => (
-                      <div key={branch.name} style={{ marginBottom: '1.25rem' }}>
-                        <div style={s.branchHdr}>
-                          <div style={s.dot} />
-                          <span style={s.branchName}>{branch.name}</span>
-                          <button onClick={() => navigate(`/hacklab?target=${encodeURIComponent(branch.targetUrl)}&round=${encodeURIComponent(branch.name)}`)} style={s.branchLaunch}>▸ LAUNCH</button>
-                        </div>
-                        <VulnTable vulns={branch.vulns} />
-                      </div>
-                    ))}
-                    {round.vulns && <VulnTable vulns={round.vulns} showEndpoint />}
+                    {round.vulns && <VulnTable vulns={round.vulns} />}
                     {round.targetUrl && (
                       <div style={s.launchBar}>
                         <div>
                           <span style={s.launchLabel}>Target System</span><br/>
                           <span style={s.launchUrl}>{round.targetUrl}</span>
                         </div>
-                        <button onClick={() => navigate(`/hacklab?target=${encodeURIComponent(round.targetUrl!)}&round=${encodeURIComponent(round.title)}`)} style={s.launchBtn}>▸ LAUNCH TARGET</button>
+                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                          <button onClick={() => navigate(`/hacklab?target=${encodeURIComponent(round.targetUrl!)}&round=${encodeURIComponent(round.title)}`)} style={s.launchBtn}>▸ LAUNCH TARGET</button>
+                          {round.monitorUrl && gameState.teamType === 'blue' && (
+                            <button onClick={() => window.open(round.monitorUrl, '_blank')} style={{ ...s.launchBtn, background: 'linear-gradient(135deg,#0e7490 0%,#0891b2 50%,#22d3ee 100%)' }}>▸ LAUNCH MONITOR</button>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>

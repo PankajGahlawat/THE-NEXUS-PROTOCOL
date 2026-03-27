@@ -16,6 +16,7 @@ interface Session {
 interface CommandLog {
   sessionId: string;
   userId: string;
+  username?: string;
   vmHost: string;
   command: string;
   timestamp: string;

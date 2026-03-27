@@ -1,56 +1,60 @@
-# NEXUS PROTOCOL - Quick Start Guide
-
-Get the game running in 5 minutes!
+# NEXUS PROTOCOL — Quick Start
 
 ## Prerequisites
+- Node.js 18+
+- Python 3.8+
+- PostgreSQL 17 (already installed)
 
-- Node.js 18+ installed
-- Git installed
+## Start Everything
 
-## Installation
+Double-click `start-all.bat` — it installs dependencies, initialises the DB, and launches all servers.
 
-```bash
-# 1. Clone the repository
-git clone https://github.com/vyber07/THE-NEXUS-PROTOCOL.git
-cd THE-NEXUS-PROTOCOL
+## URLs
 
-# 2. Install backend dependencies
-cd backend
-npm install
+| Service | URL |
+|---------|-----|
+| Main Game | http://localhost:5173 |
+| Backend API | http://localhost:3000 |
+| Round 1 — Vidyatech | http://localhost:5000 |
+| Round 1 Monitor | http://localhost:8080 |
 
-# 3. Install frontend dependencies
-cd ../frontend
-npm install
-```
+## Credentials
 
-## Running the Game
+| Role | Team Name | Access Code |
+|------|-----------|-------------|
+| Red Team | `RedTeam` | `RED@Nexus2024!` |
+| Blue Team | `BlueTeam` | `BLUE@Nexus2024!` |
+| Admin Panel | — | `ADMIN-8821` |
 
-### Start Backend Server
-```bash
-cd backend
-npm start
-```
-Server runs on: http://localhost:3000
+Admin panel: http://localhost:5173/admin
 
-### Start Frontend (New Terminal)
-```bash
-cd frontend
-npm run dev
-```
-Frontend runs on: http://localhost:5173
+## Round 1 — Vidyatech (15 Vulnerabilities, 60 min)
 
-## Login Credentials
+| # | Vulnerability | Level | Points |
+|---|--------------|-------|--------|
+| V1 | SQL Injection — Student Login | Beginner | 40 |
+| V2 | Stored XSS — Notice Board | Beginner | 40 |
+| V3 | Default Credentials — Staff Portal | Beginner | 40 |
+| V4 | Directory Traversal — Resources | Beginner | 40 |
+| V5 | Sensitive Data Exposure | Beginner | 40 |
+| V6 | Hardcoded Admin Login | Beginner | 40 |
+| V7 | Unrestricted File Upload | Beginner | 40 |
+| V8 | Clickjacking — Missing X-Frame-Options | Beginner | 40 |
+| V9 | Weak Password Policy | Beginner | 40 |
+| V10 | CSRF — Email Hijack | Beginner | 40 |
+| V11 | JWT alg:none — API Auth Bypass | Intermediate | 100 |
+| V12 | IDOR — Student Results | Intermediate | 100 |
+| V13 | Command Injection — NSLookup Tool | Intermediate | 100 |
+| V14 | PyYAML Unsafe Load — RCE | Advanced | 150 |
+| V15 | Debug Endpoint — Secret Key Leak + SSRF | Advanced | 150 |
 
-### Teams
-- **Red Team**: `RedTeam` / `redteam123`
-- **Blue Team**: `BlueTeam` / `blueteam123`
+**Total: 1100 pts**
 
-## That's It!
+## Stop Everything
 
-Open http://localhost:5173 in your browser and start playing!
+Double-click `stop-all.bat`.
 
-## Need Help?
+## LAN Access
 
-- See [README.md](README.md) for full documentation
-- Check [DEPLOYMENT.md](DEPLOYMENT.md) for production setup
-- Review [CONFIGURATION.md](CONFIGURATION.md) for advanced settings
+Players on the same network can access the game at `http://<YOUR_IP>:5173`.  
+Update `CORS_ORIGIN` in `backend/.env` with your machine's IP if needed.

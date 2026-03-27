@@ -14,7 +14,19 @@ const helmet = require('helmet');
 const compression = require('compression');
 
 // Import enhanced systems
-const database = require('./models/database'); // Use in-memory database
+let database;
+if (process.env.USE_POSTGRES === 'true') {
+  const PostgreSQLDatabase = require('./models/PostgreSQLDatabase');
+  database = new PostgreSQLDatabase({
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT) || 5432,
+    database: process.env.DB_NAME || 'nexusprotocol',
+    user: process.env.DB_USER || 'nexus_user',
+    password: process.env.DB_PASSWORD || 'nexus_pass_2024',
+  });
+} else {
+  database = require('./models/database'); // fallback in-memory
+}
 const EnhancedGameEngine = require('./game/EnhancedGameEngine');
 const AuthMiddleware = require('./middleware/auth');
 const WebSocketMiddleware = require('./middleware/websocket');
@@ -80,7 +92,7 @@ async function initializeServer() {
     console.log('🚀 Initializing Nexus Protocol Enhanced Server...');
 
     // SECURITY: Validate required environment variables
-    const requiredEnvVars = ['JWT_SECRET', 'POSTGRES_PASSWORD'];
+    const requiredEnvVars = ['JWT_SECRET'];
     const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
     
     if (missingVars.length > 0) {
@@ -99,8 +111,13 @@ async function initializeServer() {
       process.exit(1);
     }
 
-    // Initialize database (in-memory, no connection needed)
-    console.log('✅ Database initialized (in-memory)');
+    // Initialize database
+    if (process.env.USE_POSTGRES === 'true') {
+      await database.initialize();
+      console.log('✅ PostgreSQL database connected (nexusprotocol)');
+    } else {
+      console.log('✅ Database initialized (in-memory)');
+    }
 
     // Initialize game engine
     gameEngine = new EnhancedGameEngine(database);
@@ -233,13 +250,22 @@ app.get('/health', async (req, res) => {
 });
 
 // ===== AUTHENTICATION ENDPOINTS =====
-// Note: Auth routes are handled directly in this file for enhanced security
+
+// PostgreSQL pool for auth (shared, created once)
+const { Pool: AuthPool } = require('pg');
+const bcrypt = require('bcryptjs');
+const authPool = new AuthPool({
+  host: process.env.DB_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT) || 5432,
+  database: process.env.DB_NAME || 'nexusprotocol',
+  user: process.env.DB_USER || 'nexus_user',
+  password: process.env.DB_PASSWORD || '',
+  ssl: false
+});
 
 app.post('/api/v1/auth/login',
   (req, res, next) => {
-    // Lazy evaluation of validation rules
     const validators = auth.getLoginValidation();
-    // Run validators
     Promise.all(validators.map(v => v.run(req)))
       .then(() => next())
       .catch(next);
@@ -248,55 +274,46 @@ app.post('/api/v1/auth/login',
   async (req, res) => {
     try {
       const { teamName, accessCode } = req.body;
-      const clientIP = req.ip;
-      const userAgent = req.get('User-Agent');
 
-      // Built-in team credentials
-      const builtInTeams = {
-        'RedTeam': { password: 'redteam123', type: 'red' },
-        'BlueTeam': { password: 'blueteam123', type: 'blue' }
-      };
+      // Look up team in PostgreSQL
+      const result = await authPool.query(
+        'SELECT * FROM teams WHERE team_name = $1 AND is_active = TRUE',
+        [teamName]
+      );
 
-      let team = null;
-      let teamType = 'red';
-
-      // Check if it's a built-in team
-      const builtInTeam = builtInTeams[teamName];
-      if (builtInTeam && accessCode === builtInTeam.password) {
-        teamType = builtInTeam.type;
-        
-        // Create team in in-memory database
-        team = database.createTeam({
-          teamName,
-          accessCodeHash: accessCode // In-memory DB doesn't hash
-        });
-      } else {
+      if (result.rows.length === 0) {
         return res.status(401).json({
           success: false,
           error: 'INVALID_CREDENTIALS',
-          message: 'Invalid team name or access code. Use RedTeam/redteam123 or BlueTeam/blueteam123'
+          message: 'Invalid team name or access code'
         });
       }
+
+      const team = result.rows[0];
+      const passwordMatch = await bcrypt.compare(accessCode, team.password_hash);
+
+      if (!passwordMatch) {
+        return res.status(401).json({
+          success: false,
+          error: 'INVALID_CREDENTIALS',
+          message: 'Invalid team name or access code'
+        });
+      }
+
+      const teamType = team.team_type;
 
       // Generate session token
       const sessionToken = authMiddleware.generateToken({
         teamId: team.id,
-        teamName: team.teamName,
+        teamName: team.team_name,
         teamType
-      });
-
-      // Create session
-      database.createSession({
-        teamId: team.id,
-        sessionToken,
-        authenticated: true
       });
 
       res.json({
         success: true,
         sessionToken,
         teamId: team.id,
-        teamName: team.teamName,
+        teamName: team.team_name,
         teamType,
         expiresIn: 7200
       });

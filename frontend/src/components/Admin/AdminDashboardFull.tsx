@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+﻿import React, { useEffect, useState, useRef } from 'react';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { io, Socket } from 'socket.io-client';
@@ -24,6 +24,8 @@ interface WarFeedEvent {
   reason?: string;
 }
 
+const API_BASE = import.meta.env.VITE_SSH_PROXY_URL || `http://${window.location.hostname}:3002`;
+
 const AdminDashboardFull: React.FC = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
@@ -45,7 +47,7 @@ const AdminDashboardFull: React.FC = () => {
   useEffect(() => {
     // Connect to admin namespace
     const adminSocket = io(
-      `${import.meta.env.VITE_SSH_PROXY_URL || 'http://localhost:3002'}/admin`
+      `${import.meta.env.VITE_SSH_PROXY_URL || '${API_BASE}'}/admin`
     );
 
     adminSocket.on('connect', () => {
@@ -105,13 +107,13 @@ const AdminDashboardFull: React.FC = () => {
 
   const fetchInitialData = async () => {
     try {
-      const playersRes = await fetch('http://localhost:3002/api/admin/players');
+      const playersRes = await fetch('${API_BASE}/api/admin/players');
       const playersData = await playersRes.json();
       if (playersData.success) {
         setPlayers(playersData.players);
       }
 
-      const feedRes = await fetch('http://localhost:3002/api/admin/war-feed');
+      const feedRes = await fetch('${API_BASE}/api/admin/war-feed');
       const feedData = await feedRes.json();
       if (feedData.success) {
         setWarFeed(feedData.feed);
@@ -139,7 +141,7 @@ const AdminDashboardFull: React.FC = () => {
     if (!selectedPlayer) return;
 
     try {
-      const res = await fetch('http://localhost:3002/api/admin/award-points', {
+      const res = await fetch('${API_BASE}/api/admin/award-points', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -165,7 +167,7 @@ const AdminDashboardFull: React.FC = () => {
     if (!selectedPlayer || !hintText) return;
 
     try {
-      const res = await fetch('http://localhost:3002/api/admin/send-hint', {
+      const res = await fetch('${API_BASE}/api/admin/send-hint', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -191,7 +193,7 @@ const AdminDashboardFull: React.FC = () => {
     if (!confirm(`Kick ${selectedPlayer.username}?`)) return;
 
     try {
-      const res = await fetch('http://localhost:3002/api/admin/kick-player', {
+      const res = await fetch('${API_BASE}/api/admin/kick-player', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -218,7 +220,7 @@ const AdminDashboardFull: React.FC = () => {
     if (!confirm(`Reset VM for ${selectedPlayer.username}? This will restore to snapshot.`)) return;
 
     try {
-      const res = await fetch('http://localhost:3002/api/admin/reset-vm', {
+      const res = await fetch('${API_BASE}/api/admin/reset-vm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -228,7 +230,7 @@ const AdminDashboardFull: React.FC = () => {
 
       const data = await res.json();
       if (data.success) {
-        alert(`VM reset! (${data.vmName} → ${data.snapshot})`);
+        alert(`VM reset! (${data.vmName} â†’ ${data.snapshot})`);
       } else {
         alert(`Failed: ${data.error}`);
       }
@@ -241,7 +243,7 @@ const AdminDashboardFull: React.FC = () => {
     if (!broadcastMessage) return;
 
     try {
-      const res = await fetch('http://localhost:3002/api/admin/broadcast', {
+      const res = await fetch('${API_BASE}/api/admin/broadcast', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -262,15 +264,15 @@ const AdminDashboardFull: React.FC = () => {
 
   const getEventIcon = (type: string) => {
     const icons: { [key: string]: string } = {
-      player_connected: '🟢',
-      player_disconnected: '🔴',
-      points_awarded: '⭐',
-      hint_sent: '💡',
-      player_kicked: '🚫',
-      vm_reset: '🔄',
-      admin_broadcast: '📢'
+      player_connected: 'ðŸŸ¢',
+      player_disconnected: 'ðŸ”´',
+      points_awarded: 'â­',
+      hint_sent: 'ðŸ’¡',
+      player_kicked: 'ðŸš«',
+      vm_reset: 'ðŸ”„',
+      admin_broadcast: 'ðŸ“¢'
     };
-    return icons[type] || '📝';
+    return icons[type] || 'ðŸ“';
   };
 
   return (
@@ -278,7 +280,7 @@ const AdminDashboardFull: React.FC = () => {
       {/* Sidebar - Players */}
       <div style={{ width: '300px', background: '#1a1a1a', padding: '20px', overflowY: 'auto', borderRight: '2px solid #333' }}>
         <h2 style={{ color: '#00ff00', marginBottom: '10px', fontSize: '18px' }}>
-          👥 ACTIVE PLAYERS
+          ðŸ‘¥ ACTIVE PLAYERS
         </h2>
         <div style={{ 
           padding: '8px', 
@@ -287,7 +289,7 @@ const AdminDashboardFull: React.FC = () => {
           marginBottom: '20px',
           fontSize: '12px'
         }}>
-          {connected ? '● CONNECTED' : '○ DISCONNECTED'}
+          {connected ? 'â— CONNECTED' : 'â—‹ DISCONNECTED'}
         </div>
 
         <div style={{ marginBottom: '20px' }}>
@@ -333,7 +335,7 @@ const AdminDashboardFull: React.FC = () => {
           borderBottom: '2px solid #00ff00'
         }}>
           <h1 style={{ margin: 0, color: '#00ff00', fontSize: '24px' }}>
-            🎮 NEXUS PROTOCOL - ADMIN DASHBOARD
+            ðŸŽ® NEXUS PROTOCOL - ADMIN DASHBOARD
           </h1>
           {selectedPlayer && (
             <div style={{ marginTop: '10px', fontSize: '14px', color: '#aaa' }}>
@@ -355,7 +357,7 @@ const AdminDashboardFull: React.FC = () => {
             {/* Award Points */}
             <div style={{ background: '#2d2d2d', padding: '12px', borderRadius: '6px' }}>
               <div style={{ fontSize: '12px', color: '#00ff00', marginBottom: '8px', fontWeight: 'bold' }}>
-                ⭐ AWARD POINTS
+                â­ AWARD POINTS
               </div>
               <input
                 type="number"
@@ -378,7 +380,7 @@ const AdminDashboardFull: React.FC = () => {
             {/* Send Hint */}
             <div style={{ background: '#2d2d2d', padding: '12px', borderRadius: '6px' }}>
               <div style={{ fontSize: '12px', color: '#ffaa00', marginBottom: '8px', fontWeight: 'bold' }}>
-                💡 SEND HINT
+                ðŸ’¡ SEND HINT
               </div>
               <textarea
                 placeholder="Hint message"
@@ -394,7 +396,7 @@ const AdminDashboardFull: React.FC = () => {
             {/* VM Reset */}
             <div style={{ background: '#2d2d2d', padding: '12px', borderRadius: '6px' }}>
               <div style={{ fontSize: '12px', color: '#0066cc', marginBottom: '8px', fontWeight: 'bold' }}>
-                🔄 VM CONTROL
+                ðŸ”„ VM CONTROL
               </div>
               <button onClick={resetVM} style={{ width: '100%', padding: '8px', background: '#0066cc', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginBottom: '6px' }}>
                 Reset VM (Snapshot)
@@ -407,7 +409,7 @@ const AdminDashboardFull: React.FC = () => {
             {/* Broadcast */}
             <div style={{ background: '#2d2d2d', padding: '12px', borderRadius: '6px' }}>
               <div style={{ fontSize: '12px', color: '#ff00ff', marginBottom: '8px', fontWeight: 'bold' }}>
-                📢 BROADCAST
+                ðŸ“¢ BROADCAST
               </div>
               <input
                 type="text"
@@ -442,7 +444,7 @@ const AdminDashboardFull: React.FC = () => {
           {/* War Feed */}
           <div style={{ width: '350px', background: '#1a1a1a', padding: '20px', overflowY: 'auto', borderLeft: '2px solid #333' }}>
             <h3 style={{ color: '#ff0000', marginBottom: '15px', fontSize: '16px' }}>
-              ⚔️ WAR FEED
+              âš”ï¸ WAR FEED
             </h3>
             {warFeed.map((event, idx) => (
               <div

@@ -44,7 +44,7 @@ const MissionTerminal: React.FC = () => {
         background: '#0a0a0a',
         foreground: '#00ff00',
         cursor: '#00ff00',
-        selection: 'rgba(0, 255, 0, 0.3)'
+        selectionBackground: 'rgba(0, 255, 0, 0.3)'
       },
       rows: 30,
       cols: 100

@@ -28,7 +28,7 @@ export interface MissionData {
 
 export const MISSIONS: MissionData[] = [
     {
-        id: "college-event-ctf",
+        id: "college-event",
         name: "College Event Website Under Attack",
         description: "A college event website is vulnerable to multiple attacks. Red Team must exploit vulnerabilities while Blue Team defends and responds.",
         difficulty: "Beginner",
@@ -129,7 +129,7 @@ export const MISSIONS: MissionData[] = [
                 title: "The Hidden Directory",
                 description: "Reconnaissance is the first step of any successful breach. We suspect the target has misconfigured their web server permissions. Perform a directory brute-force or manual check to find the backup folder.",
                 prompt: "Access the server at `http://target-site.com/dev/backup/`. There is a text file containing the first flag. What is the content of `flag.txt`?",
-                flag: "CTF{B4ckup_Exposur3_2026}",
+                flag: "B4ckup_Exposur3_2026",
                 points: 30, // Stage 1 Reward
                 completed: false,
                 required: true,

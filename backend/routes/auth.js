@@ -2,18 +2,27 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const rateLimit = require('express-rate-limit');
-const database = require('../models/database');
+const { Pool } = require('pg');
 
 const router = express.Router();
 
-// Rate limiting for auth endpoints
+// PostgreSQL pool
+const pool = new Pool({
+  host: process.env.DB_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT) || 5432,
+  database: process.env.DB_NAME || 'nexusprotocol',
+  user: process.env.DB_USER || 'nexus_user',
+  password: process.env.DB_PASSWORD || '',
+  ssl: false
+});
+
+// Rate limiting
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 10,
   message: 'Too many authentication attempts, please try again later.'
 });
 
-// Apply rate limiting to all auth routes
 router.use(authLimiter);
 
 // POST /api/v1/auth/login
@@ -21,12 +30,11 @@ router.post('/login', async (req, res) => {
   try {
     const { teamName, accessCode } = req.body;
 
-    // Validate input
-    if (!teamName || teamName.length < 3 || teamName.length > 20) {
+    if (!teamName || teamName.length < 3 || teamName.length > 30) {
       return res.status(400).json({
         success: false,
         error: 'INVALID_TEAM_NAME',
-        message: 'Team name must be 3-20 characters'
+        message: 'Team name must be 3-30 characters'
       });
     }
 
@@ -38,43 +46,41 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Built-in team credentials with proper team types
-    const builtInTeams = {
-      'RedTeam': { password: 'redteam123', type: 'red' },
-      'BlueTeam': { password: 'blueteam123', type: 'blue' }
-    };
+    // Look up team in database only
+    const result = await pool.query(
+      'SELECT * FROM teams WHERE team_name = $1 AND is_active = TRUE',
+      [teamName]
+    );
 
-    let teamType = 'red'; // Default team type
-    let isBuiltInTeam = false;
-
-    // Check if it's a built-in team
-    const builtInTeam = builtInTeams[teamName];
-    if (builtInTeam && accessCode === builtInTeam.password) {
-      teamType = builtInTeam.type;
-      isBuiltInTeam = true;
-    } else {
-      // For other teams, accept any valid format (demo mode)
-      const isValidCredentials = teamName.length >= 3 && accessCode.length >= 4;
-      if (!isValidCredentials) {
-        return res.status(401).json({
-          success: false,
-          error: 'INVALID_CREDENTIALS',
-          message: 'Invalid team name or access code'
-        });
-      }
+    if (result.rows.length === 0) {
+      return res.status(401).json({
+        success: false,
+        error: 'INVALID_CREDENTIALS',
+        message: 'Invalid team name or access code'
+      });
     }
 
-    // Generate proper JWT session token
+    const team = result.rows[0];
+    const passwordMatch = await bcrypt.compare(accessCode, team.password_hash);
+
+    if (!passwordMatch) {
+      return res.status(401).json({
+        success: false,
+        error: 'INVALID_CREDENTIALS',
+        message: 'Invalid team name or access code'
+      });
+    }
+
+    // Generate JWT
     const sessionToken = jwt.sign(
-      { 
-        teamName,
-        teamType,
-        timestamp: Date.now(),
-        sessionId: database.generateId(),
-        isBuiltIn: isBuiltInTeam
+      {
+        teamName: team.team_name,
+        teamType: team.team_type,
+        teamId: team.id,
+        sessionId: require('crypto').randomUUID()
       },
-      process.env.JWT_SECRET || 'nexus-protocol-secret-key',
-      { 
+      process.env.JWT_SECRET,
+      {
         expiresIn: '2h',
         algorithm: 'HS256',
         issuer: 'nexus-protocol',
@@ -82,34 +88,27 @@ router.post('/login', async (req, res) => {
       }
     );
 
-    // Create team record
-    const teamData = {
-      teamName,
-      accessCodeHash: await bcrypt.hash(accessCode, 10)
-    };
-    const team = database.createTeam(teamData);
+    // Store session in DB
+    const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000);
+    await pool.query(
+      `INSERT INTO sessions (team_id, session_token, authenticated, expires_at)
+       VALUES ($1, $2, TRUE, $3)`,
+      [team.id, sessionToken, expiresAt]
+    );
 
-    // Create session in database
-    const sessionData = {
-      teamId: team.id,
-      sessionToken,
-      authenticated: true,
-      selectedAgent: null,
-      missionProgress: 0,
-      threatLevel: 'LOW',
-      traceResidue: 0,
-      currentPhase: 1,
-      currentMission: null
-    };
-    const session = database.createSession(sessionData);
+    // Update last_active
+    await pool.query(
+      'UPDATE teams SET last_active = NOW() WHERE id = $1',
+      [team.id]
+    );
 
     res.json({
       success: true,
       sessionToken,
       teamId: team.id,
-      teamName,
-      teamType,
-      expiresIn: 7200 // 2 hours
+      teamName: team.team_name,
+      teamType: team.team_type,
+      expiresIn: 7200
     });
 
   } catch (error) {
@@ -123,116 +122,102 @@ router.post('/login', async (req, res) => {
 });
 
 // POST /api/v1/auth/logout
-router.post('/logout', (req, res) => {
+router.post('/logout', async (req, res) => {
   try {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
     if (token) {
-      // In a real implementation, you'd invalidate the token
-      // For now, we'll just acknowledge the logout
+      await pool.query('DELETE FROM sessions WHERE session_token = $1', [token]);
     }
 
-    res.json({
-      success: true,
-      message: 'Session terminated'
-    });
-
+    res.json({ success: true, message: 'Session terminated' });
   } catch (error) {
     console.error('Logout error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'INTERNAL_ERROR',
-      message: 'Internal server error'
-    });
+    res.status(500).json({ success: false, error: 'INTERNAL_ERROR' });
   }
 });
 
 // GET /api/v1/auth/validate
-router.get('/validate', (req, res) => {
+router.get('/validate', async (req, res) => {
   try {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-      return res.status(401).json({
-        valid: false,
-        error: 'No token provided'
-      });
+      return res.status(401).json({ valid: false, error: 'No token provided' });
     }
 
-    // Verify JWT token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexus-protocol-secret-key');
-    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+      issuer: 'nexus-protocol',
+      audience: 'nexus-client'
+    });
+
+    // Check session still exists in DB
+    const result = await pool.query(
+      'SELECT * FROM sessions WHERE session_token = $1 AND expires_at > NOW()',
+      [token]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ valid: false, error: 'Session expired or not found' });
+    }
+
     res.json({
       valid: true,
       teamName: decoded.teamName,
+      teamType: decoded.teamType,
       sessionId: decoded.sessionId,
       expiresIn: Math.floor((decoded.exp * 1000 - Date.now()) / 1000)
     });
 
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({
-        valid: false,
-        error: 'Token expired'
-      });
+      return res.status(401).json({ valid: false, error: 'Token expired' });
     }
-
     if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({
-        valid: false,
-        error: 'Invalid token'
-      });
+      return res.status(401).json({ valid: false, error: 'Invalid token' });
     }
-
     console.error('Token validation error:', error);
-    res.status(500).json({
-      valid: false,
-      error: 'Internal server error'
-    });
+    res.status(500).json({ valid: false, error: 'Internal server error' });
   }
 });
 
 // POST /api/v1/auth/refresh
-router.post('/refresh', (req, res) => {
+router.post('/refresh', async (req, res) => {
   try {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-      return res.status(401).json({
-        success: false,
-        error: 'No token provided'
-      });
+      return res.status(401).json({ success: false, error: 'No token provided' });
     }
 
-    // Verify current token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexus-protocol-secret-key');
-    
-    // Generate new token with extended expiry
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
     const newToken = jwt.sign(
-      { 
+      {
         teamName: decoded.teamName,
-        timestamp: Date.now(),
+        teamType: decoded.teamType,
+        teamId: decoded.teamId,
         sessionId: decoded.sessionId
       },
-      process.env.JWT_SECRET || 'nexus-protocol-secret-key',
-      { expiresIn: '2h' }
+      process.env.JWT_SECRET,
+      { expiresIn: '2h', algorithm: 'HS256', issuer: 'nexus-protocol', audience: 'nexus-client' }
     );
 
-    res.json({
-      success: true,
-      sessionToken: newToken,
-      expiresIn: 7200
-    });
+    // Update session token in DB
+    const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000);
+    await pool.query(
+      'UPDATE sessions SET session_token = $1, expires_at = $2 WHERE session_token = $3',
+      [newToken, expiresAt, token]
+    );
+
+    res.json({ success: true, sessionToken: newToken, expiresIn: 7200 });
 
   } catch (error) {
     console.error('Token refresh error:', error);
-    res.status(401).json({
-      success: false,
-      error: 'Invalid or expired token'
-    });
+    res.status(401).json({ success: false, error: 'Invalid or expired token' });
   }
 });
 

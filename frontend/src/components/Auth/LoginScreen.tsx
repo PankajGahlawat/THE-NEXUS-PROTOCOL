@@ -21,12 +21,13 @@ export default function LoginScreen() {
   const [error, setError] = useState('');
 
   const { login } = useGame();
-  const { playSound } = useAudio();
+  const { playSound, startAudio } = useAudio();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    startAudio();
 
     try {
       const result = await login(teamName, accessCode);
