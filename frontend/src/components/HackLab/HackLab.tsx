@@ -9,20 +9,35 @@ export default function HackLab() {
   const targetUrl = searchParams.get('target') || 'http://localhost:5000';
   const roundName = searchParams.get('round') || 'VIDYATECH';
 
-  const totalSeconds = 2 * 60 * 60;
-  const [remaining, setRemaining] = useState(totalSeconds);
+  const TOTAL_SECONDS = 2 * 60 * 60;
+  const STORAGE_KEY = 'nexus_hacklab_start';
+
+  // Get or create a persistent start time in localStorage
+  const getStartTime = () => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) return parseInt(stored, 10);
+    const now = Date.now();
+    localStorage.setItem(STORAGE_KEY, String(now));
+    return now;
+  };
+
+  const calcRemaining = () => {
+    const elapsed = Math.floor((Date.now() - getStartTime()) / 1000);
+    return Math.max(0, TOTAL_SECONDS - elapsed);
+  };
+
+  const [remaining, setRemaining] = useState(calcRemaining);
 
   // Countdown timer — auto-logout when time expires
   useEffect(() => {
     const timer = setInterval(() => {
-      setRemaining(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          navigate('/login');
-          return 0;
-        }
-        return prev - 1;
-      });
+      const left = calcRemaining();
+      setRemaining(left);
+      if (left <= 0) {
+        clearInterval(timer);
+        localStorage.removeItem(STORAGE_KEY);
+        navigate('/login');
+      }
     }, 1000);
     return () => clearInterval(timer);
   }, []);
