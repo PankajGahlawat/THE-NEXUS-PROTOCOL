@@ -29,9 +29,6 @@ const ROUNDS: Round[] = [
     number: 1, title: 'VIDYATECH', subtitle: 'University Portal — 15 Vulnerabilities',
     difficulty: 'EASY → INTERMEDIATE → ADVANCED', difficultyClass: 'beginner',
     format: 'Red Team vs Blue Team', duration: '60 Minutes', totalVulns: 15,
-    port: 'Port 5000',
-    targetUrl: `http://${window.location.hostname}:5000`,
-    monitorUrl: `http://${window.location.hostname}:8080`,
     vulns: [
       { id:'V1',  name:'SQL Injection — Student Login',           level:'beginner',     points: 40  },
       { id:'V2',  name:'Stored XSS — Notice Board',               level:'beginner',     points: 40  },
@@ -129,6 +126,17 @@ export default function MissionBriefing() {
   };
 
   const currentRole = gameState.teamType === 'red' ? 'Red Team' : 'Blue Team';
+  const host = window.location.hostname;
+
+  // Use room-assigned ports from game state (set at login from /api/v1/rooms/my)
+  const ROUNDS_DYNAMIC: Round[] = [
+    {
+      ...ROUNDS[0],
+      port: `Port ${gameState.vidyatechPort}`,
+      targetUrl: `http://${host}:${gameState.vidyatechPort}`,
+      monitorUrl: `http://${host}:${gameState.monitorPort}`,
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-arcane-dark p-8">
@@ -148,7 +156,7 @@ export default function MissionBriefing() {
           <span style={s.sectionTag}>// OPERATION_ROUNDS</span>
           <h2 style={s.sectionTitle}>MISSION ROUNDS</h2>
 
-          {ROUNDS.map(round => {
+          {ROUNDS_DYNAMIC.map(round => {
             const open = expandedRounds.has(round.number);
             return (
               <div key={round.number} style={s.roundCard}>

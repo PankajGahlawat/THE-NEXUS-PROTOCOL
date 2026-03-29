@@ -12,5 +12,19 @@
     "patches_file": "d:\\THE-NEXUS-PROTOCOL\\backend\\data\\vidyatech_Room_A_patches.json",
     "vidyatech_port": 5000,
     "monitor_port": 8080
+  },
+  {
+    "id": "room-1774768092147",
+    "room_name": "Room B",
+    "status": "active",
+    "red_team_name": "RootStrike",
+    "red_team_code": "Root@2026",
+    "blue_team_name": "Boats",
+    "blue_team_code": "Boat@2026",
+    "created_at": "2026-03-29T07:42:43.609Z",
+    "log_file": "d:\\THE-NEXUS-PROTOCOL\\backend\\data\\vidyatech_Room_B.log",
+    "patches_file": "d:\\THE-NEXUS-PROTOCOL\\backend\\data\\vidyatech_Room_B_patches.json",
+    "vidyatech_port": 5001,
+    "monitor_port": 8081
   }
 ]

@@ -72,6 +72,8 @@ interface GameState {
   missionActive: boolean;
   websocket: WebSocket | null;
   broadcasts: Broadcast[];
+  vidyatechPort: number;
+  monitorPort: number;
 }
 
 interface GameContextType {
@@ -109,6 +111,8 @@ const initialGameState: GameState = {
   missionActive: false,
   websocket: null,
   broadcasts: [],
+  vidyatechPort: 5000,
+  monitorPort: 8080,
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -132,12 +136,28 @@ export function GameProvider({ children }: { children: ReactNode }) {
         // Get team type from backend response
         const teamType = data.teamType || data.team_type || 'red'; // Default to red if not specified
         
+        // Fetch room assignment to get isolated vidyatech/monitor ports
+        let vidyatechPort = 5000;
+        let monitorPort = 8080;
+        try {
+          const roomRes = await fetch(`${API_BASE}/api/v1/rooms/my`, {
+            headers: { Authorization: `Bearer ${data.sessionToken}` }
+          });
+          const roomData = await roomRes.json();
+          if (roomData.success && roomData.room) {
+            vidyatechPort = roomData.room.vidyatech_port || 5000;
+            monitorPort = roomData.room.monitor_port || 8080;
+          }
+        } catch { /* use defaults */ }
+
         setGameState(prev => ({
           ...prev,
           isAuthenticated: true,
           currentTeam: teamName,
           teamType: teamType,
           sessionToken: data.sessionToken,
+          vidyatechPort,
+          monitorPort,
         }));
         return { success: true, sessionToken: data.sessionToken };
       } else {
