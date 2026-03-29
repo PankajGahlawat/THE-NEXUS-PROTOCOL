@@ -1238,18 +1238,9 @@ def watch_log():
             time.sleep(2)
 
 
-def inject_startup_events():
-    os.makedirs(os.path.dirname(LOG_FILE) if os.path.dirname(LOG_FILE) else ".", exist_ok=True)
-    with open(LOG_FILE, "a") as f:
-        f.write("GET /robots.txt HTTP/1.1 -- recon probe\n")
-        f.write("POST /login roll_no=' OR '1'='1'-- HTTP/1.1\n")
-    print("[Monitor] Injected startup test events.")
-
-
 # ─────────────────────────── ENTRY POINT ─────────────────────────────────────
 
 if __name__ == "__main__":
-    inject_startup_events()
     threading.Thread(target=watch_log, daemon=True).start()
 
     port = int(os.environ.get("PORT", 8080))
