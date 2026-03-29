@@ -490,7 +490,7 @@ ATTACK_PATTERNS = [
     (r"flask\.unsign|secret_key.*forge|forged.*session", "Session Cookie Forgery",      "CRITICAL", "#ff0000"),
     (r"body=cmd=exploit\s+13\b",                        "Simulated Debug/Session Forge","HIGH",     "#ff4757"),
     # SSRF: only match when 127.0.0.1 or internal IPs appear in body/url param, not in ip= field
-    (r"body=.*(?:127\.0\.0\.1|169\.254\.169\.254|file://|/api/internal)|url=.*(?:127\.0\.0\.1|169\.254\.169\.254)", "SSRF Attempt", "CRITICAL", "#ff0000"),
+    (r"body=[^|]*(?:127\.0\.0\.1|169\.254\.169\.254|file://|/api/internal)|url=[^|]*(?:127\.0\.0\.1|169\.254\.169\.254)", "SSRF Attempt", "CRITICAL", "#ff0000"),
     (r"body=cmd=exploit\s+14\b",                        "Simulated SSRF",               "HIGH",     "#ff4757"),
     # ── EASY VULNS ──
     (r"<iframe.*src=.*localhost|X-Frame-Options",       "Clickjacking Attempt",         "MEDIUM",   "#ffa502"),
