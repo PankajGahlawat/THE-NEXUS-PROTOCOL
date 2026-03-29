@@ -26,3 +26,4 @@
 13:09:19 POST /api/patch? | body={"vuln_id": "sqli_login", "enabled": true, "name": "SQL Injection"} | ip=127.0.0.1 | status=200
 13:09:19 [BLUE_TEAM] PATCH_APPLIED | vuln=sqli_login | name=SQL Injection | regex="'\\s*OR\\s|'--|UNION\\s+SELECT|DROP\\s+TABLE" | ip=monitor | status=200
 13:11:40 GET /? | body= | ip=127.0.0.1 | status=200
+13:24:58 GET /? | body= | ip=127.0.0.1 | status=200
