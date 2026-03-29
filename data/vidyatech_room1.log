@@ -27,3 +27,14 @@
 13:09:19 [BLUE_TEAM] PATCH_APPLIED | vuln=sqli_login | name=SQL Injection | regex="'\\s*OR\\s|'--|UNION\\s+SELECT|DROP\\s+TABLE" | ip=monitor | status=200
 13:11:40 GET /? | body= | ip=127.0.0.1 | status=200
 13:24:58 GET /? | body= | ip=127.0.0.1 | status=200
+13:34:50 GET /? | body= | ip=127.0.0.1 | status=200
+13:34:54 GET /logout? | body= | ip=127.0.0.1 | status=302
+13:34:55 GET /? | body= | ip=127.0.0.1 | status=200
+13:35:08 [BLUE_TEAM] PATCH_REVERTED | vuln=sqli_login | name=SQL Injection | ip=monitor | status=200
+13:35:08 POST /api/patch? | body={"vuln_id": "sqli_login", "enabled": false, "name": "SQL Injection"} | ip=127.0.0.1 | status=200
+13:35:08 [BLUE_TEAM] PATCH_REVERTED | vuln=sqli_login | name=SQL Injection | ip=monitor | status=200
+13:35:23 GET /login? | body= | ip=127.0.0.1 | status=200
+13:36:15 POST /login? | body=roll_no=`' OR '1'='1'--`&password=4353 | ip=127.0.0.1 | status=302
+13:36:16 GET /dashboard? | body= | ip=127.0.0.1 | status=200
+15:02:04 HEAD /? | body= | ip=127.0.0.1 | status=200
+15:02:04 GET /? | body= | ip=127.0.0.1 | status=200

@@ -1,5 +1,3 @@
 {
-  "sqli_login": true,
-  "sqli_login__regex": "'\\s*OR\\s|'--|UNION\\s+SELECT|DROP\\s+TABLE",
-  "sqli_login__ts": "13:09:19"
+  "sqli_login": false
 }
