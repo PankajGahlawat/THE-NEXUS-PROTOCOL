@@ -381,7 +381,7 @@ app.get('/api/v1/auth/validate', auth.authenticateToken(), (req, res) => {
     valid: true,
     teamName: req.session.teamName,
     teamId: req.session.teamId,
-    expiresIn: 7200 // Simplified for demo
+    expiresIn: 7200 // 2 hour session
   });
 });
 
