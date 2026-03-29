@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Submit Assignment{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container"><h1>Assignment Submission</h1><p>Upload your assignment files before the due date</p></div>
+</div>
+<div class="container" style="max-width:560px; margin-bottom:3rem;">
+  {% if msg %}
+  <div class="alert {% if ok %}alert-success{% else %}alert-error{% endif %}">{{ '✓' if ok else '⚠' }} {{ msg }}</div>
+  {% endif %}
+  <div class="card card-accent">
+    <h3 style="margin-bottom:1.25rem;">Upload Assignment</h3>
+    <form method="POST" enctype="multipart/form-data">
+      <div class="form-group">
+        <label>Subject</label>
+        <select name="subject">
+          <option>Data Structures</option><option>Computer Networks</option><option>Operating Systems</option>
+          <option>Database Management</option><option>Software Engineering</option><option>Machine Learning</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Assignment File (PDF, DOCX, images accepted)</label>
+        <input type="file" name="file" style="padding:8px;">
+      </div>
+      <button type="submit" class="btn btn-primary">Submit Assignment →</button>
+    </form>
+  </div>
+  <div class="alert alert-info mt-2">Maximum file size: 10 MB. Accepted formats: PDF, DOCX, PPTX, images.</div>
+</div>
+{% endblock %}

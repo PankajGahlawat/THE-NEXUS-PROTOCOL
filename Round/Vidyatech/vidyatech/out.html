@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="4">
+  <title>Blue Team Monitor — Vidyatech</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#050810;--bg2:#0b0f1a;--bg3:#111827;--bd:#1e2d40;--accent:#00e5ff;--text:#dde4f0;--muted:#64748b}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px}
+    body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,229,255,0.008) 3px,rgba(0,229,255,0.008) 4px);pointer-events:none;z-index:9999}
+    nav{background:rgba(5,8,16,0.97);border-bottom:1px solid var(--bd);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:100}
+    .brand{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:var(--accent)}
+    .brand span{color:#ff4757}
+    .live{display:flex;align-items:center;gap:6px;font-size:12px;color:#00ff88}
+    .dot{width:7px;height:7px;border-radius:50%;background:#00ff88;animation:pulse 1.4s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
+    .page{max-width:1400px;margin:0 auto;padding:2rem}
+    .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:2rem}
+    .stat{background:var(--bg2);border:1px solid var(--bd);border-radius:8px;padding:1.25rem;text-align:center}
+    .stat-n{font-family:'Syne',sans-serif;font-weight:800;font-size:32px;line-height:1;margin-bottom:4px}
+    .stat-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+    .panel{background:var(--bg2);border:1px solid var(--bd);border-radius:8px;overflow:hidden;margin-bottom:1.5rem}
+    .panel-hdr{padding:1rem 1.5rem;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
+    .panel-hdr h2{font-family:'Syne',sans-serif;font-size:15px;font-weight:700}
+    table{width:100%;border-collapse:collapse}
+    th{text-align:left;padding:10px 14px;font-size:11px;color:var(--muted);border-bottom:1px solid var(--bd);text-transform:uppercase;letter-spacing:.5px;background:var(--bg3)}
+    td{padding:10px 14px;border-bottom:1px solid var(--bd);font-family:'JetBrains Mono',monospace;font-size:12px;vertical-align:middle}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:rgba(255,255,255,0.015)}
+    .checklist{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:1.25rem 1.5rem}
+    .check-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+    .check-item::before{content:'✓';color:#00e5ff;font-weight:700;flex-shrink:0}
+    h1{font-family:'Syne',sans-serif;font-weight:800;font-size:24px;margin-bottom:4px}
+    .refresh-note{font-size:11px;color:var(--muted)}
+  </style>
+</head>
+<body>
+<nav>
+  <span class="brand">Blue<span>Team</span> Monitor</span>
+  <div class="live"><span class="dot"></span>LIVE — refreshes every 4s</div>
+  <span style="font-size:12px;color:var(--muted)">Vidyatech · 18 Mar 2026 18:20:57</span>
+</nav>
+
+<div class="page">
+  <div style="margin-bottom:1.5rem">
+    <h1>Attack Detection Dashboard</h1>
+    <p style="color:var(--muted);font-size:13px">Real-time security monitoring for the Blue Team. Auto-refreshes every 4 seconds.</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-n" style="color:var(--accent)">1</div>
+      <div class="stat-l">Total Events</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n" style="color:#dde4f0">0</div>
+      <div class="stat-l">Critical</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n" style="color:#dde4f0">0</div>
+      <div class="stat-l">High</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n" style="color:#ffa502">1</div>
+      <div class="stat-l">Medium</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n" style="color:#dde4f0">0</div>
+      <div class="stat-l">Low</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-hdr">
+      <h2>Live Security Events</h2>
+      <span class="refresh-note">Showing latest 60 events · 1 total captured</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:80px">Time</th>
+          <th style="width:220px">Attack Type</th>
+          <th style="width:110px">Severity</th>
+          <th>Request / Payload</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="color:#64748b;white-space:nowrap">18:07:42</td>
+          <td style="color:#ffa502;font-weight:500">Simulated Exploit (Terminal)</td>
+          <td><span style="padding:2px 9px;border-radius:3px;font-size:11px;font-weight:700;background:rgba(255,165,2,0.12);color:#ffa502;border:1px solid rgba(255,165,2,0.25)">MEDIUM</span></td>
+          <td style="color:#94a3b8;font-size:12px;max-width:500px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">18:07:42 POST /api/terminal_log? | body=cmd=exploit 8 | ip=127.0.0.1 | status=200</td>
+        </tr></tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="panel-hdr">
+      <h2>Blue Team Response Checklist</h2>
+    </div>
+    <div class="checklist">
+      <div class="check-item">Monitor /login for SQL injection patterns (' OR, --, UNION)</div>
+      <div class="check-item">Watch POST /notices/post for &lt;script&gt; tags</div>
+      <div class="check-item">Alert on ../ or %2f in URL parameters</div>
+      <div class="check-item">Block ; | &amp;&amp; characters in /tools/nslookup input</div>
+      <div class="check-item">Validate upload MIME type — block .php5 .phtml .phar</div>
+      <div class="check-item">Add CSRF tokens to all POST forms</div>
+      <div class="check-item">Reject JWT tokens where alg = none</div>
+      <div class="check-item">Add ownership check to /api/result/&lt;id&gt;</div>
+      <div class="check-item">Remove secrets from /robots.txt and /.env</div>
+      <div class="check-item">Change default staff password (FAC001/admin123)</div>
+      <div class="check-item">Validate dashboard document upload extension is strictly .pdf</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-hdr"><h2>Vulnerability → Endpoint Map</h2></div>
+    <table>
+      <thead><tr><th>#</th><th>Type</th><th>Endpoint</th><th>Level</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td style="color:#00ff88">SQL Injection</td><td style="color:#64748b">POST /login</td><td><span style="padding:2px 9px;border-radius:3px;font-size:11px;font-weight:700;background:rgba(0,255,136,0.1);color:#00ff88;border:1px solid rgba(0,255,136,0.2)">Easy</span></td><td style="color:#475569">Monitoring</td></tr><tr><td>2</td><td style="color:#00ff88">Stored XSS</td><td style="color:#64748b">POST /notices/post</td><td><span style="padding:2px 9px;border-radius:3px;font-size:11px;font-weight:700;background:rgba(0,255,136,0.1);color:#00ff88;border:1px solid rgba(0,255,136,0.2)">Easy</span></td><td style="color:#475569">Monitoring</td></tr><tr><td>3</td><td style="color:#00ff88">Default Credentials</td><td style="color:#64748b">POST /staff/login</td><td><span style="padding:2px 9px;border-radius:3px;font-size:11px;font-weight:700;background:rgba(0,255,136,0.1);color:#00ff88;border:1px solid rgba(0,255,136,0.2)">Easy</span></td><td style="color:#475569">Monitoring</td></tr><tr><td>4</td><td style="color:#00ff88">Directory Traversal</td><td style="color:#64748b">GET /resources/download</td><td><span style="padding:2px 9px;border-radius:3px;font-size:11px;font-weight:700;background:rgba(0,255,136,0.1);color:#00ff88;border:1px solid rgba(0,255,136,0.2)">Easy</span></td><td style="color:#475569">Monitoring</td></tr><tr><td>5</td><td style="color:#00ff88">Data Exposure</td><td style="color:#64748b">GET /robots.txt /.env</td><td><span style="padding:2px 9px;border-radius:3px;font-size:11px;font-weight:700;background:rgba(0,255,136,0.1);color:#00ff88;border:1px solid rgba(0,255,136,0.2)">Easy</span></td><td style="color:#475569">Monitoring</td></tr><tr><td>6</td><td style="color:#ffa502">JWT alg:none</td><td style="color:#64748b">GET /api/me</td><td><span style="padding:2px 9px;border-radius:3px;font-size:11px;font-weight:700;background:rgba(255,165,2,0.1);color:#ffa502;border:1px solid rgba(255,165,2,0.2)">Intermediate</span></td><td style="color:#475569">Monitoring</td></tr><tr><td>7</td><td style="color:#ffa502">IDOR</td><td style="color:#64748b">GET /api/result/<id></td><td><span style="padding:2px 9px;border-radius:3px;font-size:11px;font-weight:700;background:rgba(255,165,2,0.1);color:#ffa502;border:1px solid rgba(255,165,2,0.2)">Intermediate</span></td><td style="color:#475569">Monitoring</td></tr><tr><td>8</td><td style="color:#ffa502">Command Injection</td><td style="color:#64748b">POST /tools/nslookup</td><td><span style="padding:2px 9px;border-radius:3px;font-size:11px;font-weight:700;background:rgba(255,165,2,0.1);color:#ffa502;border:1px solid rgba(255,165,2,0.2)">Intermediate</span></td><td style="color:#475569">Monitoring</td></tr><tr><td>9</td><td style="color:#ffa502">File Upload RCE</td><td style="color:#64748b">POST /assignments/upload</td><td><span style="padding:2px 9px;border-radius:3px;font-size:11px;font-weight:700;background:rgba(255,165,2,0.1);color:#ffa502;border:1px solid rgba(255,165,2,0.2)">Intermediate</span></td><td style="color:#475569">Monitoring</td></tr><tr><td>10</td><td style="color:#ffa502">CSRF</td><td style="color:#64748b">POST /account/update-email</td><td><span style="padding:2px 9px;border-radius:3px;font-size:11px;font-weight:700;background:rgba(255,165,2,0.1);color:#ffa502;border:1px solid rgba(255,165,2,0.2)">Intermediate</span></td><td style="color:#475569">Monitoring</td></tr><tr><td>11</td><td style="color:#00ff88">Hardcoded Credentials</td><td style="color:#64748b">POST /admin/login</td><td><span style="padding:2px 9px;border-radius:3px;font-size:11px;font-weight:700;background:rgba(0,255,136,0.1);color:#00ff88;border:1px solid rgba(0,255,136,0.2)">Easy</span></td><td style="color:#475569">Monitoring</td></tr><tr><td>12</td><td style="color:#00ff88">Document Upload Bypass</td><td style="color:#64748b">POST /dashboard/upload-doc</td><td><span style="padding:2px 9px;border-radius:3px;font-size:11px;font-weight:700;background:rgba(0,255,136,0.1);color:#00ff88;border:1px solid rgba(0,255,136,0.2)">Easy</span></td><td style="color:#475569">Monitoring</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>

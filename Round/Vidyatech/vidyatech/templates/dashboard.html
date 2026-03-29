@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1>Welcome, {{ user.name }}</h1>
+    <p>{{ user.branch }} · Year {{ user.year }} · Roll No: {{ user.roll_no }}</p>
+  </div>
+</div>
+<div class="container" style="margin-bottom:3rem;">
+  <div class="grid-4" style="margin-bottom:2rem;">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#e0eaf5;">🎓</div>
+      <div><div class="stat-num">{{ user.cgpa }}</div><div class="stat-label">CGPA</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#fef3c7;">📋</div>
+      <div><div class="stat-num">{{ results|length }}</div><div class="stat-label">Results</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#dcfce7;">📁</div>
+      <div><div class="stat-num">{{ assignments|length }}</div><div class="stat-label">Submitted</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#f3e8ff;">🏫</div>
+      <div><div class="stat-num">{{ user.year }}</div><div class="stat-label">Year</div></div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:2fr 1fr; gap:2rem; align-items:start;">
+    <div>
+      <h2>My Results</h2>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <tr><th>Subject</th><th>Marks</th><th>Grade</th><th>Semester</th></tr>
+            {% for r in results %}
+            <tr>
+              <td>{{ r.subject }}</td>
+              <td>{{ r.marks }}</td>
+              <td><span class="badge {% if r.grade in ['O','A'] %}badge-green{% elif r.grade == 'B' %}badge-blue{% else %}badge-amber{% endif %}">{{ r.grade }}</span></td>
+              <td>Sem {{ r.semester }}</td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h2>Quick Actions</h2>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <a href="/student/document/upload" class="btn btn-outline">Upload Document</a>
+        <a href="/results" class="btn btn-outline">Full Results</a>
+        <a href="/notices" class="btn btn-outline">View Notices</a>
+        <a href="/account/update-email" class="btn btn-outline">Update Email</a>
+        <a href="/account/change-password" class="btn btn-outline">Change Password</a>
+      </div>
+      <div class="card mt-3">
+        <h3 style="margin-bottom:0.75rem;">Upload Document</h3>
+        <form action="/dashboard/upload-doc" method="post" enctype="multipart/form-data" onsubmit="this.doc_name.value = this.doc_file.value.split('\\').pop()">
+          <input type="hidden" name="doc_name" value="">
+          <input type="file" name="doc_file" class="form-control" style="margin-bottom:10px;" required>
+          <button type="submit" class="btn btn-primary" style="width:100%;">Upload Document</button>
+          <p style="font-size: 12px; color: var(--muted); margin-top: 5px;">* Please upload PDF files only.</p>
+        </form>
+        {% if doc_msg %}
+          <div style="margin-top: 10px; font-size: 13px; color: {% if doc_ok %}green{% else %}red{% endif %};">{{ doc_msg }}</div>
+        {% endif %}
+      </div>
+      <div class="card mt-3">
+        <h3 style="margin-bottom:0.75rem;">Profile</h3>
+        <table style="font-size:13px;">
+          <tr><td style="color:var(--muted); padding:4px 0;">Email</td><td>{{ user.email }}</td></tr>
+          <tr><td style="color:var(--muted); padding:4px 0;">Phone</td><td>{{ user.phone }}</td></tr>
+          <tr><td style="color:var(--muted); padding:4px 0;">Branch</td><td>{{ user.branch }}</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

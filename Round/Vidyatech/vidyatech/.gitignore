@@ -1,0 +1,10 @@
+__pycache__/
+.venv/
+.vscode/
+data/
+test_regex.py
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+.env

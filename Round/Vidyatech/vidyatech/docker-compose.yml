@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  vidyatech:
+    build: .
+    container_name: vidyatech-target
+    ports:
+      - "5000:5000"
+    volumes:
+      - vt-data:/app/data
+      - vt-uploads:/app/static/uploads
+    environment:
+      - FLASK_ENV=development
+    networks:
+      - out-net
+    restart: unless-stopped
+
+  monitor:
+    image: python:3.11-slim
+    container_name: vt-monitor
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./monitor:/monitor
+    command: python /monitor/server.py
+    networks:
+      - out-net
+    depends_on:
+      - vidyatech
+    restart: unless-stopped
+
+networks:
+  out-net:
+    driver: bridge
+
+volumes:
+  vt-data:
+  vt-uploads:

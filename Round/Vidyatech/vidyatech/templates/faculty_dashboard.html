@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Faculty Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container"><h1>Faculty Dashboard</h1><p>{{ user.name }} — {{ user.department }}</p></div>
+</div>
+<div class="container" style="margin-bottom:3rem;">
+  <h2>Enrolled Students</h2>
+  <div class="card mt-2">
+    <div class="table-wrap">
+      <table>
+        <tr><th>Roll No</th><th>Name</th><th>Branch</th><th>Year</th><th>CGPA</th></tr>
+        {% for s in students %}
+        <tr>
+          <td><code style="font-size:12px;">{{ s.roll_no }}</code></td>
+          <td>{{ s.name }}</td>
+          <td>{{ s.branch }}</td>
+          <td>Year {{ s.year }}</td>
+          <td>{{ s.cgpa }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

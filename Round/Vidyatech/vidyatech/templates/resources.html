@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Resources{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container"><h1>Academic Resources</h1><p>Download syllabi, timetables, and study materials</p></div>
+</div>
+<div class="container" style="margin-bottom:3rem;">
+  <div class="grid-3">
+    {% for item in [
+      ('CSE Syllabus 2024','syllabus_cse.pdf','Computer Science','📄'),
+      ('Academic Calendar','academic_calendar.pdf','All Departments','📅'),
+      ('Lab Manual – CSE','syllabus_cse.pdf','Computer Science','🔬'),
+    ] %}
+    <div class="card card-accent">
+      <div style="font-size:32px; margin-bottom:0.75rem;">{{ item[3] }}</div>
+      <h3 style="margin-bottom:4px;">{{ item[0] }}</h3>
+      <p style="font-size:13px; color:var(--muted); margin-bottom:1rem;">{{ item[2] }}</p>
+      <a href="/resources/download?file={{ item[1] }}" class="btn btn-outline btn-sm">Download →</a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

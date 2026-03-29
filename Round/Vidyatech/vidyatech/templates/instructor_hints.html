@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Instructor Hints — Vidyatech</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:    #0a0d12;
+      --bg2:   #0f1319;
+      --bg3:   #151c26;
+      --bd:    #1e2d3d;
+      --accent:#00e5ff;
+      --red:   #ff4757;
+      --green: #00ff88;
+      --amber: #ffa502;
+      --text:  #dde4f0;
+      --muted: #64748b;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:14px; line-height:1.65; }
+    body::before { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,229,255,0.008) 3px,rgba(0,229,255,0.008) 4px); pointer-events:none; z-index:9999; }
+
+    /* NAV */
+    nav { background:rgba(10,13,18,0.97); border-bottom:1px solid var(--bd); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:54px; position:sticky; top:0; z-index:100; }
+    .brand { font-family:'Syne',sans-serif; font-weight:800; font-size:18px; color:var(--accent); }
+    .brand span { color:var(--red); }
+    .nav-badge { background:rgba(255,71,87,0.15); border:1px solid rgba(255,71,87,0.3); color:var(--red); padding:3px 10px; border-radius:3px; font-size:11px; font-weight:600; letter-spacing:0.5px; }
+
+    /* LAYOUT */
+    .container { max-width:1280px; margin:0 auto; padding:0 2rem; }
+    .page { padding:2.5rem 0 5rem; }
+
+    /* HERO */
+    .hero { background:linear-gradient(135deg,#0a0d12 0%,#0f1e30 100%); border-bottom:1px solid var(--bd); padding:2.5rem 0; }
+    .hero h1 { font-family:'Syne',sans-serif; font-weight:800; font-size:30px; margin-bottom:0.35rem; }
+    .hero p  { color:var(--muted); font-size:14px; }
+    .live-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--green); margin-right:6px; animation:pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+    /* STATS ROW */
+    .stats { display:grid; grid-template-columns:repeat(5,1fr); gap:1rem; margin-bottom:2.5rem; }
+    .stat { background:var(--bg2); border:1px solid var(--bd); border-radius:8px; padding:1.1rem 1.25rem; text-align:center; }
+    .stat-n { font-family:'Syne',sans-serif; font-weight:800; font-size:28px; line-height:1; margin-bottom:4px; }
+    .stat-l { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+
+    /* VULN CARD */
+    .vuln-card { background:var(--bg2); border:1px solid var(--bd); border-radius:10px; overflow:hidden; margin-bottom:1.5rem; }
+    .vuln-header { padding:1.1rem 1.5rem; display:flex; align-items:center; gap:1rem; cursor:pointer; user-select:none; transition:background .15s; }
+    .vuln-header:hover { background:rgba(255,255,255,0.02); }
+    .vuln-num { font-family:'Syne',sans-serif; font-weight:800; font-size:26px; min-width:40px; }
+    .vuln-title { flex:1; }
+    .vuln-title h2 { font-family:'Syne',sans-serif; font-weight:700; font-size:17px; margin-bottom:2px; }
+    .vuln-title p  { font-size:12px; color:var(--muted); }
+    .tag { display:inline-block; padding:3px 10px; border-radius:3px; font-size:11px; font-weight:700; letter-spacing:0.4px; margin-right:6px; }
+    .tag-easy  { background:rgba(0,255,136,0.12); color:var(--green); border:1px solid rgba(0,255,136,0.25); }
+    .tag-mid   { background:rgba(255,165,2,0.12);  color:var(--amber); border:1px solid rgba(255,165,2,0.25); }
+    .tag-pts   { background:rgba(0,229,255,0.1);   color:var(--accent); border:1px solid rgba(0,229,255,0.2); }
+    .chevron   { color:var(--muted); font-size:18px; transition:transform .25s; }
+    .chevron.open { transform:rotate(180deg); }
+
+    /* VULN BODY */
+    .vuln-body { display:none; border-top:1px solid var(--bd); padding:1.5rem; }
+    .vuln-body.open { display:block; }
+    .section-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; font-weight:600; margin-bottom:6px; margin-top:1.25rem; }
+    .section-label:first-child { margin-top:0; }
+    pre, code { font-family:'JetBrains Mono',monospace; }
+    code { background:var(--bg3); border:1px solid var(--bd); padding:2px 7px; border-radius:3px; font-size:12px; color:var(--accent); }
+    pre { background:var(--bg3); border:1px solid var(--bd); padding:1rem 1.25rem; border-radius:6px; font-size:12px; color:var(--green); overflow-x:auto; white-space:pre-wrap; line-height:1.8; }
+    .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem; }
+    .info-box  { background:var(--bg3); border:1px solid var(--bd); border-radius:6px; padding:1rem; }
+    .info-box p.lbl { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+    .info-box p.val { font-size:13px; color:var(--text); }
+    .flag-box { background:rgba(0,255,136,0.06); border:1px solid rgba(0,255,136,0.2); border-radius:6px; padding:1rem 1.25rem; display:flex; align-items:center; justify-content:space-between; margin-top:1.25rem; }
+    .flag-box span { font-family:'JetBrains Mono',monospace; font-size:14px; color:var(--green); font-weight:500; }
+    .copy-btn { background:rgba(0,255,136,0.1); border:1px solid rgba(0,255,136,0.25); color:var(--green); padding:4px 12px; border-radius:3px; font-size:12px; cursor:pointer; font-family:'DM Sans',sans-serif; }
+    .copy-btn:hover { background:rgba(0,255,136,0.2); }
+    .hint-text { background:rgba(255,165,2,0.06); border-left:3px solid var(--amber); padding:0.75rem 1rem; border-radius:0 5px 5px 0; font-size:13px; color:var(--text); margin-bottom:1rem; }
+    .defend-text { background:rgba(0,229,255,0.05); border-left:3px solid var(--accent); padding:0.75rem 1rem; border-radius:0 5px 5px 0; font-size:13px; color:var(--text); }
+    hr { border:none; border-top:1px solid var(--bd); margin:1.5rem 0; }
+
+    /* SCORING */
+    .scoring-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-top:2.5rem; }
+    .score-card { background:var(--bg2); border:1px solid var(--bd); border-radius:10px; overflow:hidden; }
+    .score-hdr { padding:1rem 1.5rem; border-bottom:1px solid var(--bd); }
+    .score-hdr h2 { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
+    .score-row { display:flex; justify-content:space-between; align-items:center; padding:10px 1.5rem; border-bottom:1px solid var(--bd); font-size:13px; }
+    .score-row:last-child { border-bottom:none; }
+    .pts { color:var(--green); font-weight:700; font-family:'JetBrains Mono',monospace; }
+
+    /* ACCOUNTS TABLE */
+    table { width:100%; border-collapse:collapse; }
+    th { text-align:left; padding:10px 14px; font-size:11px; color:var(--muted); border-bottom:1px solid var(--bd); text-transform:uppercase; letter-spacing:0.4px; background:var(--bg3); }
+    td { padding:10px 14px; border-bottom:1px solid var(--bd); font-size:13px; }
+    tr:last-child td { border-bottom:none; }
+
+    /* CHECKLIST */
+    .checklist { list-style:none; display:flex; flex-direction:column; gap:8px; }
+    .checklist li { display:flex; align-items:center; gap:10px; font-size:13px; }
+    .checklist li::before { content:'☐'; font-size:16px; color:var(--muted); flex-shrink:0; }
+
+    /* FOOTER */
+    .hint-footer { background:var(--bg2); border-top:1px solid var(--bd); padding:1.25rem 2rem; font-size:12px; color:var(--muted); display:flex; justify-content:space-between; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="brand">Vidya<span>tech</span></span>
+  <div style="display:flex; align-items:center; gap:1rem;">
+    <span style="font-size:12px; color:var(--muted);"><span class="live-dot"></span>Event Live</span>
+    <span class="nav-badge">INSTRUCTOR ONLY</span>
+    <a href="/" style="color:var(--muted); font-size:13px; text-decoration:none;">View Site →</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="container">
+    <h1>Instructor Hints Panel</h1>
+    <p>Complete exploit guide for all 10 vulnerabilities. Share only the hints column with students — not this page.</p>
+    <div style="margin-top:1rem; display:flex; gap:0.75rem; flex-wrap:wrap;">
+      <span class="tag tag-easy">5 Easy Vulns</span>
+      <span class="tag tag-mid">5 Intermediate Vulns</span>
+      <span class="tag tag-pts">Instructor PIN: VT@2024</span>
+    </div>
+  </div>
+</div>
+
+<div class="container page">
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat"><div class="stat-n" style="color:var(--accent);">10</div><div class="stat-l">Total Vulns</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--green);">5</div><div class="stat-l">Easy (10 pts)</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--amber);">5</div><div class="stat-l">Medium (20 pts)</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--text);">150</div><div class="stat-l">Max Red Score</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--text);">150</div><div class="stat-l">Max Blue Score</div></div>
+  </div>
+
+  <!-- Test Accounts Banner -->
+  <div style="background:var(--bg2); border:1px solid var(--bd); border-radius:10px; padding:1.25rem 1.5rem; margin-bottom:2rem;">
+    <p style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.75rem;">Test Accounts</p>
+    <div style="overflow-x:auto;">
+      <table>
+        <tr><th>Type</th><th>Username / Roll No</th><th>Password</th><th>Role</th><th>Portal URL</th></tr>
+        <tr><td>Student</td><td><code>VTU2021001</code></td><td><code>arjun123</code></td><td>student</td><td><code>/login</code></td></tr>
+        <tr><td>Student</td><td><code>VTU2021002</code></td><td><code>priya456</code></td><td>student</td><td><code>/login</code></td></tr>
+        <tr><td>Staff Admin</td><td><code>FAC001</code></td><td><code>admin123</code></td><td>admin</td><td><code>/staff/login</code></td></tr>
+        <tr><td>Faculty</td><td><code>FAC002</code></td><td><code>faculty2024</code></td><td>faculty</td><td><code>/staff/login</code></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Vulnerability Cards -->
+  {% for h in hints %}
+  <div class="vuln-card">
+    <div class="vuln-header" onclick="toggle({{ h.num }})">
+      <div class="vuln-num" style="color:{% if h.level == 'Easy' %}var(--green){% else %}var(--amber){% endif %};">
+        #{{ h.num }}
+      </div>
+      <div class="vuln-title">
+        <h2>{{ h.title }}</h2>
+        <p>{{ h.type }} · {{ h.endpoint }}</p>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="tag {% if h.level == 'Easy' %}tag-easy{% else %}tag-mid{% endif %}">{{ h.level }}</span>
+        <span class="tag tag-pts">{% if h.level == 'Easy' %}+10{% else %}+20{% endif %} pts</span>
+        <span class="chevron" id="chev-{{ h.num }}">▼</span>
+      </div>
+    </div>
+
+    <div class="vuln-body" id="body-{{ h.num }}">
+      <div class="info-grid">
+        <div class="info-box">
+          <p class="lbl">Vulnerability Type</p>
+          <p class="val">{{ h.type }}</p>
+        </div>
+        <div class="info-box">
+          <p class="lbl">Affected Endpoint</p>
+          <p class="val"><code>{{ h.endpoint }}</code></p>
+        </div>
+      </div>
+
+      <p class="section-label">Hint for Students</p>
+      <div class="hint-text">{{ h.hint }}</div>
+
+      <p class="section-label">Payload / Exploit</p>
+      <pre>{{ h.payload }}</pre>
+
+      <p class="section-label">Recommended Tool</p>
+      <code>{{ h.tool }}</code>
+
+      {% if h.get('sqlmap') %}
+      <p class="section-label">sqlmap Command</p>
+      <pre>{{ h.sqlmap }}</pre>
+      {% endif %}
+
+      {% if h.get('hydra') %}
+      <p class="section-label">Hydra Command</p>
+      <pre>{{ h.hydra }}</pre>
+      {% endif %}
+
+      {% if h.get('python') %}
+      <p class="section-label">Python Exploit Script</p>
+      <pre>{{ h.python }}</pre>
+      {% endif %}
+
+      <p class="section-label">Blue Team Defense</p>
+      <div class="defend-text">
+        {% if h.num == 1 %}Use parameterized queries: <code>db.execute("SELECT * FROM students WHERE roll_no=?", (roll,))</code>{% endif %}
+        {% if h.num == 2 %}Remove <code>| safe</code> Jinja2 filter — use <code>{{ '{{' }} n.content {{ '}}' }}</code> instead of <code>{{ '{{' }} n.content | safe {{ '}}' }}</code>{% endif %}
+        {% if h.num == 3 %}Force password reset on first login. Add password complexity requirements. Log repeated failed logins.{% endif %}
+        {% if h.num == 4 %}Sanitize filename: <code>filename = os.path.basename(filename)</code> before passing to <code>send_file()</code>{% endif %}
+        {% if h.num == 5 %}Remove secrets from robots.txt and .env. Never expose environment config files via HTTP. Add .env to .htaccess deny rules.{% endif %}
+        {% if h.num == 6 %}Reject any JWT where <code>header["alg"].lower() == "none"</code> — raise 403 immediately. Always verify signature.{% endif %}
+        {% if h.num == 7 %}Add ownership check: <code>WHERE id=? AND student_id=?</code> using session user ID. Return 403 on mismatch.{% endif %}
+        {% if h.num == 8 %}Replace <code>shell=True</code> with a list: <code>subprocess.run(["nslookup", domain], ...)</code>. Validate domain with regex before running.{% endif %}
+        {% if h.num == 9 %}Use <code>python-magic</code> to check MIME type. Whitelist extensions only: <code>allowed = {'.pdf','.docx','.pptx','.jpg','.png'}</code>{% endif %}
+        {% if h.num == 10 %}Add <code>flask-wtf</code> and include <code>{{ '{{' }} form.hidden_tag() {{ '}}' }}</code> in all forms. Verify token on POST.{% endif %}
+      </div>
+
+      <div class="flag-box">
+        <div>
+          <p style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Flag</p>
+          <span>{{ h.flag }}</span>
+        </div>
+        <button class="copy-btn" onclick="copyFlag('{{ h.flag }}', this)">Copy</button>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+  <!-- Scoring Reference -->
+  <div class="scoring-grid">
+    <div class="score-card">
+      <div class="score-hdr" style="border-left:4px solid var(--red);">
+        <h2 style="color:var(--red);">🔴 Red Team Scoring</h2>
+      </div>
+      <div class="score-row"><span>Exploit easy vulnerability (#1–5)</span><span class="pts">+10 pts each</span></div>
+      <div class="score-row"><span>Exploit intermediate vulnerability (#6–10)</span><span class="pts">+20 pts each</span></div>
+      <div class="score-row"><span>Achieve RCE (webshell or cmd injection)</span><span class="pts">+30 pts bonus</span></div>
+      <div class="score-row"><span>Exfiltrate database file</span><span class="pts">+20 pts bonus</span></div>
+      <div class="score-row"><span>Bypass a Blue Team patch</span><span class="pts">+15 pts bonus</span></div>
+      <div class="score-row" style="background:rgba(255,71,87,0.04);"><span><strong>Maximum Score</strong></span><span class="pts">150+ pts</span></div>
+    </div>
+
+    <div class="score-card">
+      <div class="score-hdr" style="border-left:4px solid var(--accent);">
+        <h2 style="color:var(--accent);">🔵 Blue Team Scoring</h2>
+      </div>
+      <div class="score-row"><span>Detect an attack in real-time (with evidence)</span><span class="pts">+15 pts</span></div>
+      <div class="score-row"><span>Patch a vulnerability before it's exploited</span><span class="pts">+25 pts</span></div>
+      <div class="score-row"><span>Block Red Team tool (rate limit / WAF rule)</span><span class="pts">+10 pts</span></div>
+      <div class="score-row"><span>Restore service after an attack</span><span class="pts">+10 pts</span></div>
+      <div class="score-row"><span>Submit written incident report</span><span class="pts">+10 pts</span></div>
+      <div class="score-row" style="background:rgba(0,229,255,0.04);"><span><strong>Maximum Score</strong></span><span class="pts">150+ pts</span></div>
+    </div>
+  </div>
+
+  <!-- Event Checklist -->
+  <div style="background:var(--bg2); border:1px solid var(--bd); border-radius:10px; padding:1.5rem; margin-top:2rem;">
+    <p style="font-family:'Syne',sans-serif; font-size:16px; font-weight:700; margin-bottom:1.25rem;">Pre-Event Checklist</p>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+      {% for item in [
+        'Deploy on isolated LAN (no external internet for participants)',
+        'Red Team VM: Kali Linux with Burp Suite, sqlmap, Hydra, curl',
+        'Blue Team VM: Ubuntu with Wireshark and log monitoring',
+        'Share target URL: http://SERVER_IP:5000',
+        'Projector showing live scoreboard',
+        'Have signed scope agreements before starting',
+        'Brief both teams: 5 easy + 5 intermediate vulns',
+        'Set 90-minute competition timer',
+        'Keep this hints page URL secret from students',
+        'Test reset script: ./start.sh reset before event starts'
+      ] %}
+      <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); padding:5px 0;">
+        <span style="color:var(--accent); font-size:16px;">☐</span>
+        <span>{{ item }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<div class="hint-footer">
+  <span>Vidyatech — Instructor Panel · Do not share this URL with students</span>
+  <span>Hints PIN: <code style="background:#1e2d3d; padding:2px 8px; border-radius:3px; color:var(--amber);">VT@2024</code></span>
+</div>
+
+<script>
+function toggle(n) {
+  const body = document.getElementById('body-' + n);
+  const chev = document.getElementById('chev-' + n);
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+function copyFlag(flag, btn) {
+  navigator.clipboard.writeText(flag).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 1500);
+  });
+}
+
+// Auto-open first card
+toggle(1);
+</script>
+</body>
+</html>

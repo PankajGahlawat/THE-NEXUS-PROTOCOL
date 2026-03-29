@@ -9,13 +9,20 @@ frontend/build/
 *.log
 *.txt
 
-# Environment files
+# Environment files — keep .example files for deployment reference
 .env
 .env.local
 .env.production
 backend/.env
 backend/.env.production
 frontend/.env.local
+frontend/.env
+# Allow example/template env files
+!.env.example
+!.env.production.example
+!backend/.env.example
+!frontend/.env.example
+!deployment/.env.production.example
 
 # Database
 *.db
@@ -51,5 +58,4 @@ coverage/
 
 # Large zip files
 frontend/public/rounds/*.zip
-
 rounds/*.zip

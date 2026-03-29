@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Post Notice{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container"><h1>Post a Notice</h1><p>Share announcements with the university community</p></div>
+</div>
+<div class="container" style="max-width:620px; margin-bottom:3rem;">
+  <div class="card card-accent">
+    <h3 style="margin-bottom:1.25rem;">New Notice</h3>
+    <form method="POST">
+      <div class="form-group"><label>Title</label><input type="text" name="title" placeholder="Notice title" required></div>
+      <div class="form-group"><label>Category</label>
+        <select name="category">
+          <option>General</option><option>Examination</option><option>Events</option><option>Placement</option><option>Academic</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Content</label><textarea name="content" rows="5" placeholder="Write notice content here..." required></textarea></div>
+      <button type="submit" class="btn btn-primary">Post Notice</button>
+      <a href="/notices" class="btn btn-outline" style="margin-left:8px;">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

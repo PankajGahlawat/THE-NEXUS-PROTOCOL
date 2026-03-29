@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+
+<!-- Hero Banner -->
+<div style="background: linear-gradient(135deg, var(--primary) 0%, #264d7a 60%, #1a5276 100%); color:#fff; padding: 4rem 0; position:relative; overflow:hidden;">
+  <div style="position:absolute;inset:0;background:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2280%22 cy=%2220%22 r=%2260%22 fill=%22rgba(200,134,10,0.08)%22/><circle cx=%2210%22 cy=%2280%22 r=%2240%22 fill=%22rgba(255,255,255,0.03)%22/></svg>');background-size:cover;"></div>
+  <div class="container" style="position:relative;">
+    <div style="max-width:600px;">
+      <p style="font-size:13px; color:rgba(255,255,255,0.65); text-transform:uppercase; letter-spacing:2px; margin-bottom:0.75rem;">Established 1994 · NAAC A+</p>
+      <h1 style="font-size:42px; line-height:1.15; margin-bottom:1rem; color:#fff;">Empowering Minds,<br><span style="color:var(--accent-l);">Building Futures</span></h1>
+      <p style="color:rgba(255,255,255,0.75); font-size:16px; margin-bottom:2rem; line-height:1.7;">Vidyatech University offers world-class engineering and technology education across 8 departments with state-of-the-art facilities and experienced faculty.</p>
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <a href="/login" class="btn btn-accent">Student Portal →</a>
+        <a href="/about" class="btn btn-outline" style="color:#fff; border-color:rgba(255,255,255,0.4);">Learn More</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stats Bar -->
+<div style="background:var(--primary-d); padding:1.25rem 0;">
+  <div class="container">
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; text-align:center;">
+      <div><p style="font-size:26px; font-weight:700; color:var(--accent-l);">12,000+</p><p style="font-size:12px; color:rgba(255,255,255,0.6); text-transform:uppercase; letter-spacing:0.5px;">Students</p></div>
+      <div><p style="font-size:26px; font-weight:700; color:var(--accent-l);">450+</p><p style="font-size:12px; color:rgba(255,255,255,0.6); text-transform:uppercase; letter-spacing:0.5px;">Faculty</p></div>
+      <div><p style="font-size:26px; font-weight:700; color:var(--accent-l);">8</p><p style="font-size:12px; color:rgba(255,255,255,0.6); text-transform:uppercase; letter-spacing:0.5px;">Departments</p></div>
+      <div><p style="font-size:26px; font-weight:700; color:var(--accent-l);">95%</p><p style="font-size:12px; color:rgba(255,255,255,0.6); text-transform:uppercase; letter-spacing:0.5px;">Placement Rate</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="container page">
+  <div style="display:grid; grid-template-columns:2fr 1fr; gap:2.5rem; align-items:start;">
+
+    <!-- Left: Notices + Events -->
+    <div>
+      <!-- Latest Notices -->
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem;">
+        <h2 style="margin:0;">Latest Notices</h2>
+        <a href="/notices" style="font-size:13px; color:var(--accent); text-decoration:none;">View All →</a>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:2.5rem;">
+        {% for n in notices %}
+        <div class="notice-card">
+          <div style="display:flex; align-items:start; justify-content:space-between; gap:1rem;">
+            <div>
+              <p class="notice-title">{{ n.title }}</p>
+              <p class="notice-meta">{{ n.content[:100] }}{% if n.content|length > 100 %}...{% endif %}</p>
+            </div>
+            <span class="badge badge-amber" style="white-space:nowrap; flex-shrink:0;">{{ n.category }}</span>
+          </div>
+          <p class="notice-meta" style="margin-top:6px;">Posted by {{ n.posted_by }} · {{ n.posted_on }}</p>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Upcoming Events -->
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem;">
+        <h2 style="margin:0;">Upcoming Events</h2>
+        <a href="/events" style="font-size:13px; color:var(--accent); text-decoration:none;">View All →</a>
+      </div>
+      <div class="grid-2" style="grid-template-columns:1fr 1fr;">
+        {% for e in events %}
+        <div class="card card-blue">
+          <p style="font-size:12px; color:var(--accent); font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">{{ e.date }}</p>
+          <h3 style="margin-bottom:4px;">{{ e.title }}</h3>
+          <p style="font-size:13px; color:var(--muted);">{{ e.description[:80] }}{% if e.description|length > 80 %}...{% endif %}</p>
+          <p style="font-size:12px; color:var(--muted); margin-top:8px;">📍 {{ e.venue }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Right: Sidebar -->
+    <div>
+      <!-- Quick Access -->
+      <div class="card card-accent" style="margin-bottom:1.5rem;">
+        <h3 style="margin-bottom:1rem;">Quick Access</h3>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <a href="/login" class="btn btn-primary" style="text-align:center; display:block;">Student Login</a>
+          <a href="/results" class="btn btn-outline" style="text-align:center; display:block;">Check Results</a>
+          <a href="/resources" class="btn btn-outline" style="text-align:center; display:block;">Download Resources</a>
+          <a href="/tools/nslookup" class="btn btn-outline" style="text-align:center; display:block;">IT Tools</a>
+        </div>
+      </div>
+
+      <!-- Important Links -->
+      <div class="card" style="margin-bottom:1.5rem;">
+        <h3 style="margin-bottom:0.75rem;">Important Links</h3>
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:6px;">
+          <li><a href="/resources/download?file=syllabus_cse.pdf" style="font-size:13px; color:var(--primary); text-decoration:none;">📄 CSE Syllabus 2024</a></li>
+          <li><a href="/resources/download?file=academic_calendar.pdf" style="font-size:13px; color:var(--primary); text-decoration:none;">📅 Academic Calendar</a></li>
+          <li><a href="/notices" style="font-size:13px; color:var(--primary); text-decoration:none;">📋 All Notices</a></li>
+          <li><a href="/staff/login" style="font-size:13px; color:var(--primary); text-decoration:none;">👤 Staff Portal</a></li>
+          <li><a href="/admin/login" style="font-size:13px; color:var(--primary); text-decoration:none;">🔐 Admin Portal</a></li>
+          <li><a href="/contact" style="font-size:13px; color:var(--primary); text-decoration:none;">📞 Contact Us</a></li>
+        </ul>
+      </div>
+
+      <!-- Departments -->
+      <div class="card">
+        <h3 style="margin-bottom:0.75rem;">Departments</h3>
+        {% for dept in ['Computer Science','Electronics & Comm.','Mechanical','Civil','Information Science','Electrical','Chemical','Biotechnology'] %}
+        <div style="padding:7px 0; border-bottom:1px solid var(--border); font-size:13px; color:var(--primary);">{{ dept }}</div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

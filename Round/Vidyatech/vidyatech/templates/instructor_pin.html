@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Instructor Access — Vidyatech</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { background:#0f172a; display:flex; align-items:center; justify-content:center; min-height:100vh; font-family:'DM Sans',sans-serif; margin:0; }
+    .box { background:#1e293b; border:1px solid #334155; border-radius:12px; padding:2.5rem; width:360px; }
+    h1 { color:#f8fafc; font-size:20px; margin-bottom:0.25rem; }
+    p  { color:#94a3b8; font-size:13px; margin-bottom:1.5rem; }
+    label { color:#94a3b8; font-size:12px; display:block; margin-bottom:6px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+    input { background:#0f172a; border:1.5px solid #334155; color:#f8fafc; padding:10px 14px; border-radius:6px; width:100%; font-size:14px; outline:none; margin-bottom:1rem; box-sizing:border-box; }
+    input:focus { border-color:#3b82f6; }
+    button { background:#3b82f6; color:#fff; border:none; padding:10px; width:100%; border-radius:6px; font-size:14px; font-weight:600; cursor:pointer; }
+    button:hover { background:#2563eb; }
+    .err { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); color:#f87171; padding:9px 12px; border-radius:5px; font-size:13px; margin-bottom:1rem; }
+    .note { color:#475569; font-size:11px; margin-top:1rem; text-align:center; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>🔐 Instructor Access</h1>
+    <p>This page is for event organizers and judges only.</p>
+    {% if error %}<div class="err">{{ error }}</div>{% endif %}
+    <form method="POST">
+      <label>Access PIN</label>
+      <input type="password" name="pin" placeholder="Enter instructor PIN" autofocus>
+      <button type="submit">Access Hints Panel →</button>
+    </form>
+    <p class="note">Do not share this URL with students.</p>
+  </div>
+</body>
+</html>

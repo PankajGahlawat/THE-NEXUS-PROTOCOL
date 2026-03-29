@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}My Results{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container"><h1>Examination Results</h1><p>Your academic performance records</p></div>
+</div>
+<div class="container" style="margin-bottom:3rem;">
+  <div class="card card-blue">
+    <div class="table-wrap">
+      <table>
+        <tr><th>Subject</th><th>Marks / 100</th><th>Grade</th><th>Semester</th></tr>
+        {% for r in results %}
+        <tr>
+          <td><strong>{{ r.subject }}</strong></td>
+          <td>{{ r.marks }}</td>
+          <td><span class="badge {% if r.grade in ['O','A'] %}badge-green{% elif r.grade == 'B' %}badge-blue{% else %}badge-amber{% endif %}">{{ r.grade }}</span></td>
+          <td>Semester {{ r.semester }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+  <div class="alert alert-info mt-2">Results discrepancy? Contact the examination cell within 7 days of publication.</div>
+</div>
+{% endblock %}

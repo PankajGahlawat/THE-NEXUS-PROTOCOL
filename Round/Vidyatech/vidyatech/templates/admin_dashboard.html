@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container"><h1>Admin Dashboard</h1><p>University administration panel — {{ user.name }}</p></div>
+</div>
+<div class="container" style="margin-bottom:3rem;">
+  <div class="grid-4" style="margin-bottom:2rem;">
+    <div class="stat-card"><div class="stat-icon" style="background:#e0eaf5;">👥</div><div><div class="stat-num">{{ students|length }}</div><div class="stat-label">Students</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:#fef3c7;">👨‍🏫</div><div><div class="stat-num">{{ staff|length }}</div><div class="stat-label">Staff</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:#dcfce7;">📋</div><div><div class="stat-num">{{ results|length }}</div><div class="stat-label">Results</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:#f3e8ff;">🏫</div><div><div class="stat-num">8</div><div class="stat-label">Departments</div></div></div>
+  </div>
+
+  <div class="grid-2">
+    <div>
+      <h2>All Students</h2>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <tr><th>Roll No</th><th>Name</th><th>Branch</th><th>CGPA</th><th>Email</th></tr>
+            {% for s in students %}
+            <tr>
+              <td><code style="font-size:12px;">{{ s.roll_no }}</code></td>
+              <td>{{ s.name }}</td>
+              <td><span class="badge badge-blue">{{ s.branch }}</span></td>
+              <td>{{ s.cgpa }}</td>
+              <td style="font-size:12px; color:var(--muted);">{{ s.email }}</td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h2>Staff Records</h2>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <tr><th>ID</th><th>Name</th><th>Department</th><th>Role</th></tr>
+            {% for s in staff %}
+            <tr>
+              <td><code style="font-size:12px;">{{ s.emp_id }}</code></td>
+              <td>{{ s.name }}</td>
+              <td>{{ s.department }}</td>
+              <td><span class="badge {% if s.role == 'admin' %}badge-red{% else %}badge-green{% endif %}">{{ s.role }}</span></td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

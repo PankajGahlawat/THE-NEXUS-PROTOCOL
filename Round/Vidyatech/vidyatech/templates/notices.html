@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Notices{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1>University Notices</h1>
+    <p>Important announcements and circulars from the administration</p>
+  </div>
+</div>
+<div class="container" style="margin-bottom:3rem;">
+  {% if session.get('user') %}
+  <div style="margin-bottom:1.5rem;">
+    <a href="/notices/post" class="btn btn-accent">+ Post New Notice</a>
+  </div>
+  {% endif %}
+  <div style="display:flex; flex-direction:column; gap:1rem;">
+    {% for n in notices %}
+    <div class="notice-card">
+      <div style="display:flex; justify-content:space-between; align-items:start; gap:1rem;">
+        <div style="flex:1;">
+          <p class="notice-title">{{ n.title }}</p>
+          <!-- VULNERABILITY: rendered with |safe — XSS executes here -->
+          <p style="font-size:14px; color:var(--muted); margin-top:4px;">{{ n.content | safe }}</p>
+        </div>
+        <span class="badge badge-amber" style="white-space:nowrap;">{{ n.category }}</span>
+      </div>
+      <p class="notice-meta" style="margin-top:8px;">— {{ n.posted_by }} &nbsp;·&nbsp; {{ n.posted_on }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

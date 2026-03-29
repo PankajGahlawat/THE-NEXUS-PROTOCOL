@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}URL Health Checker — Vidyatech University{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1>URL Health Checker</h1>
+    <p>IT Utility — Check if external resources and APIs are reachable from the Vidyatech server.</p>
+  </div>
+</div>
+
+<div class="page">
+  <div class="container">
+    <div class="card card-accent" style="max-width:760px">
+      <h2 style="margin-bottom:1rem">Check URL Availability</h2>
+      <form method="POST">
+        <div class="form-group">
+          <label>Target URL</label>
+          <input type="text" name="url" value="{{ request.form.get('url','') }}"
+            placeholder="https://example.com/api/health"
+            style="font-family:monospace"/>
+        </div>
+        <button type="submit" class="btn btn-primary">Check URL</button>
+      </form>
+    </div>
+
+    {% if status_code %}
+    <div class="card" style="margin-top:1rem;max-width:760px;border-top:3px solid {% if status_code == 200 %}#2d7a4f{% else %}#b03030{% endif %}">
+      <h3 style="color:{% if status_code == 200 %}#2d7a4f{% else %}#b03030{% endif %};margin-bottom:0.75rem">
+        HTTP Status: {{ status_code }}
+      </h3>
+      {% if result %}
+      <pre style="background:#f7f5f0;color:#1c1c1c;padding:1rem;border-radius:4px;font-size:12px;overflow-x:auto;white-space:pre-wrap;max-height:500px;border:1px solid #e2ddd6">{{ result }}</pre>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="alert alert-error" style="margin-top:1rem;max-width:760px">
+      <strong>Error:</strong> {{ error }}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}About Us{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container"><h1>About Vidyatech University</h1><p>Our history, mission, and values</p></div>
+</div>
+<div class="container page">
+  <div style="display:grid; grid-template-columns:2fr 1fr; gap:2.5rem;">
+    <div>
+      <h2>Our Story</h2>
+      <p style="margin-bottom:1rem;">Vidyatech University was established in 1994 with a vision to provide world-class technical education in India. Starting with just three departments and 300 students, we have grown into one of the leading engineering institutions in the country with over 12,000 students across 8 departments.</p>
+      <p style="margin-bottom:1rem;">Accredited by NAAC with Grade A+ and approved by AICTE, our university consistently ranks among the top 50 engineering institutions in India. Our alumni hold key positions in Fortune 500 companies, startups, and research institutions worldwide.</p>
+      <h2 style="margin-top:2rem;">Mission &amp; Vision</h2>
+      <p>To foster technical excellence, innovation, and ethical leadership through quality education and research.</p>
+    </div>
+    <div>
+      <div class="card card-accent">
+        <h3>Key Facts</h3>
+        <hr>
+        <table style="font-size:14px;">
+          <tr><td style="color:var(--muted); padding:6px 0;">Founded</td><td>1994</td></tr>
+          <tr><td style="color:var(--muted); padding:6px 0;">Accreditation</td><td>NAAC A+</td></tr>
+          <tr><td style="color:var(--muted); padding:6px 0;">Students</td><td>12,000+</td></tr>
+          <tr><td style="color:var(--muted); padding:6px 0;">Faculty</td><td>450+</td></tr>
+          <tr><td style="color:var(--muted); padding:6px 0;">Departments</td><td>8</td></tr>
+          <tr><td style="color:var(--muted); padding:6px 0;">Placement</td><td>95%</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

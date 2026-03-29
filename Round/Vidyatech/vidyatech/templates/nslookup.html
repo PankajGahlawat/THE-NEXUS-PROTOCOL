@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}IT Tools{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container"><h1>IT Tools</h1><p>Network utilities provided by the University IT Department</p></div>
+</div>
+<div class="container" style="max-width:680px; margin-bottom:3rem;">
+  <div class="card card-accent">
+    <h3 style="margin-bottom:4px;">DNS Lookup</h3>
+    <p style="font-size:13px; color:var(--muted); margin-bottom:1.25rem;">Check DNS records for any domain. Useful for verifying university email and VPN configurations.</p>
+    <form method="POST">
+      <div class="form-group">
+        <label>Domain Name</label>
+        <input type="text" name="domain" placeholder="e.g. vidyatech.edu" value="{{ request.form.get('domain','') }}">
+      </div>
+      <button type="submit" class="btn btn-primary">Lookup →</button>
+    </form>
+    {% if result %}
+    <hr>
+    <h3 style="margin-bottom:0.5rem;">Result</h3>
+    <pre style="background:var(--bg); border:1px solid var(--border); padding:1rem; border-radius:5px; font-size:13px; overflow-x:auto; white-space:pre-wrap;">{{ result }}</pre>
+    {% endif %}
+  </div>
+  <div class="card mt-2">
+    <h3 style="margin-bottom:0.5rem;">Other IT Services</h3>
+    <p style="font-size:13px; color:var(--muted);">For VPN setup, Wi-Fi issues, or email configuration help, contact IT helpdesk at <a href="mailto:it@vidyatech.edu">it@vidyatech.edu</a> or visit Room 102, Admin Block.</p>
+  </div>
+</div>
+{% endblock %}

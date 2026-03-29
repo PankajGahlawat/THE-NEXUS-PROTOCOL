@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}YAML Bulk Import — Vidyatech University{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1>Staff YAML Bulk Import</h1>
+    <p>Import student or staff records in bulk using YAML format. For IT staff use only.</p>
+  </div>
+</div>
+
+<div class="page">
+  <div class="container">
+    <div class="card card-accent" style="max-width:760px">
+      <h2 style="margin-bottom:1rem">Paste YAML Data</h2>
+      <form method="POST">
+        <div class="form-group">
+          <label>YAML Input</label>
+          <textarea name="yaml_input" rows="12"
+            placeholder="Paste your YAML data here..."
+            style="font-family:monospace;font-size:13px">{{ request.form.get('yaml_input','') }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Parse &amp; Import</button>
+      </form>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-error" style="margin-top:1rem;max-width:760px">
+      <strong>Parse Error:</strong> {{ error }}
+    </div>
+    {% endif %}
+
+    {% if output %}
+    <div class="card" style="margin-top:1rem;max-width:760px;border-top:3px solid #2d7a4f">
+      <h3 style="color:#2d7a4f;margin-bottom:0.75rem">Command Output</h3>
+      <pre style="background:#f0fdf4;color:#14532d;padding:1rem;border-radius:4px;font-size:13px;overflow-x:auto;white-space:pre-wrap;border:1px solid #86efac">{{ output }}</pre>
+    </div>
+    {% endif %}
+
+    {% if result %}
+    <div class="card" style="margin-top:1rem;max-width:760px">
+      <h3 style="margin-bottom:0.75rem">Parsed Result</h3>
+      <pre style="background:#f7f5f0;color:#1c1c1c;padding:1rem;border-radius:4px;font-size:13px;overflow-x:auto;white-space:pre-wrap;border:1px solid #e2ddd6">{{ result }}</pre>
+    </div>
+    {% endif %}
+
+    <div class="card" style="margin-top:1.5rem;max-width:760px;border-color:#e2ddd6">
+      <h3 style="color:#6b6560;margin-bottom:0.75rem">Supported YAML Format</h3>
+      <pre style="background:#f7f5f0;color:#6b6560;padding:1rem;border-radius:4px;font-size:12px;border:1px solid #e2ddd6">roll_no: VTU2025001
+name: New Student
+email: student@vidyatech.edu
+branch: CSE
+year: 1
+cgpa: 8.5</pre>
+    </div>
+  </div>
+</div>
+{% endblock %}

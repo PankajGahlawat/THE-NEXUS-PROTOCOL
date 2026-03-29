@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Events{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container"><h1>Events &amp; Activities</h1><p>Stay updated with university events</p></div>
+</div>
+<div class="container page">
+  <div class="grid-3">
+    {% for e in events %}
+    <div class="card card-blue">
+      <p style="font-size:12px; color:var(--accent); font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">{{ e.date }}</p>
+      <h3 style="margin-bottom:6px;">{{ e.title }}</h3>
+      <p style="font-size:13px; color:var(--muted); margin-bottom:0.75rem;">{{ e.description }}</p>
+      <p style="font-size:12px; color:var(--muted);">📍 {{ e.venue }}</p>
+      <p style="font-size:12px; color:var(--muted);">🏛 {{ e.organizer }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
