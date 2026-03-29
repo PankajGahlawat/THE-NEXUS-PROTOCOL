@@ -3,12 +3,12 @@ title Nexus Protocol - All Servers Launcher
 color 0A
 
 echo.
-echo  ╔═══════════════════════════════════════════════════════╗
-echo  ║        NEXUS PROTOCOL - STARTING ALL SERVERS          ║
-echo  ╚═══════════════════════════════════════════════════════╝
+echo  ?????????????????????????????????????????????????????????????????
+echo  ?          NEXUS PROTOCOL - STARTING ALL SERVERS               ?
+echo  ?????????????????????????????????????????????????????????????????
 echo.
 
-:: ── Install backend dependencies if needed ──
+:: ?? Install backend dependencies if needed ??
 if not exist "%~dp0backend\node_modules" (
     echo [SETUP] Installing backend dependencies...
     cd /d "%~dp0backend" && npm install --silent
@@ -16,7 +16,7 @@ if not exist "%~dp0backend\node_modules" (
     echo.
 )
 
-:: ── Install frontend dependencies if needed ──
+:: ?? Install frontend dependencies if needed ??
 if not exist "%~dp0frontend\node_modules" (
     echo [SETUP] Installing frontend dependencies...
     cd /d "%~dp0frontend" && npm install --silent
@@ -24,54 +24,61 @@ if not exist "%~dp0frontend\node_modules" (
     echo.
 )
 
-:: ── Init database (creates tables + registers teams) ──
-echo [DB] Initialising database...
-cd /d "%~dp0backend" && node scripts/init-database.js
-echo.
+:: ?? Create data directory for room log/patch files ??
+if not exist "%~dp0data" mkdir "%~dp0data"
 
-:: ── Main Backend (Port 3000) ──
-echo [1/4] Starting Main Backend (Port 3000)...
+:: ?? Main Backend (Port 3000) ??
+echo [1/8] Starting Main Backend (Port 3000)...
 start "NexusProtocol-Backend" /min cmd /c "cd /d %~dp0backend && node index_enhanced.js"
 timeout /t 3 /nobreak >nul
 
-:: ── Main Frontend (Port 5173) ──
-echo [2/4] Starting Main Frontend (Port 5173)...
+:: ?? Main Frontend (Port 5173) ??
+echo [2/8] Starting Main Frontend (Port 5173)...
 start "NexusProtocol-Frontend" /min cmd /c "cd /d %~dp0frontend && node serve.cjs"
 timeout /t 2 /nobreak >nul
 
-:: ── Round 1: Vidyatech (Port 5000) ──
-echo [3/4] Starting Round 1 - Vidyatech (Port 5000)...
-start "Round1-Vidyatech" /min cmd /c "cd /d %~dp0RS\Round 1\Vidyatech\Vidyatech\vidyatech && python app.py"
+:: ?? Room 1: Vidyatech (Port 5000) + Monitor (Port 8080) ??
+echo [3/8] Starting Room 1 - Vidyatech (Port 5000)...
+start "Room1-Vidyatech" /min cmd /c "cd /d %~dp0Round\Vidyatech\vidyatech && set LOG_FILE=%~dp0data\vidyatech_room1.log && set PATCHES_FILE=%~dp0data\vidyatech_room1_patches.json && set FLASK_RUN_PORT=5000 && python app.py"
 timeout /t 2 /nobreak >nul
 
-:: ── Round 1: Vidyatech Monitor (Port 8080) ──
-echo [4/4] Starting Round 1 Monitor (Port 8080)...
-start "Round1-Monitor" /min cmd /c "cd /d %~dp0RS\Round 1\Vidyatech\Vidyatech\vidyatech && python monitor/server.py"
+echo [4/8] Starting Room 1 - Monitor (Port 8080)...
+start "Room1-Monitor" /min cmd /c "cd /d %~dp0Round\Vidyatech\vidyatech && set LOG_FILE=%~dp0data\vidyatech_room1.log && set PATCHES_FILE=%~dp0data\vidyatech_room1_patches.json && set FLASK_URL=http://127.0.0.1:5000 && set PORT=8080 && python monitor/server.py"
+timeout /t 2 /nobreak >nul
+
+:: ?? Room 2: Vidyatech (Port 5001) + Monitor (Port 8081) ??
+echo [5/8] Starting Room 2 - Vidyatech (Port 5001)...
+start "Room2-Vidyatech" /min cmd /c "cd /d %~dp0Round\Vidyatech\vidyatech && set LOG_FILE=%~dp0data\vidyatech_room2.log && set PATCHES_FILE=%~dp0data\vidyatech_room2_patches.json && set FLASK_RUN_PORT=5001 && python app.py"
+timeout /t 2 /nobreak >nul
+
+echo [6/8] Starting Room 2 - Monitor (Port 8081)...
+start "Room2-Monitor" /min cmd /c "cd /d %~dp0Round\Vidyatech\vidyatech && set LOG_FILE=%~dp0data\vidyatech_room2.log && set PATCHES_FILE=%~dp0data\vidyatech_room2_patches.json && set FLASK_URL=http://127.0.0.1:5001 && set PORT=8081 && python monitor/server.py"
+timeout /t 2 /nobreak >nul
+
+:: ?? Room 3: Vidyatech (Port 5002) + Monitor (Port 8082) ??
+echo [7/8] Starting Room 3 - Vidyatech (Port 5002)...
+start "Room3-Vidyatech" /min cmd /c "cd /d %~dp0Round\Vidyatech\vidyatech && set LOG_FILE=%~dp0data\vidyatech_room3.log && set PATCHES_FILE=%~dp0data\vidyatech_room3_patches.json && set FLASK_RUN_PORT=5002 && python app.py"
+timeout /t 2 /nobreak >nul
+
+echo [8/8] Starting Room 3 - Monitor (Port 8082)...
+start "Room3-Monitor" /min cmd /c "cd /d %~dp0Round\Vidyatech\vidyatech && set LOG_FILE=%~dp0data\vidyatech_room3.log && set PATCHES_FILE=%~dp0data\vidyatech_room3_patches.json && set FLASK_URL=http://127.0.0.1:5002 && set PORT=8082 && python monitor/server.py"
 timeout /t 2 /nobreak >nul
 
 echo.
-echo  ╔═══════════════════════════════════════════════════════╗
-echo  ║          ALL SERVERS STARTED SUCCESSFULLY             ║
-echo  ╠═══════════════════════════════════════════════════════╣
-echo  ║                                                       ║
-echo  ║   Main Game  :  http://localhost:5173                 ║
-echo  ║   Backend API:  http://localhost:3000                 ║
-echo  ║   Round 1    :  http://localhost:5000                 ║
-echo  ║   R1 Monitor :  http://localhost:8080                 ║
-echo  ║                                                       ║
-echo  ╠═══════════════════════════════════════════════════════╣
-echo  ║   CREDENTIALS                                         ║
-echo  ║   Red  Team  :  RedTeam  /  RED@Nexus2024!            ║
-echo  ║   Blue Team  :  BlueTeam /  BLUE@Nexus2024!           ║
-echo  ║   Admin Code :  ADMIN-8821                            ║
-echo  ╠═══════════════════════════════════════════════════════╣
-echo  ║   ROUND 1 - VIDYATECH (15 Vulnerabilities)            ║
-echo  ║   Beginner (10): SQLi, XSS, DefaultCreds,             ║
-echo  ║     DirTraversal, DataExposure, HardcodedAdmin,       ║
-echo  ║     DocUpload, Clickjacking, WeakPassword, CSRF       ║
-echo  ║   Intermediate (3): JWT, IDOR, CmdInjection           ║
-echo  ║   Advanced (2): YAML RCE, Debug+SSRF                  ║
-echo  ╚═══════════════════════════════════════════════════════╝
+echo  ?????????????????????????????????????????????????????????????????
+echo  ?            ALL SERVERS STARTED SUCCESSFULLY                  ?
+echo  ?????????????????????????????????????????????????????????????????
+echo  ?   Main Game   :  http://localhost:5173                       ?
+echo  ?   Backend API :  http://localhost:3000                       ?
+echo  ?   Admin Code  :  ADMIN-8821                                  ?
+echo  ?????????????????????????????????????????????????????????????????
+echo  ?   ROOM 1  Vidyatech: :5000   Monitor: :8080                  ?
+echo  ?   ROOM 2  Vidyatech: :5001   Monitor: :8081                  ?
+echo  ?   ROOM 3  Vidyatech: :5002   Monitor: :8082                  ?
+echo  ?????????????????????????????????????????????????????????????????
+echo  ?   Each room is ISOLATED - attacks only show in that room     ?
+echo  ?   Red Team attacks Room X site, Blue Team monitors Room X    ?
+echo  ?????????????????????????????????????????????????????????????????
 echo.
 echo  Press any key to open the main game in browser...
 pause >nul

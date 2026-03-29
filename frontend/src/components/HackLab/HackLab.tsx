@@ -9,21 +9,29 @@ export default function HackLab() {
   const targetUrl = searchParams.get('target') || 'http://localhost:5000';
   const roundName = searchParams.get('round') || 'VIDYATECH';
 
-  const totalSeconds = 60 * 60;
+  const totalSeconds = 2 * 60 * 60;
   const [remaining, setRemaining] = useState(totalSeconds);
 
-  // Countdown timer
+  // Countdown timer — auto-logout when time expires
   useEffect(() => {
     const timer = setInterval(() => {
-      setRemaining(prev => (prev > 0 ? prev - 1 : 0));
+      setRemaining(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          navigate('/login');
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
     return () => clearInterval(timer);
   }, []);
 
   const formatTime = (secs: number) => {
-    const m = Math.floor(secs / 60).toString().padStart(2, '0');
+    const h = Math.floor(secs / 3600).toString().padStart(2, '0');
+    const m = Math.floor((secs % 3600) / 60).toString().padStart(2, '0');
     const s = (secs % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
+    return `${h}:${m}:${s}`;
   };
   const timerUrgent = remaining < 300;
 

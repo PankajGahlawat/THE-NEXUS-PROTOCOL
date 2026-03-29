@@ -33,6 +33,17 @@ export default function LoginScreen() {
       const result = await login(teamName, accessCode);
       if (result.success) {
         playSound('success');
+        // Check if team has a room — redirect to /room if assigned
+        try {
+          const roomRes = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/v1/rooms/my`, {
+            headers: { Authorization: `Bearer ${result.sessionToken}` }
+          });
+          const roomData = await roomRes.json();
+          if (roomData.success && roomData.room) {
+            navigate('/room');
+            return;
+          }
+        } catch { /* no room */ }
         navigate('/agent-select');
       } else {
         playSound('error');

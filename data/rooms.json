@@ -1,0 +1,16 @@
+[
+  {
+    "id": "room-1774763926244",
+    "room_name": "Room A",
+    "status": "active",
+    "red_team_name": "RootStrike",
+    "red_team_code": "Root@2026",
+    "blue_team_name": "Boats",
+    "blue_team_code": "Boat@2026",
+    "created_at": "2026-03-29T06:00:29.675Z",
+    "log_file": "D:\\THE-NEXUS-PROTOCOL\\backend\\data\\vidyatech_Room_A.log",
+    "patches_file": "D:\\THE-NEXUS-PROTOCOL\\backend\\data\\vidyatech_Room_A_patches.json",
+    "vidyatech_port": 5000,
+    "monitor_port": 8080
+  }
+]

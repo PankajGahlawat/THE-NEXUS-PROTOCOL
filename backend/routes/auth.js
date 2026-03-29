@@ -30,11 +30,11 @@ router.post('/login', async (req, res) => {
   try {
     const { teamName, accessCode } = req.body;
 
-    if (!teamName || teamName.length < 3 || teamName.length > 30) {
+    if (!teamName || teamName.length < 2 || teamName.length > 30) {
       return res.status(400).json({
         success: false,
         error: 'INVALID_TEAM_NAME',
-        message: 'Team name must be 3-30 characters'
+        message: 'Team name must be 2-30 characters'
       });
     }
 

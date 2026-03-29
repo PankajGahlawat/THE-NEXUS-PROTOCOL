@@ -1,0 +1,26 @@
+[
+  {
+    "id": "team-red-001",
+    "team_name": "RedTeam",
+    "access_code": "RED@Nexus2024!",
+    "team_type": "red"
+  },
+  {
+    "id": "team-blue-001",
+    "team_name": "BlueTeam",
+    "access_code": "BLUE@Nexus2024!",
+    "team_type": "blue"
+  },
+  {
+    "id": "team-red-1774708119817",
+    "team_name": "RootStrike",
+    "access_code": "Root@2026",
+    "team_type": "red"
+  },
+  {
+    "id": "team-blue-1774716280114",
+    "team_name": "Boats",
+    "access_code": "Boat@2026",
+    "team_type": "blue"
+  }
+]

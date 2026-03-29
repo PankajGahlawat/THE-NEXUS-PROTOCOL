@@ -76,7 +76,7 @@ interface GameState {
 
 interface GameContextType {
   gameState: GameState;
-  login: (teamName: string, accessCode: string) => Promise<{ success: boolean; message?: string }>;
+  login: (teamName: string, accessCode: string) => Promise<{ success: boolean; message?: string; sessionToken?: string }>;
   logout: () => void;
   selectAgent: (agentId: string) => void;
   startMission: (missionId: string) => Promise<void>;
@@ -116,7 +116,7 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 export function GameProvider({ children }: { children: ReactNode }) {
   const [gameState, setGameState] = useState<GameState>(initialGameState);
 
-  const login = useCallback(async (teamName: string, accessCode: string): Promise<{ success: boolean; message?: string }> => {
+  const login = useCallback(async (teamName: string, accessCode: string): Promise<{ success: boolean; message?: string; sessionToken?: string }> => {
     try {
       const response = await fetch(`${API_BASE}/api/v1/auth/login`, {
         method: 'POST',
@@ -139,7 +139,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           teamType: teamType,
           sessionToken: data.sessionToken,
         }));
-        return { success: true };
+        return { success: true, sessionToken: data.sessionToken };
       } else {
         const errorData = await response.json();
         return { success: false, message: errorData.message || 'Authentication failed' };
@@ -172,6 +172,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
             // Handle forced logout (Kick)
             if (response.data.forceLogout) {
               logout();
+              window.location.href = '/';
               return;
             }
 

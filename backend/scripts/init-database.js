@@ -1,4 +1,4 @@
-﻿require('dotenv').config();
+require('dotenv').config();
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const os = require('os');
@@ -39,6 +39,7 @@ async function main() {
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       team_name VARCHAR(30) NOT NULL UNIQUE,
       password_hash VARCHAR(255) NOT NULL,
+      access_code VARCHAR(100) NOT NULL,
       team_type VARCHAR(10) NOT NULL DEFAULT 'red' CHECK (team_type IN ('red','blue')),
       created_at TIMESTAMP DEFAULT NOW(),
       last_active TIMESTAMP DEFAULT NOW(),
@@ -124,6 +125,18 @@ async function main() {
       created_at TIMESTAMP DEFAULT NOW()
     )`);
 
+    // Rooms table for 2v2 multiplayer events
+    await client.query(`CREATE TABLE IF NOT EXISTS rooms (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      room_name VARCHAR(50) NOT NULL UNIQUE,
+      red_team_id UUID REFERENCES teams(id) ON DELETE SET NULL,
+      blue_team_id UUID REFERENCES teams(id) ON DELETE SET NULL,
+      status VARCHAR(20) DEFAULT 'active',
+      log_file VARCHAR(255),
+      patches_file VARCHAR(255),
+      created_at TIMESTAMP DEFAULT NOW()
+    )`);
+
     // Indexes
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_teams_name ON teams(team_name);
@@ -140,14 +153,15 @@ async function main() {
     await client.query('TRUNCATE TABLE mission_objectives CASCADE');
     await client.query('TRUNCATE TABLE mission_instances CASCADE');
     await client.query('TRUNCATE TABLE sessions CASCADE');
+    await client.query('TRUNCATE TABLE rooms CASCADE');
     await client.query('TRUNCATE TABLE teams CASCADE');
 
     // Register official teams
     for (const team of TEAMS) {
       const hash = await bcrypt.hash(team.code, 12);
       await client.query(
-        'INSERT INTO teams (team_name, password_hash, team_type) VALUES ($1, $2, $3)',
-        [team.name, hash, team.type]
+        'INSERT INTO teams (team_name, password_hash, access_code, team_type) VALUES ($1, $2, $3, $4)',
+        [team.name, hash, team.code, team.type]
       );
     }
 

@@ -3,19 +3,23 @@ title Nexus Protocol - Stopping All Servers
 color 0C
 
 echo.
-echo  ╔═══════════════════════════════════════════════════════╗
-echo  ║        NEXUS PROTOCOL - STOPPING ALL SERVERS          ║
-echo  ╚═══════════════════════════════════════════════════════╝
+echo  ?????????????????????????????????????????????????????????
+echo  ?        NEXUS PROTOCOL - STOPPING ALL SERVERS          ?
+echo  ?????????????????????????????????????????????????????????
 echo.
 
-:: Kill by named window titles first (cleanest)
+:: Kill by named window titles
 taskkill /FI "WINDOWTITLE eq NexusProtocol-Backend" /F >nul 2>&1
 taskkill /FI "WINDOWTITLE eq NexusProtocol-Frontend" /F >nul 2>&1
-taskkill /FI "WINDOWTITLE eq Round1-Vidyatech" /F >nul 2>&1
-taskkill /FI "WINDOWTITLE eq Round1-Monitor" /F >nul 2>&1
+taskkill /FI "WINDOWTITLE eq Room1-Vidyatech" /F >nul 2>&1
+taskkill /FI "WINDOWTITLE eq Room1-Monitor" /F >nul 2>&1
+taskkill /FI "WINDOWTITLE eq Room2-Vidyatech" /F >nul 2>&1
+taskkill /FI "WINDOWTITLE eq Room2-Monitor" /F >nul 2>&1
+taskkill /FI "WINDOWTITLE eq Room3-Vidyatech" /F >nul 2>&1
+taskkill /FI "WINDOWTITLE eq Room3-Monitor" /F >nul 2>&1
 
 :: Kill by port as fallback
-for %%p in (3000 5173 5000 8080) do (
+for %%p in (3000 5173 5000 5001 5002 8080 8081 8082) do (
     for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr :%%p ^| findstr LISTENING') do (
         taskkill /PID %%a /F >nul 2>&1
     )

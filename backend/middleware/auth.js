@@ -87,17 +87,15 @@ class AuthMiddleware {
     return [
       body('teamName')
         .trim()
-        .isLength({ min: 3, max: 20 })
-        .matches(/^[a-zA-Z0-9\s-_]+$/)
-        .withMessage('Team name must be 3-20 characters, alphanumeric only'),
+        .isLength({ min: 2, max: 30 })
+        .withMessage('Team name must be 2-30 characters'),
       
       body('accessCode')
-        .isLength({ min: 6, max: 50 })
-        .withMessage('Access code must be 6-50 characters'),
+        .isLength({ min: 4, max: 100 })
+        .withMessage('Access code must be 4-100 characters'),
       
-      // Sanitize inputs
-      body('teamName').escape(),
-      body('accessCode').escape()
+      // Sanitize only team name (not access code — it may contain special chars)
+      body('teamName').escape()
     ];
   }
 

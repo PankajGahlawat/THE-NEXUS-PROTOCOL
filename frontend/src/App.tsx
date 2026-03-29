@@ -24,6 +24,8 @@ import HackLab from './components/HackLab/HackLab';
 import TerminalMonitor from './components/Admin/TerminalMonitor';
 import AdminDashboardFull from './components/Admin/AdminDashboardFull';
 import Leaderboard from './components/Game/Leaderboard';
+import RoomView from './components/Room/RoomView';
+import RoomLobby from './components/Room/RoomLobby';
 
 function App() {
   return (
@@ -54,6 +56,12 @@ function App() {
 
                   {/* Admin Route */}
                   <Route path="/admin" element={<AdminDashboard />} />
+
+                  {/* Room Lobby — join a 2v2 room */}
+                  <Route path="/room-lobby" element={<RoomLobby />} />
+
+                  {/* Room View — team battle room */}
+                  <Route path="/room" element={<RoomView />} />
 
                   {/* Admin Dashboard Full */}
                   <Route path="/admin/dashboard" element={<AdminDashboardFull />} />

@@ -357,6 +357,79 @@ class WebSocketMiddleware {
         }
       });
 
+      // ==========================================
+      // 2v2 ROOM EVENTS
+      // ==========================================
+      
+      socket.on('join-room', async (data, callback) => {
+        try {
+          const { roomId, seat } = data; // seat: red-1, blue-1, etc.
+          if (!roomId || !seat) {
+             return callback?.({ success: false, message: 'Missing roomId or seat' });
+          }
+          // Join the general room and team-specific room
+          socket.join(`room:${roomId}`);
+          const teamSide = seat.split('-')[0]; // 'red' or 'blue'
+          socket.join(`room:${roomId}:${teamSide}`);
+          
+          socket.seat = seat;
+          socket.roomId = roomId;
+
+          console.log(`🎮 ${socket.teamName} joined 2v2 room: ${roomId} at seat ${seat}`);
+          
+          socket.to(`room:${roomId}`).emit('room-user-joined', {
+            teamName: socket.teamName,
+            seat,
+            timestamp: new Date().toISOString()
+          });
+
+          callback?.({ success: true, message: 'Joined 2v2 room successfully' });
+        } catch (error) {
+           callback?.({ success: false, message: error.message });
+        }
+      });
+
+      socket.on('red-attack', async (data, callback) => {
+        try {
+          const { roomId, vulnerability } = data;
+          
+          // Log vulnerability to Blue team in this room
+          io.to(`room:${roomId}:blue`).emit('vulnerability-detected', {
+            teamName: socket.teamName,
+            vulnerability,
+            timestamp: new Date().toISOString()
+          });
+          
+          // Notify other red team members
+          io.to(`room:${roomId}:red`).emit('attack-logged', {
+            teamName: socket.teamName,
+            vulnerability,
+            timestamp: new Date().toISOString()
+          });
+
+          callback?.({ success: true, message: 'Attack launched' });
+        } catch (error) {
+          callback?.({ success: false, message: error.message });
+        }
+      });
+
+      socket.on('blue-patch', async (data, callback) => {
+        try {
+          const { roomId, patchData } = data;
+          
+          // Broadcast patch successful to everyone in the room
+          io.to(`room:${roomId}`).emit('patch-successful', {
+            teamName: socket.teamName,
+            patchData,
+            timestamp: new Date().toISOString()
+          });
+
+          callback?.({ success: true, message: 'Patch deployed' });
+        } catch (error) {
+          callback?.({ success: false, message: error.message });
+        }
+      });
+
       // Handle disconnection
       socket.on('disconnect', (reason) => {
         console.log(`🔌 WebSocket disconnected: ${socket.teamName} (${reason})`);
