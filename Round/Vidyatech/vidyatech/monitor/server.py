@@ -508,6 +508,7 @@ events        = []
 stats         = {"total": 0, "critical": 0, "high": 0, "medium": 0, "low": 0}
 attack_counts = {}  # {attack_name: {count, color, severity, last, blocked, hit}}
 exploit_successes = []  # confirmed successful exploits (not patched)
+_last_line_hash = None  # deduplicate consecutive identical log lines
 
 # Regexes to pull structured fields out of a Flask access log line
 _RE_METHOD_PATH = re.compile(r'^\d{2}:\d{2}:\d{2}\s+(GET|POST|PUT|DELETE|PATCH|HEAD)\s+(\S+)')
@@ -556,6 +557,14 @@ _NAME_TO_VID = {
 }
 
 def analyze(line: str):
+    global _last_line_hash
+    # Deduplicate: skip if this line (ignoring timestamp) is identical to the last one
+    line_body = line[9:].strip() if len(line) > 9 else line.strip()
+    line_hash = hash(line_body)
+    if line_hash == _last_line_hash:
+        return
+    _last_line_hash = line_hash
+
     patches = read_patches()
     for pattern, name, severity, color in ATTACK_PATTERNS:
         if re.search(pattern, line, re.IGNORECASE):

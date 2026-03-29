@@ -10,3 +10,10 @@
 12:59:44 GET /login? | body= | ip=127.0.0.1 | status=200
 12:59:55 POST /login? | body=roll_no=`' OR '1'='1'--`&password=1345 | ip=127.0.0.1 | status=302
 12:59:55 GET /dashboard? | body= | ip=127.0.0.1 | status=200
+13:03:51 GET /logout? | body= | ip=127.0.0.1 | status=302
+13:03:51 GET /? | body= | ip=127.0.0.1 | status=200
+13:03:53 GET /? | body= | ip=127.0.0.1 | status=200
+13:03:55 GET /login? | body= | ip=127.0.0.1 | status=200
+13:04:08 POST /login? | body=roll_no=`' OR '1'='1'--`&password=23435 | ip=127.0.0.1 | status=302
+13:04:08 POST /login? | body=roll_no=`' OR '1'='1'--`&password=23435 | ip=127.0.0.1 | status=302
+13:04:08 GET /dashboard? | body= | ip=127.0.0.1 | status=200
