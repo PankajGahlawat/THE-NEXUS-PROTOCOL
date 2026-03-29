@@ -459,7 +459,7 @@ def validate_regex(pattern: str, vuln_id: str) -> dict:
 # ─────────────────────────── ATTACK DETECTION ────────────────────────────────
 
 ATTACK_PATTERNS = [
-    (r"'.*OR.*'|'.*--|\bUNION\b|\bSELECT\b",         "SQL Injection",                "HIGH",     "#ff4757"),
+    (r"'.*OR.*'|'.*--|\bUNION\b.*\bSELECT\b|\bSELECT\b.*\bFROM\b",  "SQL Injection",                "HIGH",     "#ff4757"),
     (r"body=cmd=exploit\s+1\b",                         "Simulated SQL Injection",      "MEDIUM",   "#ffa502"),
     (r"<script|javascript:|onerror=|onload=",           "Stored XSS",                  "HIGH",     "#ff4757"),
     (r"body=cmd=exploit\s+2\b",                         "Simulated Stored XSS",         "MEDIUM",   "#ffa502"),
@@ -483,15 +483,16 @@ ATTACK_PATTERNS = [
     (r"body=cmd=exploit\s+10\b",                        "Simulated CSRF",               "MEDIUM",   "#ffa502"),
     (r"POST /student/document/upload .*filename=(?![^|]*\.pdf(?:\s|\||$))[^|]+", "Unrestricted Doc Upload", "CRITICAL", "#ff0000"),
     (r"body=cmd=exploit\s+12\b",                        "Simulated Doc Upload",         "HIGH",     "#ff4757"),
-    # ── ADVANCED VULNS (Round 2 additions) ──
+    # ── ADVANCED VULNS ──
     (r"!!python/object|yaml\.unsafe_load|/tools/yaml-import", "YAML RCE Attempt",       "CRITICAL", "#ff0000"),
     (r"body=cmd=exploit\s+9\b",                         "Simulated YAML RCE",           "HIGH",     "#ff4757"),
     (r"GET /debug",                                     "Debug Endpoint Probe",         "HIGH",     "#ff4757"),
-    (r"flask.unsign|secret_key.*forge|forged.*session", "Session Cookie Forgery",       "CRITICAL", "#ff0000"),
+    (r"flask\.unsign|secret_key.*forge|forged.*session", "Session Cookie Forgery",      "CRITICAL", "#ff0000"),
     (r"body=cmd=exploit\s+13\b",                        "Simulated Debug/Session Forge","HIGH",     "#ff4757"),
-    (r"127\.0\.0\.1|169\.254\.169\.254|/api/internal",  "SSRF Attempt",                 "CRITICAL", "#ff0000"),
+    # SSRF: only match when 127.0.0.1 or internal IPs appear in body/url param, not in ip= field
+    (r"body=.*(?:127\.0\.0\.1|169\.254\.169\.254|file://|/api/internal)|url=.*(?:127\.0\.0\.1|169\.254\.169\.254)", "SSRF Attempt", "CRITICAL", "#ff0000"),
     (r"body=cmd=exploit\s+14\b",                        "Simulated SSRF",               "HIGH",     "#ff4757"),
-    # ── NEW EASY VULNS ──
+    # ── EASY VULNS ──
     (r"<iframe.*src=.*localhost|X-Frame-Options",       "Clickjacking Attempt",         "MEDIUM",   "#ffa502"),
     (r"new_password=.{1,7}(&|$|\s)",                    "Weak Password Attempt",        "MEDIUM",   "#ffa502"),
     (r"POST /account/update-email",                     "CSRF Email Hijack",            "HIGH",     "#ff4757"),
@@ -595,7 +596,7 @@ def analyze(line: str):
             else:
                 attack_counts[name]["hit"] += 1
                 # ── Record confirmed exploit success ──
-                if vid and not vid.startswith(""):
+                if vid:
                     vuln_name = next((v["name"] for v in VULNS if v["id"] == vid), name)
                     vuln_level = next((v["level"] for v in VULNS if v["id"] == vid), "")
                     exploit_successes.insert(0, {

@@ -1,1 +1,6 @@
 
+12:53:33 GET /logout? | body= | ip=127.0.0.1 | status=302
+12:53:33 GET /? | body= | ip=127.0.0.1 | status=200
+12:53:36 GET /login? | body= | ip=127.0.0.1 | status=200
+12:53:43 POST /login? | body=roll_no=`' OR '1'='1'--`&password=12345 | ip=127.0.0.1 | status=302
+12:53:43 GET /dashboard? | body= | ip=127.0.0.1 | status=200
